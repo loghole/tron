@@ -4,6 +4,7 @@ import (
 	"flag"
 )
 
+// nolint:gochecknoglobals //flags
 var (
 	localConfigEnabled bool
 )

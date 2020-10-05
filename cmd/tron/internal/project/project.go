@@ -9,7 +9,6 @@ import (
 	"os/exec"
 	"path"
 	"path/filepath"
-	"regexp"
 	"strings"
 
 	"github.com/fatih/color"
@@ -39,9 +38,6 @@ type Project struct {
 	Name    string
 	Protos  []*models.Proto
 	IsNew   bool
-
-	serviceRgx *regexp.Regexp
-	packageRgx *regexp.Regexp
 }
 
 func NewProject(module string) (project *Project, err error) {
@@ -59,12 +55,10 @@ func NewProject(module string) (project *Project, err error) {
 	parts := strings.Split(module, "/")
 
 	project = &Project{
-		Module:     module,
-		Name:       parts[len(parts)-1],
-		Protos:     make([]*models.Proto, 0),
-		IsNew:      isNew,
-		serviceRgx: regexp.MustCompile(`^service (.*?) {`),
-		packageRgx: regexp.MustCompile(`^package[\s]*?(\w*);$`),
+		Module: module,
+		Name:   parts[len(parts)-1],
+		Protos: make([]*models.Proto, 0),
+		IsNew:  isNew,
 	}
 
 	project.AbsPath, err = os.Getwd()
@@ -188,22 +182,27 @@ func (p *Project) InitValues() error {
 		return simplerr.Wrap(err, "failed to exec template")
 	}
 
+	// TODO: to const or generate.Config
 	if err := helpers.WriteToFile(".deploy/config/values.yaml", []byte(values)); err != nil {
 		return err
 	}
 
+	// TODO: to const or generate.Config
 	if err := helpers.WriteToFile(".deploy/config/values_dev.yaml", []byte(templates.ValuesDevTemplate)); err != nil {
 		return err
 	}
 
+	// TODO: to const or generate.Config
 	if err := helpers.WriteToFile(".deploy/config/values_local.yaml", []byte(templates.ValuesLocalTemplate)); err != nil {
 		return err
 	}
 
+	// TODO: to const or generate.Config
 	if err := helpers.WriteToFile(".deploy/config/values_stg.yaml", []byte(templates.ValuesStgTemplate)); err != nil {
 		return err
 	}
 
+	// TODO: to const or generate.Config
 	if err := helpers.WriteToFile(".deploy/config/values_prod.yaml", []byte(templates.ValuesProdTemplate)); err != nil {
 		return err
 	}
@@ -231,10 +230,6 @@ func (p *Project) FindProtoFiles(dirs ...string) error {
 }
 
 func (p *Project) MoveProtoFiles() error {
-	if !p.IsNew {
-		return nil
-	}
-
 	for _, proto := range p.Protos {
 		var (
 			newDir  = path.Join(projectPathApi, proto.Service.PackageName)
@@ -312,16 +307,17 @@ func (p *Project) getProtoFileInfo(path string, info os.FileInfo, err error) err
 			return err
 		}
 
-		if m := p.packageRgx.FindStringSubmatch(scanner.Text()); len(m) > 1 {
+		if m := models.PackageRegexp.FindStringSubmatch(scanner.Text()); len(m) > 1 {
 			if proto.Service.PackageName != "" {
 				return fmt.Errorf("package '%s/%s.proto' has multiple package entries", proto.RelativeDir, proto.Name)
 			}
 
 			proto.Service.PackageName = m[1]
+			// TODO: "internal/app/controllers" to const
 			proto.Service.Package = strings.Join([]string{p.Module, "internal/app/controllers", m[1]}, "/")
 		}
 
-		if m := p.serviceRgx.FindStringSubmatch(scanner.Text()); len(m) > 1 {
+		if m := models.ServiceRegexp.FindStringSubmatch(scanner.Text()); len(m) > 1 {
 			if proto.Service.Name != "" {
 				return fmt.Errorf("package '%s/%s.proto' has multiple service entries", proto.RelativeDir, proto.Name)
 			}
@@ -349,8 +345,6 @@ func moduleFromGoMod() (string, error) {
 
 	defer helpers.Close(file)
 
-	var reg = regexp.MustCompile(`^module (.*)$`)
-
 	scanner := bufio.NewScanner(file)
 	scanner.Split(bufio.ScanLines)
 
@@ -359,7 +353,7 @@ func moduleFromGoMod() (string, error) {
 			return "", err
 		}
 
-		if m := reg.FindStringSubmatch(scanner.Text()); len(m) > 1 {
+		if m := models.ModuleRegexp.FindStringSubmatch(scanner.Text()); len(m) > 1 {
 			return m[1], nil
 		}
 	}

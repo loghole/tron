@@ -10,7 +10,6 @@ import (
 	"net/http"
 	"os"
 	"path"
-	"regexp"
 	"strings"
 
 	"github.com/fatih/color"
@@ -26,7 +25,6 @@ const (
 
 type VendorPB struct {
 	project   *project.Project
-	importRgx *regexp.Regexp
 	replacer  map[string]string
 	exists    map[string]struct{}
 	imports   []string
@@ -35,7 +33,6 @@ type VendorPB struct {
 func NewVendorPB(pr *project.Project) *VendorPB {
 	return &VendorPB{
 		project:   pr,
-		importRgx: regexp.MustCompile(`^import "(.*?)";$`),
 		replacer: map[string]string{
 			"google/type":     "https://raw.githubusercontent.com/googleapis/googleapis/master/",
 			"google/api":      "https://raw.githubusercontent.com/googleapis/googleapis/master/",
@@ -89,7 +86,7 @@ func (v *VendorPB) findImports(r io.Reader) error {
 			return err
 		}
 
-		m := v.importRgx.FindStringSubmatch(scanner.Text())
+		m := models.ImportRegexp.FindStringSubmatch(scanner.Text())
 		if len(m) == 0 {
 			continue
 		}

@@ -29,6 +29,7 @@ func (g *GenerateCMD) Command() *cobra.Command {
 	}
 
 	cmd.Flags().StringArray(FlagProtoDirs, []string{}, "directory with protos for generating your services")
+	cmd.Flags().Bool(FlagConfig, false, "Generate config helpers from values")
 
 	return cmd
 }
@@ -42,6 +43,18 @@ func (g *GenerateCMD) run(cmd *cobra.Command, args []string) {
 	if len(protoDirs) > 0 {
 		if err := g.runProto(protoDirs); err != nil {
 			color.Red("Generate protos failed: %v", err)
+			os.Exit(1)
+		}
+	}
+
+	config, err := cmd.Flags().GetBool(FlagConfig)
+	if err != nil {
+		panic(err)
+	}
+
+	if config {
+		if err := g.runConfig(); err != nil {
+			color.Red("Generate config failed: %v", err)
 			os.Exit(1)
 		}
 	}
@@ -82,6 +95,14 @@ func (g *GenerateCMD) runProto(dirs []string) error {
 	if err := generate.NewProto(g.project).Generate(); err != nil {
 		color.Red("Generate proto files failed: %v", err)
 		os.Exit(1)
+	}
+
+	return nil
+}
+
+func (g *GenerateCMD) runConfig() error {
+	if err := generate.NewConfig().Generate(); err != nil {
+		panic(err)
 	}
 
 	return nil

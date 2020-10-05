@@ -15,12 +15,13 @@ const (
 )
 
 const (
-	ValuesPath     = ".deploy/config"
-	ValuesExt      = "yaml"
-	ValuesBaseName = "values"
-	ValuesDevName  = "values_dev"
-	ValuesStgName  = "values_stg"
-	ValuesProdName = "values_prod"
+	ValuesPath      = ".deploy/config"
+	ValuesExt       = "yaml"
+	ValuesBaseName  = "values"
+	ValuesDevName   = "values_dev"
+	ValuesLocalName = "values_local"
+	ValuesStgName   = "values_stg"
+	ValuesProdName  = "values_prod"
 )
 
 const (

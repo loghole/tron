@@ -34,6 +34,8 @@ func (n Namespace) ValuesPath() string {
 		name = ValuesStgName
 	case NamespaceProd:
 		name = ValuesProdName
+	case NamespaceLocal:
+		name = ValuesLocalName
 	default:
 		panic("unknown namespace")
 	}

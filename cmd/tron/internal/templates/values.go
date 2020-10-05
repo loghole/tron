@@ -11,26 +11,20 @@ type Env struct {
 
 const ValuesTemplate = `{{ range $value := .List -}}
 {{ $value.Key }}: {{ $value.Val }}
-{{end }}
-
-`
+{{end }}`
 
 const ValuesLocalTemplate = `# Place realtime config values for LOCAL development here
 LOGGER_LEVEL: DEBUG
-
 `
 
 const ValuesDevTemplate = `# Place develop overrides here
 LOGGER_LEVEL: INFO
-
 `
 
 const ValuesStgTemplate = `# Place staging overrides here
 LOGGER_LEVEL: WARN
-
 `
 
 const ValuesProdTemplate = `# Place production overrides here
 LOGGER_LEVEL: WARN
-
 `

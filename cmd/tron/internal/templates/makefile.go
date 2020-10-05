@@ -29,6 +29,9 @@ pb-deps:
 
 bin-deps: .bin-deps
 
+.PHONY: generate-config
+generate-config:
+	tron generate config -v
 `
 
 const Makefile = `include tron.mk

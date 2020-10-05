@@ -49,4 +49,3 @@ COPY --from=builder /app /app
 USER appuser:appuser
 
 ENTRYPOINT ["/app"]
-

@@ -17,5 +17,4 @@ vendor.pb/
 .DS_STORE
 /.idea
 /.vscode
-
 `

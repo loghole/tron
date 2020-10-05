@@ -3,11 +3,11 @@ package project
 import (
 	"fmt"
 	"os/exec"
-	"regexp"
 
 	"github.com/Masterminds/semver"
 	"github.com/fatih/color"
 
+	"github.com/loghole/tron/cmd/tron/internal/models"
 	"github.com/loghole/tron/cmd/tron/internal/stdout"
 )
 
@@ -19,15 +19,11 @@ const (
 
 type Checker struct {
 	printer stdout.Printer
-	rxp     *regexp.Regexp
 }
 
 func NewChecker(printer stdout.Printer) *Checker {
 	return &Checker{
 		printer: printer,
-		rxp: regexp.MustCompile(
-			`([0-9]+)\.([0-9]+)(\.([0-9]+))?(?:-([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?(?:\+[0-9A-Za-z-]+)?`,
-		),
 	}
 }
 
@@ -97,7 +93,7 @@ func (c *Checker) checkVersion(cmd *exec.Cmd, minReqVersion string) error {
 }
 
 func (c *Checker) extractVersion(s string) (string, error) {
-	matches := c.rxp.FindStringSubmatch(s)
+	matches := models.VersionRegexp.FindStringSubmatch(s)
 	if len(matches) > 0 {
 		return matches[0], nil
 	}

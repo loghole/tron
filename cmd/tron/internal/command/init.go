@@ -3,6 +3,7 @@ package command
 import (
 	"github.com/spf13/cobra"
 
+	"github.com/loghole/tron/cmd/tron/internal/generate"
 	"github.com/loghole/tron/cmd/tron/internal/helpers"
 	"github.com/loghole/tron/cmd/tron/internal/project"
 	"github.com/loghole/tron/cmd/tron/internal/stdout"
@@ -10,6 +11,7 @@ import (
 
 const (
 	FlagProtoDirs = "proto"
+	FlagConfig    = "config"
 )
 
 type InitCMD struct {
@@ -88,6 +90,10 @@ func (i *InitCMD) run(cmd *cobra.Command, args []string) {
 	}
 
 	if err := helpers.Exec("make", "generate"); err != nil {
+		panic(err)
+	}
+
+	if err := generate.NewConfig().Generate(); err != nil {
 		panic(err)
 	}
 
