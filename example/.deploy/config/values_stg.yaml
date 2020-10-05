@@ -1,0 +1,4 @@
+# Place staging overrides here
+env:
+  - LOGGER_LEVEL=WARN
+

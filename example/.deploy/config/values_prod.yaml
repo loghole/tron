@@ -1,0 +1,4 @@
+# Place production overrides here
+env:
+  - LOGGER_LEVEL=WARN
+
