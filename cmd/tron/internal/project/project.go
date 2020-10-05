@@ -38,17 +38,22 @@ type Project struct {
 	Module  string
 	Name    string
 	Protos  []*models.Proto
+	IsNew   bool
 
 	serviceRgx *regexp.Regexp
 	packageRgx *regexp.Regexp
 }
 
 func NewProject(module string) (project *Project, err error) {
+	var isNew bool
+
 	if module == "" {
 		module, err = moduleFromGoMod()
 		if err != nil {
 			return nil, ErrEmptyModule
 		}
+
+		isNew = false
 	}
 
 	parts := strings.Split(module, "/")
@@ -57,6 +62,7 @@ func NewProject(module string) (project *Project, err error) {
 		Module:     module,
 		Name:       parts[len(parts)-1],
 		Protos:     make([]*models.Proto, 0),
+		IsNew:      isNew,
 		serviceRgx: regexp.MustCompile(`^service (.*?) {`),
 		packageRgx: regexp.MustCompile(`^package[\s]*?(\w*);$`),
 	}
@@ -190,6 +196,10 @@ func (p *Project) InitValues() error {
 		return err
 	}
 
+	if err := helpers.WriteToFile(".deploy/config/values_local.yaml", []byte(templates.ValuesLocalTemplate)); err != nil {
+		return err
+	}
+
 	if err := helpers.WriteToFile(".deploy/config/values_stg.yaml", []byte(templates.ValuesStgTemplate)); err != nil {
 		return err
 	}
@@ -221,6 +231,10 @@ func (p *Project) FindProtoFiles(dirs ...string) error {
 }
 
 func (p *Project) MoveProtoFiles() error {
+	if !p.IsNew {
+		return nil
+	}
+
 	for _, proto := range p.Protos {
 		var (
 			newDir  = path.Join(projectPathApi, proto.Service.PackageName)

@@ -27,6 +27,8 @@ type Options struct {
 }
 
 func NewOptions(options ...Option) (*Options, error) {
+	parseFlags()
+
 	hostname, err := os.Hostname()
 	if err != nil {
 		return nil, err

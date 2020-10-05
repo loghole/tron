@@ -1,4 +1,3 @@
 # Place develop overrides here
-env:
-  - LOGGER_LEVEL=INFO
+LOGGER_LEVEL: INFO
 

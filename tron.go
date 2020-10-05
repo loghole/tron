@@ -27,6 +27,18 @@ type servers struct {
 }
 
 func (s *servers) init(opts *app.Options) (err error) {
+	if opts.PortAdmin == 0 {
+		opts.PortAdmin = uint16(viper.GetInt32(app.AdminPortEnv))
+	}
+
+	if opts.PortHTTP == 0 {
+		opts.PortHTTP = uint16(viper.GetInt32(app.HTTPPortEnv))
+	}
+
+	if opts.PortGRPC == 0 {
+		opts.PortGRPC = uint16(viper.GetInt32(app.GRPCPortEnv))
+	}
+
 	s.publicGRPC, err = grpc.NewServer(opts.PortGRPC, opts.GRPCOptions...)
 	if err != nil {
 		return err
@@ -98,7 +110,9 @@ func New(options ...Option) (a *App, err error) {
 		return nil, err
 	}
 
-	initConfig(a.opts)
+	if err := initConfig(); err != nil {
+		return nil, simplerr.Wrap(err, "init config failed")
+	}
 
 	if err := a.logger.init(a.info); err != nil {
 		return nil, simplerr.Wrap(err, "init logger failed")
@@ -194,11 +208,28 @@ func (a *App) Run(impl ...transport.Service) {
 	_ = a.logger.Sync()
 }
 
-func initConfig(opts *app.Options) {
+func initConfig() error {
 	viper.AutomaticEnv()
 	viper.SetConfigType("yaml")
-	viper.SetConfigName(opts.ConfigName)
-	viper.WatchConfig()
+	viper.SetConfigName(app.ValuesBaseName)
+	viper.AddConfigPath(app.ValuesPath)
+
+	if err := viper.ReadInConfig(); err != nil {
+		return err
+	}
+
+	namespace := app.ParseNamespace(viper.GetString(app.NamespaceEnv))
+
+	replacer, err := os.Open(namespace.ValuesPath())
+	if err != nil {
+		return simplerr.Wrapf(err, "open values file = '%s' failed", namespace.ValuesPath())
+	}
+
+	if err := viper.MergeConfig(replacer); err != nil {
+		return simplerr.Wrap(err, "merge config failed")
+	}
+
+	return nil
 }
 
 func initInfo() *Info {

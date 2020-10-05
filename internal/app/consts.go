@@ -13,3 +13,19 @@ const (
 	GRPCPortEnv  = "service_port_grpc"
 	AdminPortEnv = "service_port_admin"
 )
+
+const (
+	ValuesPath     = ".deploy/config"
+	ValuesExt      = "yaml"
+	ValuesBaseName = "values"
+	ValuesDevName  = "values_dev"
+	ValuesStgName  = "values_stg"
+	ValuesProdName = "values_prod"
+)
+
+const (
+	NamespaceDev   Namespace = "dev"
+	NamespaceLocal Namespace = "local"
+	NamespaceStage Namespace = "stage"
+	NamespaceProd  Namespace = "prod"
+)

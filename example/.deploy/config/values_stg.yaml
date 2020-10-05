@@ -1,4 +1,3 @@
 # Place staging overrides here
-env:
-  - LOGGER_LEVEL=WARN
+LOGGER_LEVEL: WARN
 
