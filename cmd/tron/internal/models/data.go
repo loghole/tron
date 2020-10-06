@@ -4,6 +4,8 @@ import (
 	"github.com/loghole/tron/cmd/tron/internal/helpers"
 )
 
+const ProtoExt = ".proto"
+
 // Data is a datastruct containing common stuff for the templates
 type Data struct {
 	Protos []*Proto
@@ -22,6 +24,14 @@ type Proto struct {
 	Path        string
 	RelativeDir string
 	Service     Service
+}
+
+func (p *Proto) NameWithExt() string {
+	return p.Name + ProtoExt
+}
+
+func AddProtoExt(name string) string {
+	return name + ProtoExt
 }
 
 type Service struct {

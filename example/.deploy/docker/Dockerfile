@@ -24,8 +24,8 @@ RUN go mod download && go mod verify
 
 COPY . .
 
-ARG SERVICE_NAME=example
-ARG APP_NAME=example
+ARG SERVICE_NAME=collector
+ARG APP_NAME=github.com/loghole/collector
 
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build \
     -ldflags="-w -s \

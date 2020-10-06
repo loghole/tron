@@ -1,11 +1,13 @@
 package project
 
 import (
+	"errors"
 	"fmt"
 	"os/exec"
 
 	"github.com/Masterminds/semver"
 	"github.com/fatih/color"
+	"github.com/lissteron/simplerr"
 
 	"github.com/loghole/tron/cmd/tron/internal/models"
 	"github.com/loghole/tron/cmd/tron/internal/stdout"
@@ -15,6 +17,11 @@ const (
 	GoMinVersion     = "1.13.15"
 	GitMinVersion    = "2.3.4"
 	ProtocMinVersion = "3.3.0"
+)
+
+var (
+	ErrNotSemanticVersion = errors.New("string is not semantic version")
+	ErrCheckVersionFailed = errors.New("check failed")
 )
 
 type Checker struct {
@@ -44,6 +51,7 @@ func (c *Checker) CheckRequirements() (failed bool) {
 
 		if err := check.fn(); err != nil {
 			c.printer.VerbosePrintf(color.FgRed, "FAIL: %v\n", err)
+
 			failed = true
 
 			continue
@@ -86,7 +94,7 @@ func (c *Checker) checkVersion(cmd *exec.Cmd, minReqVersion string) error {
 	constr, _ := semver.NewConstraint(">= " + minReqVersion)
 
 	if !constr.Check(v) {
-		return fmt.Errorf("should be >= %s current version is %s", minReqVersion, v.String())
+		return simplerr.Wrapf(ErrCheckVersionFailed, "should be >= %s current version is %s", minReqVersion, v.String())
 	}
 
 	return nil
@@ -98,5 +106,5 @@ func (c *Checker) extractVersion(s string) (string, error) {
 		return matches[0], nil
 	}
 
-	return "", fmt.Errorf("string is not semantic version")
+	return "", ErrNotSemanticVersion
 }

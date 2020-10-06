@@ -24,6 +24,10 @@ func ParseNamespace(s string) Namespace {
 	}
 }
 
+func (n Namespace) String() string {
+	return string(n)
+}
+
 func (n Namespace) ValuesPath() string {
 	var name string
 
@@ -40,5 +44,5 @@ func (n Namespace) ValuesPath() string {
 		panic("unknown namespace")
 	}
 
-	return path.Join(ValuesPath, strings.Join([]string{name, ValuesExt}, "."))
+	return path.Join(DeploymentsDir, ValuesDir, strings.Join([]string{name, ValuesExt}, "."))
 }

@@ -1,12 +1,13 @@
+# More info on config here: https://github.com/golangci/golangci-lint#config-file
 run:
   tests: false
   skip-dirs:
-    - scripts
+  - scripts
 linters:
   enable-all: true
   disable:
-    - godot
-    - gci
+   - godot
+   - gci
 linters-settings:
   gocritic:
     enabled-tags:
@@ -15,3 +16,5 @@ linters-settings:
       - performance
       - diagnostic
       - opinionated
+service:
+  golangci-lint-version: 1.31.x

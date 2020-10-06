@@ -19,27 +19,25 @@ import (
 	"github.com/loghole/tron/cmd/tron/internal/project"
 )
 
-const (
-	vendorDir = "vendor.pb"
-)
+var ErrBadImport = errors.New("bad import")
 
 type VendorPB struct {
-	project   *project.Project
-	replacer  map[string]string
-	exists    map[string]struct{}
-	imports   []string
+	project  *project.Project
+	replacer map[string]string
+	exists   map[string]struct{}
+	imports  []string
 }
 
 func NewVendorPB(pr *project.Project) *VendorPB {
 	return &VendorPB{
-		project:   pr,
+		project: pr,
 		replacer: map[string]string{
 			"google/type":     "https://raw.githubusercontent.com/googleapis/googleapis/master/",
 			"google/api":      "https://raw.githubusercontent.com/googleapis/googleapis/master/",
 			"google/rpc":      "https://raw.githubusercontent.com/googleapis/googleapis/master/",
 			"google/protobuf": "https://raw.githubusercontent.com/google/protobuf/master/src/",
 		},
-		exists:  make(map[string]struct{}, 0),
+		exists:  make(map[string]struct{}),
 		imports: make([]string, 0),
 	}
 }
@@ -66,8 +64,8 @@ func (v *VendorPB) scanProtos(protos []*models.Proto) error {
 	return nil
 }
 
-func (v *VendorPB) scanFile(path string) error {
-	file, err := os.Open(path)
+func (v *VendorPB) scanFile(filepath string) error {
+	file, err := os.Open(filepath)
 	if err != nil {
 		return err
 	}
@@ -136,13 +134,13 @@ func (v *VendorPB) copyProto(name string) error {
 		return err
 	}
 
-	return helpers.WriteToFile(path.Join(vendorDir, name), data)
+	return helpers.WriteToFile(path.Join(models.ProjectPathVendorPB, name), data)
 }
 
 func (v *VendorPB) curlProto(name string) error {
 	link, ok := v.importLink(name)
 	if !ok {
-		return errors.New("bad import")
+		return ErrBadImport
 	}
 
 	resp, err := http.Get(link)
@@ -161,7 +159,7 @@ func (v *VendorPB) curlProto(name string) error {
 		return err
 	}
 
-	return helpers.WriteToFile(path.Join(vendorDir, name), data)
+	return helpers.WriteToFile(path.Join(models.ProjectPathVendorPB, name), data)
 }
 
 func (v *VendorPB) importLink(s string) (string, bool) {
@@ -179,17 +177,4 @@ func (v *VendorPB) importLink(s string) (string, bool) {
 	}
 
 	return "", false
-}
-
-func (v *VendorPB) checkExists(s string) (bool, error) {
-	_, err := os.Stat(path.Join(vendorDir, s))
-	if err != nil {
-		if os.IsNotExist(err) {
-			return false, nil
-		}
-
-		return false, err
-	}
-
-	return true, nil
 }

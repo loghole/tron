@@ -6,5 +6,8 @@ gomod:
 gotest:
 	go test -race -v -cover -coverprofile coverage.out $(GO_TEST_PACKAGES)
 
-golint:
+golint: .cmd_lint
 	golangci-lint run -v
+
+.cmd_lint:
+	cd cmd/tron && golangci-lint run -v

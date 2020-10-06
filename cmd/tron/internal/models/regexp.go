@@ -4,8 +4,11 @@ import (
 	"regexp"
 )
 
+// nolint:gochecknoglobals //regexp
 var (
-	VersionRegexp = regexp.MustCompile(`([0-9]+)\.([0-9]+)(\.([0-9]+))?(?:-([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?(?:\+[0-9A-Za-z-]+)?`)
+	VersionRegexp = regexp.MustCompile(
+		`([0-9]+)\.([0-9]+)(\.([0-9]+))?(?:-([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?(?:\+[0-9A-Za-z-]+)?`,
+	)
 	ImportRegexp  = regexp.MustCompile(`^import "(.*?)";$`)
 	ServiceRegexp = regexp.MustCompile(`^service (.*?) {`)
 	PackageRegexp = regexp.MustCompile(`^package[\s]*?(\w*);$`)

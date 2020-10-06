@@ -12,8 +12,13 @@ type MainData struct {
 	models.Data
 
 	Imports map[string]Import
+}
 
-	ConfigPackage string
+func NewMainData(data models.Data) *MainData {
+	return &MainData{
+		Data:    data,
+		Imports: make(map[string]Import),
+	}
 }
 
 type Import struct {
@@ -22,53 +27,61 @@ type Import struct {
 }
 
 // Pkg returns pkg prefix with dot
-func (d MainData) Pkg(pkg string) string {
-	i := d.Imports[pkg]
+func (m *MainData) Pkg(pkg string) string {
+	i := m.Imports[pkg]
+
 	if i.Alias != "" {
 		return i.Alias + `.`
 	}
+
 	return ""
 }
 
 // AddImport adds pkg to Imports map, and guarantees a unique alias
 // if alias[0] passed it will be used as alias for this pkg, alias[1..N] are ignored
-func (d *MainData) AddImport(pkg string, alias ...string) *MainData {
-	if d.Imports == nil {
-		d.Imports = make(map[string]Import)
+func (m *MainData) AddImport(pkg string, alias ...string) {
+	if m.Imports == nil {
+		m.Imports = make(map[string]Import)
 	}
+
 	if len(alias) != 0 {
-		d.Imports[pkg] = Import{Pkg: pkg, Alias: alias[0]}
-		return d
+		m.Imports[pkg] = Import{Pkg: pkg, Alias: alias[0]}
+
+		return
 	}
 
 	path := strings.Split(pkg, "/")
+
 	if len(path) == 0 {
-		return d
+		return
 	}
 
-	lastPart := strings.Replace(path[len(path)-1], "-", "_", -1)
+	lastPart := strings.ReplaceAll(path[len(path)-1], "-", "_")
 
 	a := func(i int) string {
 		if i == 1 {
 			return lastPart
 		}
+
 		return lastPart + strconv.Itoa(i)
 	}
 
 	n := 1
 	found := false
+
 	for !found {
-		for _, i := range d.Imports {
+		for _, i := range m.Imports {
 			if i.Alias == a(n) {
 				n++
+
 				break
 			}
 		}
+
 		found = true
 	}
-	d.Imports[pkg] = Import{Pkg: pkg, Alias: a(n)}
 
-	return d
+	m.Imports[pkg] = Import{Pkg: pkg, Alias: a(n)}
 }
 
 const MainTemplate = `package main
@@ -84,6 +97,8 @@ func main() {
 	if err != nil {
 		{{ pkg "log" }}Fatalf("can't create app: %s", err)
 	}
+
+	log.Println(config.GetExampleValue())
 
 	// Init all ..
 

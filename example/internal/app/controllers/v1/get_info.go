@@ -5,8 +5,8 @@ package v1
 
 import (
 	"context"
-	desc "example/pkg/v1"
 
+	desc "github.com/loghole/collector/pkg/v1"
 	"github.com/pkg/errors"
 )
 

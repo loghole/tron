@@ -3,30 +3,49 @@
 
 LOCAL_BIN:=$(CURDIR)/bin
 
+DOCKERFILE   = .deploy/docker/Dockerfile
+DOCKER_IMAGE = loghole/collector
+VERSION     ?= $$(git describe --tags --always)
+
 .PHONY: .generate
 .generate:
-	tron generate --proto=api
+	tron generate --proto=api -v
 
 # generate code from proto and config
 .PHONY: generate
-generate: bin-deps pb-deps .generate
+generate: .bin-deps .pb-deps .generate
 
 # generate code from proto but without downloading proto deps
 .PHONY: fast-generate
 fast-generate: .generate
 
+.PHONY: generate-config
+generate-config:
+	tron generate config -v
+
 # install proto dependencies
-.PHONY: pb-deps
-pb-deps:
+.PHONY: .pb-deps
+.pb-deps:
+	$(info #Installing proto dependencies...)
+	GOBIN=$(LOCAL_BIN) go install github.com/gogo/protobuf/protoc-gen-gofast
+	GOBIN=$(LOCAL_BIN) go install github.com/utrack/clay/v2/cmd/protoc-gen-goclay
 
 .PHONY: .bin-deps
 .bin-deps:
 	$(info #Installing binary dependencies...)
-	GOBIN=$(LOCAL_BIN) go install github.com/gogo/protobuf/protoc-gen-gofast
-	GOBIN=$(LOCAL_BIN) go install github.com/utrack/clay/v2/cmd/protoc-gen-goclay
 
-bin-deps: .bin-deps
+gotest:
+	go test -race -v -cover -coverprofile coverage.out $(GO_TEST_PACKAGES)
 
-.PHONY: generate-config
-generate-config:
-	tron generate config -v
+golint:
+	golangci-lint run -v
+
+docker-image:
+	docker build \
+	-f $(DOCKERFILE) \
+	-t $(DOCKER_IMAGE) \
+	-t $(DOCKER_IMAGE):$(VERSION) \
+	.
+
+run-local:
+	go run cmd/collector/main.go --local-config-enabled

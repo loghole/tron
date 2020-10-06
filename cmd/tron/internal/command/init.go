@@ -69,23 +69,7 @@ func (i *InitCMD) run(cmd *cobra.Command, args []string) {
 		panic(err)
 	}
 
-	if err := i.project.InitGoMod(); err != nil {
-		panic(err)
-	}
-
-	if err := i.project.InitMakeFile(); err != nil {
-		panic(err)
-	}
-
-	if err := i.project.InitGitignore(); err != nil {
-		panic(err)
-	}
-
-	if err := i.project.InitDockerfile(); err != nil {
-		panic(err)
-	}
-
-	if err := i.project.InitValues(); err != nil {
+	if err := i.initBaseFiles(); err != nil {
 		panic(err)
 	}
 
@@ -100,4 +84,32 @@ func (i *InitCMD) run(cmd *cobra.Command, args []string) {
 	if err := i.project.InitMainFile(); err != nil {
 		panic(err)
 	}
+}
+
+func (i *InitCMD) initBaseFiles() error {
+	if err := i.project.InitGoMod(); err != nil {
+		return err
+	}
+
+	if err := i.project.InitMakeFile(); err != nil {
+		return err
+	}
+
+	if err := i.project.InitLinter(); err != nil {
+		return err
+	}
+
+	if err := i.project.InitGitignore(); err != nil {
+		return err
+	}
+
+	if err := i.project.InitDockerfile(); err != nil {
+		return err
+	}
+
+	if err := i.project.InitValues(); err != nil {
+		return err
+	}
+
+	return nil
 }

@@ -28,7 +28,7 @@ func ConfirmOverwrite(path string) bool {
 	_, result, err := prompt.Run()
 	if err != nil {
 		if errors.Is(err, promptui.ErrInterrupt) {
-			os.Exit(130)
+			os.Exit(1)
 		}
 
 		color.Red("Prompt failed %v: %s", err, keep)

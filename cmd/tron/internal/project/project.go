@@ -3,7 +3,8 @@ package project
 import (
 	"bufio"
 	"errors"
-	"fmt"
+	"go/format"
+	"io"
 	"io/ioutil"
 	"os"
 	"os/exec"
@@ -22,14 +23,14 @@ import (
 )
 
 const (
-	projectPathApi = "api"
-	gomodFile      = "go.mod"
-	protoExt       = ".proto"
+	gomodFile = "go.mod"
 )
 
 var (
-	ErrEmptyModule    = errors.New("can't create project with empty module")
-	ErrModuleNotFound = errors.New("project module does not exists")
+	ErrEmptyModule      = errors.New("can't create project with empty module")
+	ErrModuleNotFound   = errors.New("project module does not exists")
+	ErrMultiplePackages = errors.New("multiple package entries")
+	ErrMultipleServices = errors.New("multiple service entries")
 )
 
 type Project struct {
@@ -82,36 +83,36 @@ func (p *Project) InitGoMod() error {
 }
 
 func (p *Project) InitMakeFile() error {
-	files := []struct {
-		name string
-		tmpl string
-	}{
-		{name: "tron.mk", tmpl: templates.TronMK},
-		{name: "Makefile", tmpl: templates.Makefile},
+	data := templates.NewTronMKData(
+		strings.Join([]string{models.CmdDir, p.Name, models.MainFile}, "/"),
+		models.DockerfileFilepath,
+		p.Module,
+	)
+
+	tronMK, err := helpers.ExecTemplate(templates.TronMK, data)
+	if err != nil {
+		return simplerr.Wrap(err, "failed to exec template")
 	}
 
-	for _, file := range files {
-		if err := helpers.WriteToFile(file.name, []byte(file.tmpl)); err != nil {
-			return err
-		}
+	if err := helpers.WriteToFile(models.TronMKFilepath, []byte(tronMK)); err != nil {
+		return err
+	}
+
+	if err := helpers.WriteToFile(models.MakefileFilepath, []byte(templates.Makefile)); err != nil {
+		return err
 	}
 
 	return nil
 }
 
 func (p *Project) InitMainFile() error {
-	fpath := filepath.Join(p.AbsPath, "cmd", p.Name, "main.go")
+	fpath := filepath.Join(p.AbsPath, models.CmdDir, p.Name, models.MainFile)
 
-	data := templates.MainData{
-		Data: models.Data{
-			Protos: p.Protos,
-		},
-		ConfigPackage: filepath.Join(p.Module, "./config"),
-	}
-	data.AddImport("context")
+	data := templates.NewMainData(models.Data{Protos: p.Protos})
+
 	data.AddImport("log")
 	data.AddImport("github.com/loghole/tron")
-	data.AddImport(data.ConfigPackage, "_")
+	data.AddImport(strings.Join([]string{p.Module, "config"}, "/"))
 
 	for _, p := range p.Protos {
 		data.AddImport(p.Service.Package)
@@ -122,7 +123,12 @@ func (p *Project) InitMainFile() error {
 		return simplerr.Wrap(err, "failed to exec template")
 	}
 
-	formattedBytes, err := imports.Process("", []byte(mainScript), nil)
+	formattedBytes, err := format.Source([]byte(mainScript))
+	if err != nil {
+		return simplerr.Wrap(err, "failed to format process")
+	}
+
+	formattedBytes, err = imports.Process("", formattedBytes, nil)
 	if err != nil {
 		return simplerr.Wrap(err, "failed to imports process")
 	}
@@ -131,11 +137,11 @@ func (p *Project) InitMainFile() error {
 }
 
 func (p *Project) InitGitignore() error {
-	if !helpers.ConfirmOverwrite(".gitignore") {
+	if !helpers.ConfirmOverwrite(models.GitignoreFilepath) {
 		return nil
 	}
 
-	return helpers.WriteToFile(".gitignore", []byte(templates.GitignoreTemplate))
+	return helpers.WriteToFile(models.GitignoreFilepath, []byte(templates.GitignoreTemplate))
 }
 
 func (p *Project) InitDockerfile() error {
@@ -144,8 +150,8 @@ func (p *Project) InitDockerfile() error {
 		return simplerr.Wrap(err, "failed to exec template")
 	}
 
-	if err := helpers.WriteToFile(".deploy/docker/default/Dockerfile", []byte(dockerfile)); err != nil {
-		return err
+	if err := helpers.WriteToFile(models.DockerfileFilepath, []byte(dockerfile)); err != nil {
+		return simplerr.Wrap(err, "failed to write file")
 	}
 
 	return nil
@@ -157,8 +163,8 @@ func (p *Project) InitLinter() error {
 		return simplerr.Wrap(err, "failed to exec template")
 	}
 
-	if err := helpers.WriteToFile(".golangci.yaml", []byte(dockerfile)); err != nil {
-		return err
+	if err := helpers.WriteToFile(models.GolangciLintFilepath, []byte(dockerfile)); err != nil {
+		return simplerr.Wrap(err, "failed to write file")
 	}
 
 	return nil
@@ -182,29 +188,24 @@ func (p *Project) InitValues() error {
 		return simplerr.Wrap(err, "failed to exec template")
 	}
 
-	// TODO: to const or generate.Config
-	if err := helpers.WriteToFile(".deploy/config/values.yaml", []byte(values)); err != nil {
-		return err
+	if err := helpers.WriteToFile(models.ValuesBaseFilepath, []byte(values)); err != nil {
+		return simplerr.Wrap(err, "failed to write file")
 	}
 
-	// TODO: to const or generate.Config
-	if err := helpers.WriteToFile(".deploy/config/values_dev.yaml", []byte(templates.ValuesDevTemplate)); err != nil {
-		return err
+	if err := helpers.WriteToFile(models.ValuesDevFilepath, []byte(templates.ValuesDevTemplate)); err != nil {
+		return simplerr.Wrap(err, "failed to write file")
 	}
 
-	// TODO: to const or generate.Config
-	if err := helpers.WriteToFile(".deploy/config/values_local.yaml", []byte(templates.ValuesLocalTemplate)); err != nil {
-		return err
+	if err := helpers.WriteToFile(models.ValuesLocalFilepath, []byte(templates.ValuesLocalTemplate)); err != nil {
+		return simplerr.Wrap(err, "failed to write file")
 	}
 
-	// TODO: to const or generate.Config
-	if err := helpers.WriteToFile(".deploy/config/values_stg.yaml", []byte(templates.ValuesStgTemplate)); err != nil {
-		return err
+	if err := helpers.WriteToFile(models.ValuesStgFilepath, []byte(templates.ValuesStgTemplate)); err != nil {
+		return simplerr.Wrap(err, "failed to write file")
 	}
 
-	// TODO: to const or generate.Config
-	if err := helpers.WriteToFile(".deploy/config/values_prod.yaml", []byte(templates.ValuesProdTemplate)); err != nil {
-		return err
+	if err := helpers.WriteToFile(models.ValuesProdFilepath, []byte(templates.ValuesProdTemplate)); err != nil {
+		return simplerr.Wrap(err, "failed to write file")
 	}
 
 	return nil
@@ -231,11 +232,15 @@ func (p *Project) FindProtoFiles(dirs ...string) error {
 
 func (p *Project) MoveProtoFiles() error {
 	for _, proto := range p.Protos {
+		if strings.Contains(proto.RelativeDir, models.ProjectPathVendorPB) {
+			continue
+		}
+
 		var (
-			newDir  = path.Join(projectPathApi, proto.Service.PackageName)
+			newDir  = filepath.Join(models.ProjectPathAPI, proto.Service.PackageName)
 			newName = proto.Service.SnakeCasedName()
-			oldPath = path.Join(proto.RelativeDir, proto.Name+protoExt)
-			newPath = path.Join(newDir, newName+protoExt)
+			oldPath = filepath.Join(proto.RelativeDir, proto.NameWithExt())
+			newPath = filepath.Join(newDir, models.AddProtoExt(newName))
 		)
 
 		if oldPath == newPath {
@@ -275,17 +280,17 @@ func (p *Project) getProtoFileInfo(path string, info os.FileInfo, err error) err
 		return nil
 	}
 
-	if filepath.Ext(path) != protoExt {
+	if filepath.Ext(path) != models.ProtoExt {
 		return nil
 	}
 
-	proto := &models.Proto{Name: strings.TrimSuffix(info.Name(), protoExt), Path: path}
+	proto := &models.Proto{Name: strings.TrimSuffix(info.Name(), models.ProtoExt), Path: path}
 
 	switch {
 	case strings.HasPrefix(path, p.AbsPath):
 		proto.RelativeDir, err = filepath.Rel(p.AbsPath, filepath.Dir(path))
 	default:
-		proto.RelativeDir = filepath.Join("api", filepath.Base(filepath.Dir(path)))
+		proto.RelativeDir = filepath.Join(models.ProjectPathAPI, filepath.Base(filepath.Dir(path)))
 	}
 
 	if err != nil {
@@ -299,27 +304,39 @@ func (p *Project) getProtoFileInfo(path string, info os.FileInfo, err error) err
 
 	defer helpers.Close(file)
 
+	proto, err = p.scanProtoFile(file, proto)
+	if err != nil {
+		return err
+	}
+
+	color.Yellow("\tcollected proto '%s%s.proto'", proto.Path, proto.Name)
+
+	p.Protos = append(p.Protos, proto)
+
+	return nil
+}
+
+func (p *Project) scanProtoFile(file io.Reader, proto *models.Proto) (*models.Proto, error) {
 	scanner := bufio.NewScanner(file)
 	scanner.Split(bufio.ScanLines)
 
 	for scanner.Scan() {
 		if err := scanner.Err(); err != nil {
-			return err
+			return nil, err
 		}
 
 		if m := models.PackageRegexp.FindStringSubmatch(scanner.Text()); len(m) > 1 {
 			if proto.Service.PackageName != "" {
-				return fmt.Errorf("package '%s/%s.proto' has multiple package entries", proto.RelativeDir, proto.Name)
+				return nil, simplerr.Wrapf(ErrMultiplePackages, "'%s/%s.proto'", proto.RelativeDir, proto.Name)
 			}
 
 			proto.Service.PackageName = m[1]
-			// TODO: "internal/app/controllers" to const
-			proto.Service.Package = strings.Join([]string{p.Module, "internal/app/controllers", m[1]}, "/")
+			proto.Service.Package = strings.Join([]string{p.Module, models.ProjectPathImplementation, m[1]}, "/")
 		}
 
 		if m := models.ServiceRegexp.FindStringSubmatch(scanner.Text()); len(m) > 1 {
 			if proto.Service.Name != "" {
-				return fmt.Errorf("package '%s/%s.proto' has multiple service entries", proto.RelativeDir, proto.Name)
+				return nil, simplerr.Wrapf(ErrMultipleServices, "'%s/%s.proto'", proto.RelativeDir, proto.Name)
 			}
 
 			proto.Service.Name = m[1]
@@ -330,11 +347,7 @@ func (p *Project) getProtoFileInfo(path string, info os.FileInfo, err error) err
 		}
 	}
 
-	color.Yellow("\tcollected proto '%s%s.proto'", proto.Path, proto.Name)
-
-	p.Protos = append(p.Protos, proto)
-
-	return nil
+	return proto, nil
 }
 
 func moduleFromGoMod() (string, error) {

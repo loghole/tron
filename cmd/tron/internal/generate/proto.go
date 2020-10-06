@@ -17,10 +17,7 @@ import (
 )
 
 const (
-	cmdProtoc                  = "protoc"
-	projectPathClients         = "pkg"
-	projectPathImplementations = "internal/app/controllers"
-	projectPathVendorPB        = "vendor.pb"
+	cmdProtoc = "protoc"
 
 	pkgMap = "Mgoogle/protobuf/any.proto=github.com/gogo/protobuf/types," +
 		"Mgoogle/protobuf/api.proto=github.com/gogo/protobuf/types," +
@@ -34,6 +31,8 @@ const (
 		"Mgoogle/protobuf/type.proto=github.com/gogo/protobuf/types," +
 		"Mgoogle/protobuf/wrappers.proto=github.com/gogo/protobuf/types"
 )
+
+var ErrProtoc = errors.New("protoc")
 
 type Proto struct {
 	project *project.Project
@@ -51,6 +50,7 @@ func (p *Proto) Generate() error {
 
 		if err := p.generateGoFast(proto); err != nil {
 			color.Red("ERROR: %v", err)
+
 			return err
 		}
 
@@ -61,6 +61,7 @@ func (p *Proto) Generate() error {
 
 		if err := p.generateGoClay(proto); err != nil {
 			color.Red("ERROR: %v", err)
+
 			return err
 		}
 
@@ -73,40 +74,48 @@ func (p *Proto) Generate() error {
 }
 
 func (p *Proto) generateGoFast(proto *models.Proto) error {
-	err := helpers.Mkdir(path.Join(projectPathClients, proto.Service.PackageName, proto.Name))
+	err := helpers.Mkdir(path.Join(models.ProjectPathPkgClients, proto.Service.PackageName, proto.Name))
 	if err != nil {
 		return err
 	}
 
 	args := []string{
 		fmt.Sprintf("--plugin=protoc-gen-gofast=%s", path.Join(p.project.AbsPath, "bin/protoc-gen-gofast")),
-		fmt.Sprintf("-I%s:%s", proto.RelativeDir, projectPathVendorPB),
-		fmt.Sprintf("--gofast_out=%s,plugins=grpc:%s", pkgMap, path.Join(projectPathClients, proto.Service.PackageName)),
-		path.Join(proto.RelativeDir, proto.Name+".proto"),
+		fmt.Sprintf("-I%s:%s", proto.RelativeDir, models.ProjectPathVendorPB),
+		fmt.Sprintf("--gofast_out=%s,plugins=grpc:%s", pkgMap, path.Join(models.ProjectPathPkgClients, proto.Service.PackageName)),
+		path.Join(proto.RelativeDir, proto.NameWithExt()),
 	}
 
-	return execProtoc(p.project.AbsPath, args)
+	if err := execProtoc(p.project.AbsPath, args); err != nil {
+		return simplerr.Wrap(err, "generate go-fast")
+	}
+
+	return nil
 }
 
 func (p *Proto) generateGoClay(proto *models.Proto) error {
-	err := helpers.Mkdir(filepath.Join(projectPathImplementations, proto.Service.PackageName, proto.Name))
+	err := helpers.Mkdir(filepath.Join(models.ProjectPathImplementation, proto.Service.PackageName, proto.Name))
 	if err != nil {
 		return simplerr.Wrap(err, "failed to mkdir")
 	}
 
-	relToRoot, err := filepath.Rel(filepath.Join(p.project.AbsPath, projectPathClients, proto.Service.PackageName), p.project.AbsPath)
+	relToRoot, err := filepath.Rel(filepath.Join(p.project.AbsPath, models.ProjectPathPkgClients, proto.Service.PackageName), p.project.AbsPath)
 	if err != nil {
 		return simplerr.Wrap(err, "failed to get relative path")
 	}
 
 	args := []string{
 		fmt.Sprintf("--plugin=protoc-gen-goclay=%s", path.Join(p.project.AbsPath, "bin/protoc-gen-goclay")),
-		fmt.Sprintf("-I%s:%s", filepath.Join(relToRoot, proto.RelativeDir), filepath.Join(relToRoot, projectPathVendorPB)),
-		fmt.Sprintf("--goclay_out=%s,impl=true,impl_path=%s,impl_type_name_tmpl=%s:.", pkgMap, path.Join(relToRoot, projectPathImplementations, proto.Service.PackageName), "Implementation"),
-		path.Join(relToRoot, proto.RelativeDir, proto.Name+".proto"),
+		fmt.Sprintf("-I%s:%s", filepath.Join(relToRoot, proto.RelativeDir), filepath.Join(relToRoot, models.ProjectPathVendorPB)),
+		fmt.Sprintf("--goclay_out=%s,impl=true,impl_path=%s,impl_type_name_tmpl=%s:.", pkgMap, path.Join(relToRoot, models.ProjectPathImplementation, proto.Service.PackageName), models.ImplementationName),
+		path.Join(relToRoot, proto.RelativeDir, proto.NameWithExt()),
 	}
 
-	return execProtoc(path.Join(p.project.AbsPath, projectPathClients, proto.Service.PackageName), args)
+	if err := execProtoc(path.Join(p.project.AbsPath, models.ProjectPathPkgClients, proto.Service.PackageName), args); err != nil {
+		return simplerr.Wrap(err, "generate go-clay")
+	}
+
+	return nil
 }
 
 func execProtoc(wd string, args []string) error {
@@ -118,11 +127,11 @@ func execProtoc(wd string, args []string) error {
 
 	o, err := cmd.Output()
 	if err != nil {
-		return fmt.Errorf("protoc: %w", fmt.Errorf("stderr: %s: %w", stderr.String(), err))
+		return simplerr.Wrapf(err, "stderr: %s", stderr.String())
 	}
 
 	if len(o) > 0 {
-		return fmt.Errorf("protoc: unexpected output: %w", errors.New(string(o)))
+		return simplerr.Wrapf(ErrProtoc, "unexpected output: %s", o)
 	}
 
 	return nil

@@ -9,24 +9,36 @@ import (
 	"github.com/lissteron/simplerr"
 
 	"github.com/loghole/tron/cmd/tron/internal/helpers"
+	"github.com/loghole/tron/cmd/tron/internal/models"
 	"github.com/loghole/tron/cmd/tron/internal/templates"
+	"github.com/loghole/tron/internal/app"
 )
 
 type Config struct {
-	imports map[string]struct{}
-	files   []string
+	imports  map[string]struct{}
+	internal map[string]struct{}
+	files    []string
 }
 
 func NewConfig() *Config {
 	return &Config{
 		imports: make(map[string]struct{}),
 		files: []string{
-			// TODO: to const
-			".deploy/config/values.yaml",
-			".deploy/config/values_dev.yaml",
-			".deploy/config/values_local.yaml",
-			".deploy/config/values_stg.yaml",
-			".deploy/config/values_prod.yaml",
+			models.ValuesBaseFilepath,
+			models.ValuesDevFilepath,
+			models.ValuesLocalFilepath,
+			models.ValuesStgFilepath,
+			models.ValuesProdFilepath,
+		},
+		internal: map[string]struct{}{
+			app.NamespaceEnv: {},
+			app.LoggerLevelEnv: {},
+			app.LoggerCollectorAddrEnv: {},
+			app.LoggerDisableStdoutEnv: {},
+			app.JaegerAddrEnv: {},
+			app.HTTPPortEnv: {},
+			app.GRPCPortEnv: {},
+			app.AdminPortEnv: {},
 		},
 	}
 }
@@ -44,7 +56,7 @@ func (c *Config) Generate() error {
 		data.Values = append(data.Values, templates.NewConfigValue(key))
 	}
 
-	config, err := helpers.ExecTemplate(templates.ConfigTemplate, data)
+	config, err := helpers.ExecTemplate(templates.ConfigConstTemplate, data)
 	if err != nil {
 		return simplerr.Wrap(err, "failed to exec template")
 	}
@@ -54,7 +66,15 @@ func (c *Config) Generate() error {
 		return simplerr.Wrap(err, "failed to format config")
 	}
 
-	return helpers.WriteToFile("config/config.go", formatted)
+	if err := helpers.WriteToFile(models.ConfigConstFilepath, formatted); err != nil {
+		return err
+	}
+
+	if err := helpers.WriteToFile(models.ConfigFilepath, []byte(templates.ConfigTemplate)); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (c *Config) parseFile(filepath string) error {
@@ -79,11 +99,17 @@ func (c *Config) parseFile(filepath string) error {
 			continue
 		}
 
-		if strings.HasPrefix(parts[0], "#") {
+		name := strings.TrimSpace(parts[0])
+
+		if strings.HasPrefix(name, "#") {
 			continue
 		}
 
-		c.imports[strings.TrimSpace(parts[0])] = struct{}{}
+		if _, ok := c.internal[name]; ok {
+			continue
+		}
+
+		c.imports[name] = struct{}{}
 	}
 
 	return nil

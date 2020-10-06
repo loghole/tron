@@ -43,6 +43,7 @@ func (p *printer) VerbosePrint(atr color.Attribute, args ...interface{}) {
 		p.Print(atr, args...)
 	}
 }
+
 func (p *printer) VerbosePrintln(atr color.Attribute, args ...interface{}) {
 	if p.verbose {
 		p.Println(atr, args...)

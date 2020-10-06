@@ -4,6 +4,7 @@ import (
 	"os"
 
 	"github.com/fatih/color"
+	"github.com/lissteron/simplerr"
 	"github.com/spf13/cobra"
 
 	"github.com/loghole/tron/cmd/tron/internal/generate"
@@ -72,29 +73,25 @@ func (g *GenerateCMD) runProto(dirs []string) error {
 
 	g.project, err = project.NewProject("")
 	if err != nil {
-		color.Red("Parse project failed: %v", err)
-		os.Exit(1)
+		return simplerr.Wrap(err, "parse project failed")
 	}
 
 	g.printer.VerbosePrintln(color.FgBlack, "Find proto files")
 
 	if err := g.project.FindProtoFiles(dirs...); err != nil {
-		color.Red("Find proto files failed: %v", err)
-		os.Exit(1)
+		return simplerr.Wrap(err, "find proto files failed")
 	}
 
 	g.printer.VerbosePrintln(color.FgBlack, "Start vendoring")
 
 	if err := generate.NewVendorPB(g.project).Download(); err != nil {
-		color.Red("Download proto imports failed: %v", err)
-		os.Exit(1)
+		return simplerr.Wrap(err, "download proto imports failed")
 	}
 
 	g.printer.VerbosePrintln(color.FgBlack, "Generate profiles")
 
 	if err := generate.NewProto(g.project).Generate(); err != nil {
-		color.Red("Generate proto files failed: %v", err)
-		os.Exit(1)
+		return simplerr.Wrap(err, "generate proto files failed")
 	}
 
 	return nil
@@ -102,7 +99,7 @@ func (g *GenerateCMD) runProto(dirs []string) error {
 
 func (g *GenerateCMD) runConfig() error {
 	if err := generate.NewConfig().Generate(); err != nil {
-		panic(err)
+		return simplerr.Wrap(err, "generate config failed")
 	}
 
 	return nil

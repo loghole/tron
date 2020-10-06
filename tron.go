@@ -4,6 +4,7 @@ import (
 	"context"
 	"os"
 	"os/signal"
+	"path/filepath"
 
 	"github.com/go-chi/chi"
 	"github.com/lissteron/simplerr"
@@ -103,12 +104,14 @@ type App struct {
 }
 
 func New(options ...Option) (a *App, err error) {
-	a = &App{info: initInfo()}
+	a = &App{}
 
 	a.opts, err = app.NewOptions(options...)
 	if err != nil {
 		return nil, err
 	}
+
+	a.info = initInfo()
 
 	if err := initConfig(); err != nil {
 		return nil, simplerr.Wrap(err, "init config failed")
@@ -125,6 +128,8 @@ func New(options ...Option) (a *App, err error) {
 	if err := a.servers.init(a.opts); err != nil {
 		return nil, simplerr.Wrap(err, "init servers failed")
 	}
+
+	a.logger.With("info", a.info).Infof("init app")
 
 	return a, nil
 }
@@ -159,7 +164,7 @@ func (a *App) Run(impl ...transport.Service) {
 	a.publicGRPC.RegistryDesc(desc)
 	a.publicHTTP.RegistryDesc(desc)
 
-	swagger.New(desc).InitRoutes(a.adminHTTP.Router())
+	swagger.New(desc, a.info.Version).InitRoutes(a.adminHTTP.Router())
 
 	eg, ctx := errgroup.WithContext(context.Background())
 
@@ -210,9 +215,9 @@ func (a *App) Run(impl ...transport.Service) {
 
 func initConfig() error {
 	viper.AutomaticEnv()
-	viper.SetConfigType("yaml")
+	viper.SetConfigType(app.ValuesExt)
 	viper.SetConfigName(app.ValuesBaseName)
-	viper.AddConfigPath(app.ValuesPath)
+	viper.AddConfigPath(filepath.Join(app.DeploymentsDir, app.ValuesDir))
 
 	if err := viper.ReadInConfig(); err != nil {
 		return err
@@ -237,7 +242,7 @@ func initInfo() *Info {
 		InstanceUUID: app.InstanceUUID.String(),
 		ServiceName:  app.ServiceName,
 		AppName:      app.AppName,
-		Namespace:    viper.GetString(app.NamespaceEnv),
+		Namespace:    app.ParseNamespace(viper.GetString(app.NamespaceEnv)).String(),
 		GitHash:      app.GitHash,
 		Version:      app.Version,
 		BuildAt:      app.BuildAt,

@@ -15,8 +15,8 @@ type Docs struct {
 	desc []byte
 }
 
-func New(desc ServiceDesc) *Docs {
-	return &Docs{desc: desc.SwaggerDef()}
+func New(desc ServiceDesc, version string) *Docs {
+	return &Docs{desc: desc.SwaggerDef(swagger.WithVersion(version))}
 }
 
 func (s *Docs) InitRoutes(r chi.Router) {

@@ -4,8 +4,7 @@
 package v1
 
 import (
-	desc "example/pkg/v1"
-
+	desc "github.com/loghole/collector/pkg/v1"
 	"github.com/utrack/clay/v2/transport"
 )
 
