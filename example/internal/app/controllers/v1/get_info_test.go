@@ -7,7 +7,7 @@ import (
 	"context"
 	"testing"
 
-	desc "github.com/loghole/collector/pkg/v1"
+	desc "github.com/loghole/example/pkg/v1"
 	"github.com/stretchr/testify/require"
 )
 
