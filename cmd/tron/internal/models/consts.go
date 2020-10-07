@@ -14,8 +14,9 @@ const (
 )
 
 const (
-	MainFile = "main.go"
-	CmdDir   = "cmd"
+	MainFile  = "main.go"
+	GoModFile = "go.mod"
+	CmdDir    = "cmd"
 
 	ValuesBaseFilepath   = valuesDirPath + app.ValuesBaseName + "." + app.ValuesExt
 	ValuesDevFilepath    = valuesDirPath + app.ValuesDevName + "." + app.ValuesExt

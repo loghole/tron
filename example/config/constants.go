@@ -2,12 +2,5 @@
 package config
 
 const (
-	ServicePortGrpc     = "service_port_grpc"
-	ServicePortAdmin    = "service_port_admin"
-	ExampleValue        = "example_value"
-	LoggerLevel         = "logger_level"
-	LoggerCollectorAddr = "logger_collector_addr"
-	LoggerDisableStdout = "logger_disable_stdout"
-	JaegerAddr          = "jaeger_addr"
-	ServicePortHttp     = "service_port_http"
+	ExampleValue = "example_value"
 )

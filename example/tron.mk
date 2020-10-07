@@ -4,7 +4,7 @@
 LOCAL_BIN:=$(CURDIR)/bin
 
 DOCKERFILE   = .deploy/docker/Dockerfile
-DOCKER_IMAGE = loghole/collector
+DOCKER_IMAGE = loghole/example
 VERSION     ?= $$(git describe --tags --always)
 
 .PHONY: .generate
@@ -48,4 +48,4 @@ docker-image:
 	.
 
 run-local:
-	go run cmd/collector/main.go --local-config-enabled
+	go run cmd/example/main.go --local-config-enabled

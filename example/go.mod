@@ -1,4 +1,4 @@
-module github.com/loghole/collector
+module github.com/loghole/example
 
 go 1.15
 

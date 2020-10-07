@@ -5,14 +5,6 @@ import (
 	"unicode"
 )
 
-func KebabCase(s string) string {
-	return strings.Trim(strings.ReplaceAll(SnakeCase(s), "_", "-"), "-")
-}
-
-func UpperSnakeCase(s string) string {
-	return strings.ToUpper(SnakeCase(s))
-}
-
 func SnakeCase(s string) string {
 	in := []rune(s)
 

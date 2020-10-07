@@ -1,6 +1,7 @@
 package command
 
 import (
+	"github.com/fatih/color"
 	"github.com/spf13/cobra"
 
 	"github.com/loghole/tron/cmd/tron/internal/generate"
@@ -56,20 +57,31 @@ func (i *InitCMD) run(cmd *cobra.Command, args []string) {
 		panic(err)
 	}
 
+	i.printer.VerbosePrintln(color.FgBlack, "Init project")
+
 	i.project, err = project.NewProject(module)
 	if err != nil {
 		panic(err)
 	}
 
+	i.printer.VerbosePrintln(color.FgBlack, "Find proto files")
+
 	if err := i.project.FindProtoFiles(protoDirs...); err != nil {
 		panic(err)
 	}
+
+	i.printer.VerbosePrintln(color.FgBlack, "Move proto files")
 
 	if err := i.project.MoveProtoFiles(); err != nil {
 		panic(err)
 	}
 
-	if err := i.initBaseFiles(); err != nil {
+	if err := i.generate(generate.GoMod,
+		generate.Makefile,
+		generate.Linter,
+		generate.Gitignore,
+		generate.Dockerfile,
+		generate.Values); err != nil {
 		panic(err)
 	}
 
@@ -77,38 +89,16 @@ func (i *InitCMD) run(cmd *cobra.Command, args []string) {
 		panic(err)
 	}
 
-	if err := generate.NewConfig().Generate(); err != nil {
-		panic(err)
-	}
-
-	if err := i.project.InitMainFile(); err != nil {
+	if err := i.generate(generate.Config, generate.Mainfile); err != nil {
 		panic(err)
 	}
 }
 
-func (i *InitCMD) initBaseFiles() error {
-	if err := i.project.InitGoMod(); err != nil {
-		return err
-	}
-
-	if err := i.project.InitMakeFile(); err != nil {
-		return err
-	}
-
-	if err := i.project.InitLinter(); err != nil {
-		return err
-	}
-
-	if err := i.project.InitGitignore(); err != nil {
-		return err
-	}
-
-	if err := i.project.InitDockerfile(); err != nil {
-		return err
-	}
-
-	if err := i.project.InitValues(); err != nil {
-		return err
+func (i *InitCMD) generate(list ...generate.Generator) error {
+	for _, gen := range list {
+		if err := gen(i.project, i.printer); err != nil {
+			return err
+		}
 	}
 
 	return nil

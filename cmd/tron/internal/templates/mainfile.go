@@ -9,12 +9,12 @@ import (
 
 // MainData is a datastruct for main.go
 type MainData struct {
-	models.Data
+	*models.Data
 
 	Imports map[string]Import
 }
 
-func NewMainData(data models.Data) *MainData {
+func NewMainData(data *models.Data) *MainData {
 	return &MainData{
 		Data:    data,
 		Imports: make(map[string]Import),

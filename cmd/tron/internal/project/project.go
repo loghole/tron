@@ -3,27 +3,17 @@ package project
 import (
 	"bufio"
 	"errors"
-	"go/format"
 	"io"
 	"io/ioutil"
 	"os"
-	"os/exec"
-	"path"
 	"path/filepath"
 	"strings"
 
 	"github.com/fatih/color"
 	"github.com/lissteron/simplerr"
-	"golang.org/x/tools/imports"
 
 	"github.com/loghole/tron/cmd/tron/internal/helpers"
 	"github.com/loghole/tron/cmd/tron/internal/models"
-	"github.com/loghole/tron/cmd/tron/internal/templates"
-	"github.com/loghole/tron/internal/app"
-)
-
-const (
-	gomodFile = "go.mod"
 )
 
 var (
@@ -38,19 +28,14 @@ type Project struct {
 	Module  string
 	Name    string
 	Protos  []*models.Proto
-	IsNew   bool
 }
 
 func NewProject(module string) (project *Project, err error) {
-	var isNew bool
-
 	if module == "" {
 		module, err = moduleFromGoMod()
 		if err != nil {
 			return nil, ErrEmptyModule
 		}
-
-		isNew = false
 	}
 
 	parts := strings.Split(module, "/")
@@ -59,7 +44,6 @@ func NewProject(module string) (project *Project, err error) {
 		Module: module,
 		Name:   parts[len(parts)-1],
 		Protos: make([]*models.Proto, 0),
-		IsNew:  isNew,
 	}
 
 	project.AbsPath, err = os.Getwd()
@@ -68,147 +52,6 @@ func NewProject(module string) (project *Project, err error) {
 	}
 
 	return project, nil
-}
-
-func (p *Project) InitGoMod() error {
-	if _, err := os.Stat("go.mod"); err != nil {
-		if os.IsNotExist(err) {
-			return exec.Command("go", "mod", "init", p.Module).Run()
-		}
-
-		return err
-	}
-
-	return nil
-}
-
-func (p *Project) InitMakeFile() error {
-	data := templates.NewTronMKData(
-		strings.Join([]string{models.CmdDir, p.Name, models.MainFile}, "/"),
-		models.DockerfileFilepath,
-		p.Module,
-	)
-
-	tronMK, err := helpers.ExecTemplate(templates.TronMK, data)
-	if err != nil {
-		return simplerr.Wrap(err, "failed to exec template")
-	}
-
-	if err := helpers.WriteToFile(models.TronMKFilepath, []byte(tronMK)); err != nil {
-		return err
-	}
-
-	if err := helpers.WriteToFile(models.MakefileFilepath, []byte(templates.Makefile)); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (p *Project) InitMainFile() error {
-	fpath := filepath.Join(p.AbsPath, models.CmdDir, p.Name, models.MainFile)
-
-	data := templates.NewMainData(models.Data{Protos: p.Protos})
-
-	data.AddImport("log")
-	data.AddImport("github.com/loghole/tron")
-	data.AddImport(strings.Join([]string{p.Module, "config"}, "/"))
-
-	for _, p := range p.Protos {
-		data.AddImport(p.Service.Package)
-	}
-
-	mainScript, err := helpers.ExecTemplate(templates.MainTemplate, data)
-	if err != nil {
-		return simplerr.Wrap(err, "failed to exec template")
-	}
-
-	formattedBytes, err := format.Source([]byte(mainScript))
-	if err != nil {
-		return simplerr.Wrap(err, "failed to format process")
-	}
-
-	formattedBytes, err = imports.Process("", formattedBytes, nil)
-	if err != nil {
-		return simplerr.Wrap(err, "failed to imports process")
-	}
-
-	return helpers.WriteToFile(fpath, formattedBytes)
-}
-
-func (p *Project) InitGitignore() error {
-	if !helpers.ConfirmOverwrite(models.GitignoreFilepath) {
-		return nil
-	}
-
-	return helpers.WriteToFile(models.GitignoreFilepath, []byte(templates.GitignoreTemplate))
-}
-
-func (p *Project) InitDockerfile() error {
-	dockerfile, err := helpers.ExecTemplate(templates.DefaultDockerfileTemplate, p)
-	if err != nil {
-		return simplerr.Wrap(err, "failed to exec template")
-	}
-
-	if err := helpers.WriteToFile(models.DockerfileFilepath, []byte(dockerfile)); err != nil {
-		return simplerr.Wrap(err, "failed to write file")
-	}
-
-	return nil
-}
-
-func (p *Project) InitLinter() error {
-	dockerfile, err := helpers.ExecTemplate(templates.GolangCILintTemplate, p)
-	if err != nil {
-		return simplerr.Wrap(err, "failed to exec template")
-	}
-
-	if err := helpers.WriteToFile(models.GolangciLintFilepath, []byte(dockerfile)); err != nil {
-		return simplerr.Wrap(err, "failed to write file")
-	}
-
-	return nil
-}
-
-func (p *Project) InitValues() error {
-	data := templates.ValuesData{
-		List: []templates.Env{
-			{Key: strings.ToUpper(app.LoggerLevelEnv), Val: "info"},
-			{Key: strings.ToUpper(app.LoggerCollectorAddrEnv), Val: ""},
-			{Key: strings.ToUpper(app.LoggerDisableStdoutEnv), Val: "false"},
-			{Key: strings.ToUpper(app.JaegerAddrEnv), Val: "127.0.0.1:6831"},
-			{Key: strings.ToUpper(app.HTTPPortEnv), Val: "8080"},
-			{Key: strings.ToUpper(app.GRPCPortEnv), Val: "8081"},
-			{Key: strings.ToUpper(app.AdminPortEnv), Val: "8082"},
-		},
-	}
-
-	values, err := helpers.ExecTemplate(templates.ValuesTemplate, data)
-	if err != nil {
-		return simplerr.Wrap(err, "failed to exec template")
-	}
-
-	if err := helpers.WriteToFile(models.ValuesBaseFilepath, []byte(values)); err != nil {
-		return simplerr.Wrap(err, "failed to write file")
-	}
-
-	if err := helpers.WriteToFile(models.ValuesDevFilepath, []byte(templates.ValuesDevTemplate)); err != nil {
-		return simplerr.Wrap(err, "failed to write file")
-	}
-
-	if err := helpers.WriteToFile(models.ValuesLocalFilepath, []byte(templates.ValuesLocalTemplate)); err != nil {
-		return simplerr.Wrap(err, "failed to write file")
-	}
-
-	if err := helpers.WriteToFile(models.ValuesStgFilepath, []byte(templates.ValuesStgTemplate)); err != nil {
-		return simplerr.Wrap(err, "failed to write file")
-	}
-
-	if err := helpers.WriteToFile(models.ValuesProdFilepath, []byte(templates.ValuesProdTemplate)); err != nil {
-		return simplerr.Wrap(err, "failed to write file")
-	}
-
-	return nil
 }
 
 func (p *Project) FindProtoFiles(dirs ...string) error {
@@ -254,7 +97,7 @@ func (p *Project) MoveProtoFiles() error {
 			return err
 		}
 
-		err = helpers.WriteToFile(path.Join(p.AbsPath, newPath), data)
+		err = helpers.WriteToFile(filepath.Join(p.AbsPath, newPath), data)
 		if err != nil {
 			return err
 		}
@@ -351,7 +194,7 @@ func (p *Project) scanProtoFile(file io.Reader, proto *models.Proto) (*models.Pr
 }
 
 func moduleFromGoMod() (string, error) {
-	file, err := os.Open(gomodFile)
+	file, err := os.Open(models.GoModFile)
 	if err != nil {
 		return "", err
 	}

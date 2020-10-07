@@ -6,6 +6,5 @@ SERVICE_PORT_HTTP: 8080
 SERVICE_PORT_GRPC: 8081
 SERVICE_PORT_ADMIN: 8082
 
-
 # Place default config values here
 EXAMPLE_VALUE: example_value

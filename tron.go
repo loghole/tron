@@ -4,7 +4,6 @@ import (
 	"context"
 	"os"
 	"os/signal"
-	"path/filepath"
 
 	"github.com/go-chi/chi"
 	"github.com/lissteron/simplerr"
@@ -16,6 +15,7 @@ import (
 	"golang.org/x/sync/errgroup"
 
 	"github.com/loghole/tron/internal/app"
+	"github.com/loghole/tron/internal/config"
 	"github.com/loghole/tron/internal/grpc"
 	"github.com/loghole/tron/internal/http"
 	"github.com/loghole/tron/internal/swagger"
@@ -103,17 +103,15 @@ type App struct {
 	tracer
 }
 
-func New(options ...Option) (a *App, err error) {
-	a = &App{}
-
-	a.opts, err = app.NewOptions(options...)
+func New(options ...Option) (*App, error) {
+	opts, err := app.NewOptions(options...)
 	if err != nil {
 		return nil, err
 	}
 
-	a.info = initInfo()
+	a := &App{opts: opts, info: initInfo()}
 
-	if err := initConfig(); err != nil {
+	if err := config.Init(); err != nil {
 		return nil, simplerr.Wrap(err, "init config failed")
 	}
 
@@ -125,13 +123,17 @@ func New(options ...Option) (a *App, err error) {
 		return nil, simplerr.Wrap(err, "init tracer failed")
 	}
 
-	if err := a.servers.init(a.opts); err != nil {
+	if err := a.servers.init(opts); err != nil {
 		return nil, simplerr.Wrap(err, "init servers failed")
 	}
 
-	a.logger.With("info", a.info).Infof("init app")
+	a.logger.With("app info", a.info).Infof("init app")
 
 	return a, nil
+}
+
+func (a *App) Info() *Info {
+	return a.info
 }
 
 func (a *App) Tracer() *tracing.Tracer {
@@ -211,40 +213,4 @@ func (a *App) Run(impl ...transport.Service) {
 	}
 
 	_ = a.logger.Sync()
-}
-
-func initConfig() error {
-	viper.AutomaticEnv()
-	viper.SetConfigType(app.ValuesExt)
-	viper.SetConfigName(app.ValuesBaseName)
-	viper.AddConfigPath(filepath.Join(app.DeploymentsDir, app.ValuesDir))
-
-	if err := viper.ReadInConfig(); err != nil {
-		return err
-	}
-
-	namespace := app.ParseNamespace(viper.GetString(app.NamespaceEnv))
-
-	replacer, err := os.Open(namespace.ValuesPath())
-	if err != nil {
-		return simplerr.Wrapf(err, "open values file = '%s' failed", namespace.ValuesPath())
-	}
-
-	if err := viper.MergeConfig(replacer); err != nil {
-		return simplerr.Wrap(err, "merge config failed")
-	}
-
-	return nil
-}
-
-func initInfo() *Info {
-	return &Info{
-		InstanceUUID: app.InstanceUUID.String(),
-		ServiceName:  app.ServiceName,
-		AppName:      app.AppName,
-		Namespace:    app.ParseNamespace(viper.GetString(app.NamespaceEnv)).String(),
-		GitHash:      app.GitHash,
-		Version:      app.Version,
-		BuildAt:      app.BuildAt,
-	}
 }

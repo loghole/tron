@@ -84,13 +84,13 @@ func (g *GenerateCMD) runProto(dirs []string) error {
 
 	g.printer.VerbosePrintln(color.FgBlack, "Start vendoring")
 
-	if err := generate.NewVendorPB(g.project).Download(); err != nil {
+	if err := generate.VendorPB(g.project, g.printer); err != nil {
 		return simplerr.Wrap(err, "download proto imports failed")
 	}
 
 	g.printer.VerbosePrintln(color.FgBlack, "Generate profiles")
 
-	if err := generate.NewProto(g.project).Generate(); err != nil {
+	if err := generate.Protos(g.project, g.printer); err != nil {
 		return simplerr.Wrap(err, "generate proto files failed")
 	}
 
@@ -98,7 +98,7 @@ func (g *GenerateCMD) runProto(dirs []string) error {
 }
 
 func (g *GenerateCMD) runConfig() error {
-	if err := generate.NewConfig().Generate(); err != nil {
+	if err := generate.Config(g.project, g.printer); err != nil {
 		return simplerr.Wrap(err, "generate config failed")
 	}
 

@@ -3,8 +3,8 @@ package main
 import (
 	log "log"
 
-	config "github.com/loghole/collector/config"
-	v1 "github.com/loghole/collector/internal/app/controllers/v1"
+	config "github.com/loghole/example/config"
+	v1 "github.com/loghole/example/internal/app/controllers/v1"
 	tron "github.com/loghole/tron"
 )
 

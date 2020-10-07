@@ -14,6 +14,7 @@ import (
 	"github.com/loghole/tron/cmd/tron/internal/helpers"
 	"github.com/loghole/tron/cmd/tron/internal/models"
 	"github.com/loghole/tron/cmd/tron/internal/project"
+	"github.com/loghole/tron/cmd/tron/internal/stdout"
 )
 
 const (
@@ -34,46 +35,47 @@ const (
 
 var ErrProtoc = errors.New("protoc")
 
-type Proto struct {
+func Protos(p *project.Project, printer stdout.Printer) error {
+	generator := &proto{project: p, printer: printer}
+
+	return generator.run()
+}
+
+type proto struct {
 	project *project.Project
+	printer stdout.Printer
 }
 
-func NewProto(pr *project.Project) *Proto {
-	return &Proto{project: pr}
-}
-
-func (p *Proto) Generate() error {
-	fmt.Println("Start generate proto")
-
+func (p *proto) run() error {
 	for _, proto := range p.project.Protos {
-		fmt.Printf("    generate go-fast %s: ", proto.Service.SnakeCasedName())
+		p.printer.VerbosePrint(color.FgBlack, "\tgenerate go-fast %s: ", proto.Service.SnakeCasedName())
 
 		if err := p.generateGoFast(proto); err != nil {
-			color.Red("ERROR: %v", err)
+			p.printer.VerbosePrintln(color.FgRed, "ERROR: %v", err)
 
 			return err
 		}
 
-		color.Green("OK")
+		p.printer.VerbosePrintln(color.FgGreen,"OK")
 
 		// generate go-clay
-		fmt.Printf("    generate go-clay %s: ", proto.Service.SnakeCasedName())
+		p.printer.VerbosePrint(color.FgBlack, "\tgenerate go-clay %s: ", proto.Service.SnakeCasedName())
 
 		if err := p.generateGoClay(proto); err != nil {
-			color.Red("ERROR: %v", err)
+			p.printer.VerbosePrintln(color.FgRed, "ERROR: %v", err)
 
 			return err
 		}
 
-		color.Green("OK")
+		p.printer.VerbosePrintln(color.FgGreen,"OK")
 	}
 
-	color.Green("Success")
+	p.printer.VerbosePrintln(color.FgGreen,"Success")
 
 	return nil
 }
 
-func (p *Proto) generateGoFast(proto *models.Proto) error {
+func (p *proto) generateGoFast(proto *models.Proto) error {
 	err := helpers.Mkdir(path.Join(models.ProjectPathPkgClients, proto.Service.PackageName, proto.Name))
 	if err != nil {
 		return err
@@ -82,7 +84,10 @@ func (p *Proto) generateGoFast(proto *models.Proto) error {
 	args := []string{
 		fmt.Sprintf("--plugin=protoc-gen-gofast=%s", path.Join(p.project.AbsPath, "bin/protoc-gen-gofast")),
 		fmt.Sprintf("-I%s:%s", proto.RelativeDir, models.ProjectPathVendorPB),
-		fmt.Sprintf("--gofast_out=%s,plugins=grpc:%s", pkgMap, path.Join(models.ProjectPathPkgClients, proto.Service.PackageName)),
+		fmt.Sprintf("--gofast_out=%s,plugins=grpc:%s",
+			pkgMap,
+			path.Join(models.ProjectPathPkgClients, proto.Service.PackageName),
+		),
 		path.Join(proto.RelativeDir, proto.NameWithExt()),
 	}
 
@@ -93,25 +98,36 @@ func (p *Proto) generateGoFast(proto *models.Proto) error {
 	return nil
 }
 
-func (p *Proto) generateGoClay(proto *models.Proto) error {
+func (p *proto) generateGoClay(proto *models.Proto) error {
 	err := helpers.Mkdir(filepath.Join(models.ProjectPathImplementation, proto.Service.PackageName, proto.Name))
 	if err != nil {
 		return simplerr.Wrap(err, "failed to mkdir")
 	}
 
-	relToRoot, err := filepath.Rel(filepath.Join(p.project.AbsPath, models.ProjectPathPkgClients, proto.Service.PackageName), p.project.AbsPath)
+	wd := filepath.Join(p.project.AbsPath, models.ProjectPathPkgClients, proto.Service.PackageName)
+
+	relToRoot, err := filepath.Rel(wd, p.project.AbsPath)
 	if err != nil {
 		return simplerr.Wrap(err, "failed to get relative path")
 	}
 
 	args := []string{
-		fmt.Sprintf("--plugin=protoc-gen-goclay=%s", path.Join(p.project.AbsPath, "bin/protoc-gen-goclay")),
-		fmt.Sprintf("-I%s:%s", filepath.Join(relToRoot, proto.RelativeDir), filepath.Join(relToRoot, models.ProjectPathVendorPB)),
-		fmt.Sprintf("--goclay_out=%s,impl=true,impl_path=%s,impl_type_name_tmpl=%s:.", pkgMap, path.Join(relToRoot, models.ProjectPathImplementation, proto.Service.PackageName), models.ImplementationName),
+		fmt.Sprintf("--plugin=protoc-gen-goclay=%s",
+			path.Join(p.project.AbsPath, "bin/protoc-gen-goclay"),
+		),
+		fmt.Sprintf("-I%s:%s",
+			filepath.Join(relToRoot, proto.RelativeDir),
+			filepath.Join(relToRoot, models.ProjectPathVendorPB),
+		),
+		fmt.Sprintf("--goclay_out=%s,impl=true,impl_path=%s,impl_type_name_tmpl=%s:.",
+			pkgMap,
+			path.Join(relToRoot, models.ProjectPathImplementation, proto.Service.PackageName),
+			models.ImplementationName,
+		),
 		path.Join(relToRoot, proto.RelativeDir, proto.NameWithExt()),
 	}
 
-	if err := execProtoc(path.Join(p.project.AbsPath, models.ProjectPathPkgClients, proto.Service.PackageName), args); err != nil {
+	if err := execProtoc(wd, args); err != nil {
 		return simplerr.Wrap(err, "generate go-clay")
 	}
 

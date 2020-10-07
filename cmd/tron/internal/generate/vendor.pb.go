@@ -17,20 +17,23 @@ import (
 	"github.com/loghole/tron/cmd/tron/internal/helpers"
 	"github.com/loghole/tron/cmd/tron/internal/models"
 	"github.com/loghole/tron/cmd/tron/internal/project"
+	"github.com/loghole/tron/cmd/tron/internal/stdout"
 )
 
 var ErrBadImport = errors.New("bad import")
 
-type VendorPB struct {
+type vendorPB struct {
+	printer  stdout.Printer
 	project  *project.Project
 	replacer map[string]string
 	exists   map[string]struct{}
 	imports  []string
 }
 
-func NewVendorPB(pr *project.Project) *VendorPB {
-	return &VendorPB{
-		project: pr,
+func VendorPB(p *project.Project, printer stdout.Printer) error {
+	generator := &vendorPB{
+		printer: printer,
+		project: p,
 		replacer: map[string]string{
 			"google/type":     "https://raw.githubusercontent.com/googleapis/googleapis/master/",
 			"google/api":      "https://raw.githubusercontent.com/googleapis/googleapis/master/",
@@ -40,67 +43,14 @@ func NewVendorPB(pr *project.Project) *VendorPB {
 		exists:  make(map[string]struct{}),
 		imports: make([]string, 0),
 	}
+
+	return generator.run()
 }
 
-func (v *VendorPB) Download() error {
+func (v *vendorPB) run() (err error) {
 	if err := v.scanProtos(v.project.Protos); err != nil {
 		return err
 	}
-
-	if err := v.vendoring(); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (v *VendorPB) scanProtos(protos []*models.Proto) error {
-	for _, proto := range protos {
-		if err := v.scanFile(proto.Path); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-func (v *VendorPB) scanFile(filepath string) error {
-	file, err := os.Open(filepath)
-	if err != nil {
-		return err
-	}
-
-	defer helpers.Close(file)
-
-	return v.findImports(file)
-}
-
-func (v *VendorPB) findImports(r io.Reader) error {
-	scanner := bufio.NewScanner(r)
-	scanner.Split(bufio.ScanLines)
-
-	for scanner.Scan() {
-		if err := scanner.Err(); err != nil {
-			return err
-		}
-
-		m := models.ImportRegexp.FindStringSubmatch(scanner.Text())
-		if len(m) == 0 {
-			continue
-		}
-
-		if _, ok := v.exists[m[0]]; ok {
-			continue
-		}
-
-		v.exists[m[1]], v.imports = struct{}{}, append(v.imports, m[1])
-	}
-
-	return nil
-}
-
-func (v *VendorPB) vendoring() (err error) {
-	fmt.Println("Start vendoring:")
 
 	for val := ""; len(v.imports) > 0; {
 		val, v.imports = v.imports[0], v.imports[1:]
@@ -126,7 +76,52 @@ func (v *VendorPB) vendoring() (err error) {
 	return nil
 }
 
-func (v *VendorPB) copyProto(name string) error {
+func (v *vendorPB) scanProtos(protos []*models.Proto) error {
+	for _, proto := range protos {
+		if err := v.scanFile(proto.Path); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (v *vendorPB) scanFile(filepath string) error {
+	file, err := os.Open(filepath)
+	if err != nil {
+		return err
+	}
+
+	defer helpers.Close(file)
+
+	return v.findImports(file)
+}
+
+func (v *vendorPB) findImports(r io.Reader) error {
+	scanner := bufio.NewScanner(r)
+	scanner.Split(bufio.ScanLines)
+
+	for scanner.Scan() {
+		if err := scanner.Err(); err != nil {
+			return err
+		}
+
+		m := models.ImportRegexp.FindStringSubmatch(scanner.Text())
+		if len(m) == 0 {
+			continue
+		}
+
+		if _, ok := v.exists[m[0]]; ok {
+			continue
+		}
+
+		v.exists[m[1]], v.imports = struct{}{}, append(v.imports, m[1])
+	}
+
+	return nil
+}
+
+func (v *vendorPB) copyProto(name string) error {
 	filename := strings.TrimPrefix(strings.TrimPrefix(name, v.project.Module), "/")
 
 	data, err := ioutil.ReadFile(filename)
@@ -137,13 +132,13 @@ func (v *VendorPB) copyProto(name string) error {
 	return helpers.WriteToFile(path.Join(models.ProjectPathVendorPB, name), data)
 }
 
-func (v *VendorPB) curlProto(name string) error {
+func (v *vendorPB) curlProto(name string) error {
 	link, ok := v.importLink(name)
 	if !ok {
 		return ErrBadImport
 	}
 
-	resp, err := http.Get(link)
+	resp, err := http.Get(link) // nolint:gosec,bodyclose,noctx //body is closed
 	if err != nil {
 		return err
 	}
@@ -162,7 +157,7 @@ func (v *VendorPB) curlProto(name string) error {
 	return helpers.WriteToFile(path.Join(models.ProjectPathVendorPB, name), data)
 }
 
-func (v *VendorPB) importLink(s string) (string, bool) {
+func (v *vendorPB) importLink(s string) (string, bool) {
 	parts := strings.Split(s, "/")
 
 	for repoPartsCount := len(parts); repoPartsCount >= 1; repoPartsCount-- {

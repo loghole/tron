@@ -1,6 +1,8 @@
 package tron
 
 import (
+	"github.com/spf13/viper"
+
 	"github.com/loghole/tron/internal/app"
 )
 
@@ -17,4 +19,16 @@ type Info struct {
 	GitHash      string
 	Version      string
 	BuildAt      string
+}
+
+func initInfo() *Info {
+	return &Info{
+		InstanceUUID: app.InstanceUUID.String(),
+		ServiceName:  app.ServiceName,
+		AppName:      app.AppName,
+		Namespace:    app.ParseNamespace(viper.GetString(app.NamespaceEnv)).String(),
+		GitHash:      app.GitHash,
+		Version:      app.Version,
+		BuildAt:      app.BuildAt,
+	}
 }

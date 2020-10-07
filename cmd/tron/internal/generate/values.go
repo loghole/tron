@@ -1,115 +1,54 @@
 package generate
 
 import (
-	"bufio"
-	"go/format"
-	"os"
 	"strings"
 
 	"github.com/lissteron/simplerr"
 
 	"github.com/loghole/tron/cmd/tron/internal/helpers"
 	"github.com/loghole/tron/cmd/tron/internal/models"
+	"github.com/loghole/tron/cmd/tron/internal/project"
+	"github.com/loghole/tron/cmd/tron/internal/stdout"
 	"github.com/loghole/tron/cmd/tron/internal/templates"
 	"github.com/loghole/tron/internal/app"
 )
 
-type Config struct {
-	imports  map[string]struct{}
-	internal map[string]struct{}
-	files    []string
-}
-
-func NewConfig() *Config {
-	return &Config{
-		imports: make(map[string]struct{}),
-		files: []string{
-			models.ValuesBaseFilepath,
-			models.ValuesDevFilepath,
-			models.ValuesLocalFilepath,
-			models.ValuesStgFilepath,
-			models.ValuesProdFilepath,
-		},
-		internal: map[string]struct{}{
-			app.NamespaceEnv: {},
-			app.LoggerLevelEnv: {},
-			app.LoggerCollectorAddrEnv: {},
-			app.LoggerDisableStdoutEnv: {},
-			app.JaegerAddrEnv: {},
-			app.HTTPPortEnv: {},
-			app.GRPCPortEnv: {},
-			app.AdminPortEnv: {},
+func Values(p *project.Project, printer stdout.Printer) error {
+	data := templates.ValuesData{
+		List: []templates.Env{
+			{Key: strings.ToUpper(app.LoggerLevelEnv), Val: "info"},
+			{Key: strings.ToUpper(app.LoggerCollectorAddrEnv), Val: ""},
+			{Key: strings.ToUpper(app.LoggerDisableStdoutEnv), Val: "false"},
+			{Key: strings.ToUpper(app.JaegerAddrEnv), Val: "127.0.0.1:6831"},
+			{Key: strings.ToUpper(app.HTTPPortEnv), Val: "8080"},
+			{Key: strings.ToUpper(app.GRPCPortEnv), Val: "8081"},
+			{Key: strings.ToUpper(app.AdminPortEnv), Val: "8082"},
 		},
 	}
-}
 
-func (c *Config) Generate() error {
-	for _, file := range c.files {
-		if err := c.parseFile(file); err != nil {
-			return err
-		}
-	}
-
-	data := &templates.ConfigData{Values: make([]templates.ConfigValue, 0, len(c.imports))}
-
-	for key := range c.imports {
-		data.Values = append(data.Values, templates.NewConfigValue(key))
-	}
-
-	config, err := helpers.ExecTemplate(templates.ConfigConstTemplate, data)
+	values, err := helpers.ExecTemplate(templates.ValuesTemplate, data)
 	if err != nil {
 		return simplerr.Wrap(err, "failed to exec template")
 	}
 
-	formatted, err := format.Source([]byte(config))
-	if err != nil {
-		return simplerr.Wrap(err, "failed to format config")
+	if err := helpers.WriteWithConfirm(models.ValuesBaseFilepath, []byte(values)); err != nil {
+		return simplerr.Wrap(err, "failed to write file")
 	}
 
-	if err := helpers.WriteToFile(models.ConfigConstFilepath, formatted); err != nil {
-		return err
+	if err := helpers.WriteWithConfirm(models.ValuesDevFilepath, []byte(templates.ValuesDevTemplate)); err != nil {
+		return simplerr.Wrap(err, "failed to write file")
 	}
 
-	if err := helpers.WriteToFile(models.ConfigFilepath, []byte(templates.ConfigTemplate)); err != nil {
-		return err
+	if err := helpers.WriteWithConfirm(models.ValuesLocalFilepath, []byte(templates.ValuesLocalTemplate)); err != nil {
+		return simplerr.Wrap(err, "failed to write file")
 	}
 
-	return nil
-}
-
-func (c *Config) parseFile(filepath string) error {
-	file, err := os.Open(filepath)
-	if err != nil {
-		return simplerr.Wrapf(err, "open file '%s' failed", filepath)
+	if err := helpers.WriteWithConfirm(models.ValuesStgFilepath, []byte(templates.ValuesStgTemplate)); err != nil {
+		return simplerr.Wrap(err, "failed to write file")
 	}
 
-	defer helpers.Close(file)
-
-	scanner := bufio.NewScanner(file)
-	scanner.Split(bufio.ScanLines)
-
-	for scanner.Scan() {
-		if err := scanner.Err(); err != nil {
-			return err
-		}
-
-		parts := strings.Split(scanner.Text(), ": ")
-
-		if len(parts) <= 1 {
-			continue
-		}
-
-		name := strings.TrimSpace(parts[0])
-
-		if strings.HasPrefix(name, "#") {
-			continue
-		}
-
-		if _, ok := c.internal[name]; ok {
-			continue
-		}
-
-		c.imports[name] = struct{}{}
+	if err := helpers.WriteWithConfirm(models.ValuesProdFilepath, []byte(templates.ValuesProdTemplate)); err != nil {
+		return simplerr.Wrap(err, "failed to write file")
 	}
 
 	return nil
