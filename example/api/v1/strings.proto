@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+import "google/api/annotations.proto";
+
+package v1;
+
+service Strings {
+    // Method to upper
+    rpc ToUpper (String) returns (String) {
+        option (google.api.http) = { get: "/api/v1/strings/upper/{str}" };
+    }
+
+    rpc GetInfo (String) returns (String) {
+        option (google.api.http) = { get: "/api/v1/strings/info" };
+    }
+}
+
+message String {
+    // string
+		string str = 1;
+}
