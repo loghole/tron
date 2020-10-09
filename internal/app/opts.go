@@ -2,6 +2,7 @@ package app
 
 import (
 	"crypto/tls"
+	"net/http"
 	"os"
 	"syscall"
 
@@ -11,16 +12,21 @@ import (
 
 type Option func(opts *Options) error
 
-type Options struct {
-	Hostname  string
-	PortAdmin uint16
-	PortHTTP  uint16
-	PortGRPC  uint16
-	TLSConfig *tls.Config
+type RunOption func(opts *Options)
 
+type Options struct {
+	// New options.
+	Hostname      string
+	PortAdmin     uint16
+	PortHTTP      uint16
+	PortGRPC      uint16
+	TLSConfig     *tls.Config
 	LoggerOptions []zap.Option
-	GRPCOptions   []grpc.ServerOption
 	ExitSignals   []os.Signal
+
+	// Run options.
+	GRPCOptions     []grpc.ServerOption
+	HTTPMiddlewares []func(http.Handler) http.Handler
 }
 
 func NewOptions(options ...Option) (*Options, error) {
@@ -43,4 +49,10 @@ func NewOptions(options ...Option) (*Options, error) {
 	}
 
 	return opts, nil
+}
+
+func (o *Options) ApplyRunOptions(options ...RunOption) {
+	for _, apply := range options {
+		apply(o)
+	}
 }

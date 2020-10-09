@@ -5,6 +5,7 @@ import (
 	"github.com/spf13/viper"
 )
 
+// GetExampleValue returns ExampleValue from viper config.
 func GetExampleValue() string {
 	return viper.GetString(ExampleValue)
 }

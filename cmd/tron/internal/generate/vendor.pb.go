@@ -56,7 +56,7 @@ func (v *vendorPB) run() (err error) {
 	for val := ""; len(v.imports) > 0; {
 		val, v.imports = v.imports[0], v.imports[1:]
 
-		v.printer.VerbosePrintf(color.FgBlack,"\tvendor %s: ", val)
+		v.printer.VerbosePrintf(color.FgBlack, "\tvendor %s: ", val)
 
 		switch {
 		case strings.HasPrefix(val, v.project.Module):
@@ -66,12 +66,12 @@ func (v *vendorPB) run() (err error) {
 		}
 
 		if err != nil {
-			v.printer.VerbosePrintln(color.FgRed,"FAIL: %v", err)
+			v.printer.VerbosePrintln(color.FgRed, "FAIL: %v", err)
 
 			return err
 		}
 
-		v.printer.VerbosePrintln(color.FgGreen,"OK")
+		v.printer.VerbosePrintln(color.FgGreen, "OK")
 	}
 
 	return nil

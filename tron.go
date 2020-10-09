@@ -6,9 +6,11 @@ import (
 	"os/signal"
 
 	"github.com/go-chi/chi"
+	"github.com/grpc-ecosystem/grpc-opentracing/go/otgrpc"
 	"github.com/lissteron/simplerr"
 	"github.com/loghole/lhw/zap"
 	"github.com/loghole/tracing"
+	"github.com/loghole/tracing/tracehttp"
 	"github.com/loghole/tracing/tracelog"
 	"github.com/spf13/viper"
 	"github.com/utrack/clay/v2/transport"
@@ -18,7 +20,7 @@ import (
 	"github.com/loghole/tron/internal/config"
 	"github.com/loghole/tron/internal/grpc"
 	"github.com/loghole/tron/internal/http"
-	"github.com/loghole/tron/internal/swagger"
+	"github.com/loghole/tron/internal/http/swagger"
 )
 
 type servers struct {
@@ -40,7 +42,7 @@ func (s *servers) init(opts *app.Options) (err error) {
 		opts.PortGRPC = uint16(viper.GetInt32(app.GRPCPortEnv))
 	}
 
-	s.publicGRPC, err = grpc.NewServer(opts.PortGRPC, opts.GRPCOptions...)
+	s.publicGRPC, err = grpc.NewServer(opts.PortGRPC, opts.GRPCOptions)
 	if err != nil {
 		return err
 	}
@@ -96,14 +98,15 @@ func (t *tracer) init(info *Info) (err error) {
 }
 
 type App struct {
-	info *Info
-	opts *app.Options
-	servers
-	logger
-	tracer
+	info    *Info
+	opts    *app.Options
+	servers servers
+	logger  logger
+	tracer  tracer
 }
 
-func New(options ...Option) (*App, error) {
+// New init viper config, logger and tracer.
+func New(options ...app.Option) (*App, error) {
 	opts, err := app.NewOptions(options...)
 	if err != nil {
 		return nil, err
@@ -123,9 +126,11 @@ func New(options ...Option) (*App, error) {
 		return nil, simplerr.Wrap(err, "init tracer failed")
 	}
 
-	if err := a.servers.init(opts); err != nil {
-		return nil, simplerr.Wrap(err, "init servers failed")
-	}
+	// Append tracing middlewares.
+	a.opts.ApplyRunOptions(
+		WithUnaryInterceptor(otgrpc.OpenTracingServerInterceptor(a.Tracer())),
+		WithHTTPMiddleware(tracehttp.NewMiddleware(a.Tracer()).Middleware),
+	)
 
 	a.logger.With("app info", a.info).Infof("init app")
 
@@ -145,47 +150,49 @@ func (a *App) Logger() *zap.Logger {
 }
 
 func (a *App) TraceLogger() tracelog.Logger {
-	return a.traceLogger
+	return a.logger.traceLogger
 }
 
 func (a *App) Router() chi.Router {
-	return a.publicHTTP.Router()
+	return a.servers.publicHTTP.Router()
 }
 
-func (a *App) Run(impl ...transport.Service) {
-	descs := make([]transport.ServiceDesc, 0, len(impl))
+// Append some run options.
+func (a *App) WithRunOptions(opts ...app.RunOption) *App {
+	a.opts.ApplyRunOptions(opts...)
 
-	for _, service := range impl {
-		descs = append(descs, service.GetDescription())
+	return a
+}
+
+func (a *App) Run(impl ...transport.Service) error {
+	if err := a.servers.init(a.opts); err != nil {
+		return simplerr.Wrap(err, "init servers failed")
 	}
 
-	desc := transport.NewCompoundServiceDesc(descs...)
+	a.servers.publicGRPC.RegistryDesc(impl...)
+	a.servers.publicHTTP.RegistryDesc(impl...)
+	swagger.New(a.info.Version, impl...).InitRoutes(a.servers.adminHTTP.Router())
 
 	a.logger.Info("starting app")
-
-	a.publicGRPC.RegistryDesc(desc)
-	a.publicHTTP.RegistryDesc(desc)
-
-	swagger.New(desc, a.info.Version).InitRoutes(a.adminHTTP.Router())
 
 	eg, ctx := errgroup.WithContext(context.Background())
 
 	eg.Go(func() error {
-		a.logger.Infof("start public grpc server on: %s", a.publicGRPC.Addr())
+		a.logger.Infof("start public grpc server on: %s", a.servers.publicGRPC.Addr())
 
-		return a.publicGRPC.Serve()
+		return a.servers.publicGRPC.Serve()
 	})
 
 	eg.Go(func() error {
-		a.logger.Infof("start public http server on: %s", a.publicHTTP.Addr())
+		a.logger.Infof("start public http server on: %s", a.servers.publicHTTP.Addr())
 
-		return a.publicHTTP.Serve()
+		return a.servers.publicHTTP.Serve()
 	})
 
 	eg.Go(func() error {
-		a.logger.Infof("start admin http server on: %s", a.adminHTTP.Addr())
+		a.logger.Infof("start admin http server on: %s", a.servers.adminHTTP.Addr())
 
-		return a.adminHTTP.Serve()
+		return a.servers.adminHTTP.Serve()
 	})
 
 	exit := make(chan os.Signal, 1)
@@ -200,17 +207,19 @@ func (a *App) Run(impl ...transport.Service) {
 
 	signal.Stop(exit)
 
-	if err := a.publicHTTP.Close(); err != nil {
+	if err := a.servers.publicHTTP.Close(); err != nil {
 		a.logger.Errorf("error while stopping public http server: %v", err)
 	}
 
-	if err := a.publicGRPC.Close(); err != nil {
+	if err := a.servers.publicGRPC.Close(); err != nil {
 		a.logger.Errorf("error while stopping public grpc server: %v", err)
 	}
 
-	if err := a.publicHTTP.Close(); err != nil {
+	if err := a.servers.publicHTTP.Close(); err != nil {
 		a.logger.Errorf("error while stopping admin http server: %v", err)
 	}
 
 	_ = a.logger.Sync()
+
+	return nil
 }

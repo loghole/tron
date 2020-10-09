@@ -36,11 +36,6 @@ func (g *GenerateCMD) Command() *cobra.Command {
 }
 
 func (g *GenerateCMD) run(cmd *cobra.Command, args []string) {
-	if ok := project.NewChecker(g.printer).CheckRequirements(); !ok {
-		g.printer.Println(color.FgRed, "Requirements check failed")
-		os.Exit(1)
-	}
-
 	protoDirs, err := cmd.Flags().GetStringArray(FlagProtoDirs)
 	if err != nil {
 		panic(err)
@@ -93,6 +88,8 @@ func (g *GenerateCMD) runConfig() error {
 	if err := generate.Config(g.project, g.printer); err != nil {
 		return simplerr.Wrap(err, "generate config failed")
 	}
+
+	g.printer.Println(color.FgCyan, "\tCreated")
 
 	return nil
 }

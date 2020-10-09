@@ -15,7 +15,7 @@ type Server struct {
 	*grpc.Server
 }
 
-func NewServer(port uint16, opts ...grpc.ServerOption) (server *Server, err error) {
+func NewServer(port uint16, opts []grpc.ServerOption) (server *Server, err error) {
 	if port == 0 {
 		return nil, nil
 	}
@@ -30,13 +30,15 @@ func NewServer(port uint16, opts ...grpc.ServerOption) (server *Server, err erro
 	return server, nil
 }
 
-func (s *Server) RegistryDesc(desc transport.ServiceDesc) {
+func (s *Server) RegistryDesc(services ...transport.Service) {
 	if s == nil {
 		return
 	}
 
-	if desc != nil {
-		desc.RegisterGRPC(s.Server)
+	for _, service := range services {
+		if service != nil {
+			service.GetDescription().RegisterGRPC(s.Server)
+		}
 	}
 }
 

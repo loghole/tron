@@ -9,12 +9,12 @@ import (
 )
 
 func main() {
-	app, err := tron.New()
+	app, err := tron.New(tron.AddLogCaller())
 	if err != nil {
 		log.Fatalf("can't create app: %s", err)
 	}
 
-	log.Println(config.GetExampleValue())
+	app.Logger().Info(config.GetExampleValue())
 
 	// Init all ..
 
@@ -22,7 +22,9 @@ func main() {
 		strings = v1.NewStrings()
 	)
 
-	app.Run(strings)
+	if err := app.WithRunOptions().Run(strings); err != nil {
+		app.Logger().Fatalf("can't run app: %v", err)
+	}
 
 	// Stop all...
 }

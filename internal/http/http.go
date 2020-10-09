@@ -44,13 +44,15 @@ func NewServer(port uint16, tlsConfig *tls.Config) (server *Server, err error) {
 	return server, nil
 }
 
-func (s *Server) RegistryDesc(desc transport.ServiceDesc) {
+func (s *Server) RegistryDesc(services ...transport.Service) {
 	if s == nil {
 		return
 	}
 
-	if desc != nil {
-		desc.RegisterHTTP(s.rout)
+	for _, service := range services {
+		if service != nil {
+			service.GetDescription().RegisterHTTP(s.rout)
+		}
 	}
 }
 

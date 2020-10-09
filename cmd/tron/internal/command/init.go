@@ -110,6 +110,7 @@ func (i *InitCMD) generate(list ...generate.Generator) error {
 		if err := gen(i.project, i.printer); err != nil {
 			return err
 		}
+
 		i.printer.VerbosePrintln(color.FgCyan, "\tCreated")
 	}
 

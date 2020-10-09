@@ -58,7 +58,7 @@ func (p *proto) run() error {
 			return err
 		}
 
-		p.printer.VerbosePrintln(color.FgGreen,"OK")
+		p.printer.VerbosePrintln(color.FgGreen, "OK")
 
 		// generate go-clay
 		p.printer.VerbosePrintf(color.FgBlack, "\tgenerate go-clay %s: ", proto.Service.SnakeCasedName())
@@ -69,7 +69,7 @@ func (p *proto) run() error {
 			return err
 		}
 
-		p.printer.VerbosePrintln(color.FgGreen,"OK")
+		p.printer.VerbosePrintln(color.FgGreen, "OK")
 	}
 
 	return nil

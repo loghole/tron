@@ -93,12 +93,12 @@ import (
 )
 
 func main() {
-	app, err := {{ pkg "github.com/loghole/tron" }}New()
+	app, err := {{ pkg "github.com/loghole/tron" }}New(tron.AddLogCaller())
 	if err != nil {
 		{{ pkg "log" }}Fatalf("can't create app: %s", err)
 	}
 
-	log.Println(config.GetExampleValue())
+	app.Logger().Info(config.GetExampleValue())
 
 	// Init all ..
 
@@ -108,7 +108,11 @@ func main() {
 		{{- end }}
 	)
 
-	app.Run({{- range $proto := .Protos -}} {{ $proto.Service.SnakeCasedName }}, {{- end -}})
+	if err := app.WithRunOptions().Run(
+			{{- range $proto := .Protos -}} {{ $proto.Service.SnakeCasedName }},
+	{{- end -}}); err != nil {
+		app.Logger().Fatalf("can't run app: %v", err)
+	}
 
 	// Stop all...
 }

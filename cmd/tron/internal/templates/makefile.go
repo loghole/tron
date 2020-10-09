@@ -49,7 +49,7 @@ fast-generate: .generate
 
 .PHONY: generate-config
 generate-config:
-	tron generate config -v
+	tron generate --config -v
 
 # install proto dependencies
 .PHONY: .pb-deps
