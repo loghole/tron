@@ -18,7 +18,7 @@ const (
 	ValuesBaseName  = "values"
 	ValuesDevName   = "values_dev"
 	ValuesLocalName = "values_local"
-	ValuesStgName   = "values_stg"
+	ValuesStgName   = "values_stage"
 	ValuesProdName  = "values_prod"
 )
 

@@ -109,11 +109,11 @@ func New(options ...Option) (*App, error) {
 		return nil, err
 	}
 
-	a := &App{opts: opts, info: initInfo()}
-
 	if err := config.Init(); err != nil {
 		return nil, simplerr.Wrap(err, "init config failed")
 	}
+
+	a := &App{opts: opts, info: initInfo()}
 
 	if err := a.logger.init(a.info); err != nil {
 		return nil, simplerr.Wrap(err, "init logger failed")
