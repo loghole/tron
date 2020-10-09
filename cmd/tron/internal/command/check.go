@@ -1,6 +1,8 @@
 package command
 
 import (
+	"os"
+
 	"github.com/fatih/color"
 	"github.com/spf13/cobra"
 
@@ -28,7 +30,8 @@ func (c *Check) Command() *cobra.Command {
 func (c *Check) run(cmd *cobra.Command, args []string) {
 	if ok := project.NewChecker(c.printer).CheckRequirements(); !ok {
 		c.printer.Println(color.FgHiRed, "Requirements check failed")
-	} else {
-		c.printer.VerbosePrintf(color.FgGreen, "Success\n\n")
+		os.Exit(1)
 	}
+
+	c.printer.Println(color.FgGreen, "Success\n")
 }

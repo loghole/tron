@@ -19,7 +19,7 @@ import (
 func Mainfile(p *project.Project, printer stdout.Printer) error {
 	path := filepath.Join(p.AbsPath, models.CmdDir, p.Name, models.MainFile)
 
-	printer.VerbosePrintln(color.FgCyan, "Generate main.go")
+	printer.VerbosePrintln(color.FgMagenta, "Generate main.go")
 
 	if !helpers.ConfirmOverwrite(path) {
 		return nil

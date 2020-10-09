@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"bytes"
 	"errors"
-	"fmt"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -31,6 +30,8 @@ type vendorPB struct {
 }
 
 func VendorPB(p *project.Project, printer stdout.Printer) error {
+	printer.VerbosePrintln(color.FgMagenta, "Start vendor pb")
+
 	generator := &vendorPB{
 		printer: printer,
 		project: p,
@@ -55,7 +56,7 @@ func (v *vendorPB) run() (err error) {
 	for val := ""; len(v.imports) > 0; {
 		val, v.imports = v.imports[0], v.imports[1:]
 
-		fmt.Printf("    vendor %s: ", val)
+		v.printer.VerbosePrintf(color.FgBlack,"\tvendor %s: ", val)
 
 		switch {
 		case strings.HasPrefix(val, v.project.Module):
@@ -65,12 +66,12 @@ func (v *vendorPB) run() (err error) {
 		}
 
 		if err != nil {
-			color.Red("FAIL: %v", err)
+			v.printer.VerbosePrintln(color.FgRed,"FAIL: %v", err)
 
 			return err
 		}
 
-		color.Green("OK")
+		v.printer.VerbosePrintln(color.FgGreen,"OK")
 	}
 
 	return nil

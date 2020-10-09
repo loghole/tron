@@ -3,6 +3,7 @@ package generate
 import (
 	"strings"
 
+	"github.com/fatih/color"
 	"github.com/lissteron/simplerr"
 
 	"github.com/loghole/tron/cmd/tron/internal/helpers"
@@ -14,6 +15,8 @@ import (
 )
 
 func Values(p *project.Project, printer stdout.Printer) error {
+	printer.VerbosePrintln(color.FgMagenta, "Generate values")
+
 	data := templates.ValuesData{
 		List: []templates.Env{
 			{Key: strings.ToUpper(app.LoggerLevelEnv), Val: "info"},

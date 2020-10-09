@@ -51,7 +51,7 @@ func Config(p *project.Project, printer stdout.Printer) error {
 }
 
 func (c *config) run() error {
-	c.printer.VerbosePrintln(color.FgCyan, "Generate config")
+	c.printer.VerbosePrintln(color.FgMagenta, "Generate config")
 
 	for _, file := range c.files {
 		if err := c.parseFile(file); err != nil {

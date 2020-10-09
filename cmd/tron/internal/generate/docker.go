@@ -14,7 +14,7 @@ import (
 )
 
 func Dockerfile(p *project.Project, printer stdout.Printer) error {
-	printer.VerbosePrintln(color.FgCyan, "Generate Dockerfile")
+	printer.VerbosePrintln(color.FgMagenta, "Generate Dockerfile")
 
 	path := filepath.Join(p.AbsPath, models.DockerfileFilepath)
 

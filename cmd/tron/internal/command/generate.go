@@ -36,6 +36,11 @@ func (g *GenerateCMD) Command() *cobra.Command {
 }
 
 func (g *GenerateCMD) run(cmd *cobra.Command, args []string) {
+	if ok := project.NewChecker(g.printer).CheckRequirements(); !ok {
+		g.printer.Println(color.FgRed, "Requirements check failed")
+		os.Exit(1)
+	}
+
 	protoDirs, err := cmd.Flags().GetStringArray(FlagProtoDirs)
 	if err != nil {
 		panic(err)
@@ -43,7 +48,7 @@ func (g *GenerateCMD) run(cmd *cobra.Command, args []string) {
 
 	if len(protoDirs) > 0 {
 		if err := g.runProto(protoDirs); err != nil {
-			color.Red("Generate protos failed: %v", err)
+			g.printer.Println(color.FgRed, "Generate protos failed: %v", err)
 			os.Exit(1)
 		}
 	}
@@ -55,40 +60,27 @@ func (g *GenerateCMD) run(cmd *cobra.Command, args []string) {
 
 	if config {
 		if err := g.runConfig(); err != nil {
-			color.Red("Generate config failed: %v", err)
+			g.printer.Println(color.FgRed, "Generate config failed: %v", err)
 			os.Exit(1)
 		}
 	}
+
+	g.printer.Println(color.FgGreen, "Success\n")
 }
 
-func (g *GenerateCMD) runProto(dirs []string) error {
-	if ok := project.NewChecker(g.printer).CheckRequirements(); !ok {
-		color.Red("\nRequirements check failed")
-		os.Exit(1)
-	}
-
-	var err error
-
-	g.printer.VerbosePrintln(color.FgBlack, "Parse project")
-
-	g.project, err = project.NewProject("")
+func (g *GenerateCMD) runProto(dirs []string) (err error) {
+	g.project, err = project.NewProject("", g.printer)
 	if err != nil {
 		return simplerr.Wrap(err, "parse project failed")
 	}
-
-	g.printer.VerbosePrintln(color.FgBlack, "Find proto files")
 
 	if err := g.project.FindProtoFiles(dirs...); err != nil {
 		return simplerr.Wrap(err, "find proto files failed")
 	}
 
-	g.printer.VerbosePrintln(color.FgBlack, "Start vendoring")
-
 	if err := generate.VendorPB(g.project, g.printer); err != nil {
 		return simplerr.Wrap(err, "download proto imports failed")
 	}
-
-	g.printer.VerbosePrintln(color.FgBlack, "Generate profiles")
 
 	if err := generate.Protos(g.project, g.printer); err != nil {
 		return simplerr.Wrap(err, "generate proto files failed")

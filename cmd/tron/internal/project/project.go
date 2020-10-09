@@ -14,6 +14,7 @@ import (
 
 	"github.com/loghole/tron/cmd/tron/internal/helpers"
 	"github.com/loghole/tron/cmd/tron/internal/models"
+	"github.com/loghole/tron/cmd/tron/internal/stdout"
 )
 
 var (
@@ -28,9 +29,10 @@ type Project struct {
 	Module  string
 	Name    string
 	Protos  []*models.Proto
+	printer stdout.Printer
 }
 
-func NewProject(module string) (project *Project, err error) {
+func NewProject(module string, printer stdout.Printer) (project *Project, err error) {
 	if module == "" {
 		module, err = moduleFromGoMod()
 		if err != nil {
@@ -41,9 +43,10 @@ func NewProject(module string) (project *Project, err error) {
 	parts := strings.Split(module, "/")
 
 	project = &Project{
-		Module: module,
-		Name:   parts[len(parts)-1],
-		Protos: make([]*models.Proto, 0),
+		Module:  module,
+		Name:    parts[len(parts)-1],
+		Protos:  make([]*models.Proto, 0),
+		printer: printer,
 	}
 
 	project.AbsPath, err = os.Getwd()
@@ -55,6 +58,8 @@ func NewProject(module string) (project *Project, err error) {
 }
 
 func (p *Project) FindProtoFiles(dirs ...string) error {
+	p.printer.VerbosePrintln(color.FgMagenta, "Find proto files")
+
 	for _, dir := range dirs {
 		absPath, err := filepath.Abs(dir)
 		if err != nil {
@@ -74,6 +79,8 @@ func (p *Project) FindProtoFiles(dirs ...string) error {
 }
 
 func (p *Project) MoveProtoFiles() error {
+	p.printer.VerbosePrintln(color.FgMagenta, "Move proto files")
+
 	for _, proto := range p.Protos {
 		if strings.Contains(proto.RelativeDir, models.ProjectPathVendorPB) {
 			continue
@@ -90,7 +97,7 @@ func (p *Project) MoveProtoFiles() error {
 			continue
 		}
 
-		color.Yellow("\tmove proto %s >> %s", oldPath, newPath)
+		p.printer.VerbosePrintf(color.FgBlack, "\tmove proto %s >> %s", oldPath, newPath)
 
 		data, err := ioutil.ReadFile(proto.Path)
 		if err != nil {
@@ -152,7 +159,7 @@ func (p *Project) getProtoFileInfo(path string, info os.FileInfo, err error) err
 		return err
 	}
 
-	color.Yellow("\tcollected proto '%s%s.proto'", proto.Path, proto.Name)
+	p.printer.VerbosePrintf(color.FgBlack, "\tcollected proto '%s%s.proto'\n", proto.Path, proto.Name)
 
 	p.Protos = append(p.Protos, proto)
 

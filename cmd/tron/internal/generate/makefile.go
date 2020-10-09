@@ -15,7 +15,7 @@ import (
 )
 
 func Makefile(p *project.Project, printer stdout.Printer) error {
-	printer.VerbosePrintln(color.FgCyan, "Generate Makefile")
+	printer.VerbosePrintln(color.FgMagenta, "Generate Makefile")
 
 	data := templates.NewTronMKData(
 		strings.Join([]string{models.CmdDir, p.Name, models.MainFile}, "/"),

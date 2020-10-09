@@ -35,7 +35,7 @@ func NewChecker(printer stdout.Printer) *Checker {
 }
 
 func (c *Checker) CheckRequirements() (failed bool) {
-	c.printer.VerbosePrint(color.FgCyan, "Check system requirements:\n")
+	c.printer.VerbosePrint(color.FgMagenta, "Check system requirements:\n")
 
 	checks := []struct {
 		name string

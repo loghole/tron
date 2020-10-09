@@ -14,7 +14,7 @@ import (
 )
 
 func Linter(p *project.Project, printer stdout.Printer) error {
-	printer.VerbosePrintln(color.FgCyan, "Generate .golangci.yaml")
+	printer.VerbosePrintln(color.FgMagenta, "Generate .golangci.yaml")
 
 	path := filepath.Join(p.AbsPath, models.GolangciLintFilepath)
 

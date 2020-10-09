@@ -34,7 +34,7 @@ const (
 
 const (
 	ProjectPathAPI            = "api"
-	ProjectPathImplementation = "internal/app/controllers"
+	ProjectPathImplementation = "internal" + sep + "app" + sep + "controllers"
 	ProjectPathPkgClients     = "pkg"
 	ProjectPathVendorPB       = "vendor.pb"
 )

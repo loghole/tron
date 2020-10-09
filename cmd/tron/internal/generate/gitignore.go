@@ -13,7 +13,7 @@ import (
 )
 
 func Gitignore(p *project.Project, printer stdout.Printer) error {
-	printer.VerbosePrintln(color.FgCyan, "Generate .gitignore")
+	printer.VerbosePrintln(color.FgMagenta, "Generate .gitignore")
 
 	path := filepath.Join(p.AbsPath, models.GitignoreFilepath)
 

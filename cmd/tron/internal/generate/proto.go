@@ -36,6 +36,8 @@ const (
 var ErrProtoc = errors.New("protoc")
 
 func Protos(p *project.Project, printer stdout.Printer) error {
+	printer.VerbosePrintln(color.FgMagenta, "Generate proto files")
+
 	generator := &proto{project: p, printer: printer}
 
 	return generator.run()
@@ -48,7 +50,7 @@ type proto struct {
 
 func (p *proto) run() error {
 	for _, proto := range p.project.Protos {
-		p.printer.VerbosePrint(color.FgBlack, "\tgenerate go-fast %s: ", proto.Service.SnakeCasedName())
+		p.printer.VerbosePrintf(color.FgBlack, "\tgenerate go-fast %s: ", proto.Service.SnakeCasedName())
 
 		if err := p.generateGoFast(proto); err != nil {
 			p.printer.VerbosePrintln(color.FgRed, "ERROR: %v", err)
@@ -59,7 +61,7 @@ func (p *proto) run() error {
 		p.printer.VerbosePrintln(color.FgGreen,"OK")
 
 		// generate go-clay
-		p.printer.VerbosePrint(color.FgBlack, "\tgenerate go-clay %s: ", proto.Service.SnakeCasedName())
+		p.printer.VerbosePrintf(color.FgBlack, "\tgenerate go-clay %s: ", proto.Service.SnakeCasedName())
 
 		if err := p.generateGoClay(proto); err != nil {
 			p.printer.VerbosePrintln(color.FgRed, "ERROR: %v", err)
@@ -69,8 +71,6 @@ func (p *proto) run() error {
 
 		p.printer.VerbosePrintln(color.FgGreen,"OK")
 	}
-
-	p.printer.VerbosePrintln(color.FgGreen,"Success")
 
 	return nil
 }
