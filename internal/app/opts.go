@@ -12,7 +12,7 @@ import (
 
 type Option func(opts *Options) error
 
-type RunOption func(opts *Options)
+type RunOption func(opts *Options) error
 
 type Options struct {
 	// New options.
@@ -20,13 +20,15 @@ type Options struct {
 	PortAdmin     uint16
 	PortHTTP      uint16
 	PortGRPC      uint16
-	TLSConfig     *tls.Config
 	LoggerOptions []zap.Option
 	ExitSignals   []os.Signal
 
 	// Run options.
+	TLSConfig       *tls.Config
 	GRPCOptions     []grpc.ServerOption
 	HTTPMiddlewares []func(http.Handler) http.Handler
+
+	options []RunOption
 }
 
 func NewOptions(options ...Option) (*Options, error) {
@@ -51,8 +53,18 @@ func NewOptions(options ...Option) (*Options, error) {
 	return opts, nil
 }
 
-func (o *Options) ApplyRunOptions(options ...RunOption) {
-	for _, apply := range options {
-		apply(o)
+func (o *Options) AddRunOptions(options ...RunOption) {
+	o.options = append(o.options, options...)
+}
+
+func (o *Options) ApplyRunOptions() error {
+	for _, apply := range o.options {
+		if err := apply(o); err != nil {
+			return err
+		}
 	}
+
+	o.options = nil
+
+	return nil
 }

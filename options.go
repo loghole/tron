@@ -1,7 +1,6 @@
 package tron
 
 import (
-	"crypto/tls"
 	"os"
 
 	"github.com/loghole/lhw/zap"
@@ -40,24 +39,6 @@ func WithExitSignals(sig ...os.Signal) Option {
 		opts.ExitSignals = append(opts.ExitSignals, sig...)
 
 		return nil
-	}
-}
-
-func WithTLSConfig(config *tls.Config) Option {
-	return func(opts *app.Options) error {
-		opts.TLSConfig = config
-
-		return nil
-	}
-}
-
-func WithTLSKeyPair(certFile, keyFile string) Option {
-	return func(opts *app.Options) (err error) {
-		opts.TLSConfig = &tls.Config{} // nolint:gosec // default by http.ListenAndServeTLS
-		opts.TLSConfig.Certificates = make([]tls.Certificate, 1)
-		opts.TLSConfig.Certificates[0], err = tls.LoadX509KeyPair(certFile, keyFile)
-
-		return err
 	}
 }
 

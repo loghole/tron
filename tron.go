@@ -127,7 +127,7 @@ func New(options ...app.Option) (*App, error) {
 	}
 
 	// Append tracing middlewares.
-	a.opts.ApplyRunOptions(
+	a.opts.AddRunOptions(
 		WithUnaryInterceptor(otgrpc.OpenTracingServerInterceptor(a.Tracer())),
 		WithHTTPMiddleware(tracehttp.NewMiddleware(a.Tracer()).Middleware),
 	)
@@ -159,12 +159,17 @@ func (a *App) Router() chi.Router {
 
 // Append some run options.
 func (a *App) WithRunOptions(opts ...app.RunOption) *App {
-	a.opts.ApplyRunOptions(opts...)
+	a.opts.AddRunOptions(opts...)
 
 	return a
 }
 
-func (a *App) Run(impl ...transport.Service) error {
+// Run apply run options if exists and starts servers.
+func (a *App) Run(impl ...transport.Service) error { // nolint:funlen // start app
+	if err := a.opts.ApplyRunOptions(); err != nil {
+		return simplerr.Wrap(err, "apply run options failed")
+	}
+
 	if err := a.servers.init(a.opts); err != nil {
 		return simplerr.Wrap(err, "init servers failed")
 	}
