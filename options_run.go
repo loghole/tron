@@ -36,6 +36,10 @@ func WithTLSConfig(config *tls.Config) RunOption {
 }
 
 func WithTLSKeyPair(certFile, keyFile string) RunOption {
+	if certFile == "" || keyFile == "" {
+		return nil
+	}
+
 	return func(opts *app.Options) (err error) {
 		opts.TLSConfig = &tls.Config{} // nolint:gosec // default by http.ListenAndServeTLS
 		opts.TLSConfig.Certificates = make([]tls.Certificate, 1)

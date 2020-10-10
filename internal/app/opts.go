@@ -45,6 +45,10 @@ func NewOptions(options ...Option) (*Options, error) {
 	}
 
 	for _, apply := range options {
+		if apply == nil {
+			continue
+		}
+
 		if err := apply(opts); err != nil {
 			return nil, err
 		}
@@ -59,6 +63,10 @@ func (o *Options) AddRunOptions(options ...RunOption) {
 
 func (o *Options) ApplyRunOptions() error {
 	for _, apply := range o.options {
+		if apply == nil {
+			continue
+		}
+
 		if err := apply(o); err != nil {
 			return err
 		}
