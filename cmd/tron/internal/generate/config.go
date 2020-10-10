@@ -79,7 +79,7 @@ func (c *config) run() error {
 		return err
 	}
 
-	if err := helpers.WriteToFile(models.ConfigFilepath, []byte(templates.ConfigTemplate)); err != nil {
+	if err := helpers.WriteWithConfirm(models.ConfigFilepath, []byte(templates.ConfigTemplate)); err != nil {
 		return err
 	}
 
@@ -102,7 +102,7 @@ func (c *config) parseFile(filepath string) error {
 			return err
 		}
 
-		parts := strings.Split(scanner.Text(), ": ")
+		parts := strings.Split(scanner.Text(), ":")
 
 		if len(parts) <= 1 {
 			continue
