@@ -27,6 +27,8 @@ func NewServer(port uint16, opts []grpc.ServerOption) (server *Server, err error
 		return nil, simplerr.Wrap(err, "create GRPc listener failed")
 	}
 
+	setClayErrorWriter()
+
 	return server, nil
 }
 
