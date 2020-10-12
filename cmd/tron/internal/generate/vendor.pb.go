@@ -4,14 +4,17 @@ import (
 	"bufio"
 	"bytes"
 	"errors"
+	"fmt"
 	"io"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"os"
 	"path"
 	"strings"
 
 	"github.com/fatih/color"
+	"github.com/lissteron/simplerr"
 
 	"github.com/loghole/tron/cmd/tron/internal/helpers"
 	"github.com/loghole/tron/cmd/tron/internal/models"
@@ -19,7 +22,16 @@ import (
 	"github.com/loghole/tron/cmd/tron/internal/stdout"
 )
 
-var ErrBadImport = errors.New("bad import")
+const (
+	github      = "github.com"
+	githubRaw   = "https://raw.githubusercontent.com"
+	importParts = 3
+)
+
+var (
+	ErrBadImport = errors.New("bad import")
+	ErrReqFailed = errors.New("request failed")
+)
 
 type vendorPB struct {
 	printer  stdout.Printer
@@ -146,6 +158,10 @@ func (v *vendorPB) curlProto(name string) error {
 
 	defer helpers.Close(resp.Body)
 
+	if resp.StatusCode != http.StatusOK {
+		return simplerr.Wrapf(ErrReqFailed, "link: %s code: %d", link, resp.StatusCode)
+	}
+
 	data, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return err
@@ -169,7 +185,20 @@ func (v *vendorPB) importLink(s string) (string, bool) {
 			continue
 		}
 
+		log.Println(strings.Join([]string{replacer, s}, ""))
+
 		return strings.Join([]string{replacer, s}, ""), true
+	}
+
+	if len(parts) > importParts && strings.EqualFold(parts[0], github) {
+		parts[0] = githubRaw
+
+		part1 := strings.Join(parts[:importParts], "/")
+		part2 := strings.Join(parts[importParts:], "/")
+
+		log.Println(fmt.Sprintf("%s/master/%s", part1, part2))
+
+		return fmt.Sprintf("%s/master/%s", part1, part2), true
 	}
 
 	return "", false
