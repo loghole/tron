@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"os"
 	"path"
@@ -185,8 +184,6 @@ func (v *vendorPB) importLink(s string) (string, bool) {
 			continue
 		}
 
-		log.Println(strings.Join([]string{replacer, s}, ""))
-
 		return strings.Join([]string{replacer, s}, ""), true
 	}
 
@@ -195,8 +192,6 @@ func (v *vendorPB) importLink(s string) (string, bool) {
 
 		part1 := strings.Join(parts[:importParts], "/")
 		part2 := strings.Join(parts[importParts:], "/")
-
-		log.Println(fmt.Sprintf("%s/master/%s", part1, part2))
 
 		return fmt.Sprintf("%s/master/%s", part1, part2), true
 	}
