@@ -20,7 +20,7 @@ func ParseNamespace(s string) Namespace {
 	case "p", "prod", "production":
 		return NamespaceProd
 	default:
-		return NamespaceDev
+		panic("unknown namespace")
 	}
 }
 

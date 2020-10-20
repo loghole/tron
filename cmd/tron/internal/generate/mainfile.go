@@ -31,8 +31,8 @@ func Mainfile(p *project.Project, printer stdout.Printer) error {
 	data.AddImport("github.com/loghole/tron")
 	data.AddImport(strings.Join([]string{p.Module, "config"}, "/"))
 
-	for _, p := range p.Protos {
-		data.AddImport(p.Service.Package)
+	for _, proto := range p.Protos {
+		data.AddImport(proto.Service.Import, proto.Service.Alias)
 	}
 
 	mainScript, err := helpers.ExecTemplate(templates.MainTemplate, data)

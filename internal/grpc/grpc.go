@@ -1,6 +1,7 @@
 package grpc
 
 import (
+	"crypto/tls"
 	"fmt"
 	"net"
 
@@ -10,26 +11,40 @@ import (
 )
 
 type Server struct {
-	addr string
-	lis  net.Listener
-	*grpc.Server
+	addr     string
+	listener net.Listener
+	server   *grpc.Server
 }
 
-func NewServer(port uint16, opts []grpc.ServerOption) (server *Server, err error) {
+func NewServer(port uint16) *Server {
 	if port == 0 {
-		return nil, nil
+		return nil
 	}
 
-	server = &Server{Server: grpc.NewServer(opts...), addr: fmt.Sprintf("0.0.0.0:%d", port)}
+	return &Server{addr: fmt.Sprintf("0.0.0.0:%d", port)}
+}
 
-	server.lis, err = net.Listen("tcp", server.addr)
-	if err != nil {
-		return nil, simplerr.Wrap(err, "create GRPc listener failed")
+func (s *Server) BuildServer(tlsConfig *tls.Config, opts []grpc.ServerOption) (err error) {
+	if s == nil {
+		return nil
 	}
 
-	setClayErrorWriter()
+	s.server = grpc.NewServer(opts...)
 
-	return server, nil
+	switch {
+	case tlsConfig != nil:
+		s.listener, err = tls.Listen("tcp", s.addr, tlsConfig)
+		if err != nil {
+			return simplerr.Wrap(err, "create TLS listener failed")
+		}
+	default:
+		s.listener, err = net.Listen("tcp", s.addr)
+		if err != nil {
+			return simplerr.Wrap(err, "create TCP listener failed")
+		}
+	}
+
+	return nil
 }
 
 func (s *Server) RegistryDesc(services ...transport.Service) {
@@ -39,7 +54,7 @@ func (s *Server) RegistryDesc(services ...transport.Service) {
 
 	for _, service := range services {
 		if service != nil {
-			service.GetDescription().RegisterGRPC(s.Server)
+			service.GetDescription().RegisterGRPC(s.server)
 		}
 	}
 }
@@ -49,7 +64,7 @@ func (s *Server) Serve() error {
 		return nil
 	}
 
-	return s.Server.Serve(s.lis)
+	return s.server.Serve(s.listener)
 }
 
 func (s *Server) Close() error {
@@ -57,8 +72,8 @@ func (s *Server) Close() error {
 		return nil
 	}
 
-	if s.Server != nil {
-		s.Server.GracefulStop()
+	if s.server != nil {
+		s.server.GracefulStop()
 	}
 
 	return nil

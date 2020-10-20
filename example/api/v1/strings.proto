@@ -2,7 +2,9 @@ syntax = "proto3";
 
 import "google/api/annotations.proto";
 
-package v1;
+package strings.v1;
+
+option go_package = "strings";
 
 service Strings {
     // Method to upper

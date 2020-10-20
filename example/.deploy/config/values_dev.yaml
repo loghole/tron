@@ -1,2 +1,2 @@
 # Place develop overrides here
-LOGGER_LEVEL: INFO
+EXAMPLE_VALUE: example_value_dev

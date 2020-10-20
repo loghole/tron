@@ -76,7 +76,7 @@ func (p *proto) run() error {
 }
 
 func (p *proto) generateGoFast(proto *models.Proto) error {
-	err := helpers.Mkdir(path.Join(models.ProjectPathPkgClients, proto.Service.PackageName, proto.Name))
+	err := helpers.Mkdir(path.Join(models.ProjectPathPkgClients, proto.Service.Package, proto.Name))
 	if err != nil {
 		return err
 	}
@@ -86,7 +86,7 @@ func (p *proto) generateGoFast(proto *models.Proto) error {
 		fmt.Sprintf("-I%s:%s", proto.RelativeDir, models.ProjectPathVendorPB),
 		fmt.Sprintf("--gofast_out=%s,plugins=grpc:%s",
 			pkgMap,
-			path.Join(models.ProjectPathPkgClients, proto.Service.PackageName),
+			path.Join(models.ProjectPathPkgClients, proto.Service.Package),
 		),
 		path.Join(proto.RelativeDir, proto.NameWithExt()),
 	}
@@ -99,12 +99,12 @@ func (p *proto) generateGoFast(proto *models.Proto) error {
 }
 
 func (p *proto) generateGoClay(proto *models.Proto) error {
-	err := helpers.Mkdir(filepath.Join(models.ProjectPathImplementation, proto.Service.PackageName, proto.Name))
+	err := helpers.Mkdir(filepath.Join(models.ProjectPathImplementation, proto.Service.Package, proto.Name))
 	if err != nil {
 		return simplerr.Wrap(err, "failed to mkdir")
 	}
 
-	wd := filepath.Join(p.project.AbsPath, models.ProjectPathPkgClients, proto.Service.PackageName)
+	wd := filepath.Join(p.project.AbsPath, models.ProjectPathPkgClients, proto.Service.Package)
 
 	relToRoot, err := filepath.Rel(wd, p.project.AbsPath)
 	if err != nil {
@@ -121,7 +121,7 @@ func (p *proto) generateGoClay(proto *models.Proto) error {
 		),
 		fmt.Sprintf("--goclay_out=%s,impl=true,impl_path=%s,impl_type_name_tmpl=%s:.",
 			pkgMap,
-			path.Join(relToRoot, models.ProjectPathImplementation, proto.Service.PackageName),
+			path.Join(relToRoot, models.ProjectPathImplementation, proto.Service.Package),
 			models.ImplementationName,
 		),
 		path.Join(relToRoot, proto.RelativeDir, proto.NameWithExt()),

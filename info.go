@@ -11,15 +11,7 @@ func SetName(name string) {
 	app.ServiceName = name
 }
 
-type Info struct {
-	InstanceUUID string
-	ServiceName  string
-	Namespace    string
-	AppName      string
-	GitHash      string
-	Version      string
-	BuildAt      string
-}
+type Info = app.Info
 
 func initInfo() *Info {
 	return &Info{
@@ -30,5 +22,6 @@ func initInfo() *Info {
 		GitHash:      app.GitHash,
 		Version:      app.Version,
 		BuildAt:      app.BuildAt,
+		StartTime:    app.StartTime,
 	}
 }

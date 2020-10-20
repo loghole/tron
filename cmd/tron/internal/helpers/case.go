@@ -1,8 +1,15 @@
 package helpers
 
 import (
+	"regexp"
 	"strings"
 	"unicode"
+)
+
+// nolint:gochecknoglobals //regexp
+var (
+	goNameRexp      = regexp.MustCompile(`[^a-zA-Z0-9\s_-]+`)
+	firstDigitsRexp = regexp.MustCompile(`^\d+`)
 )
 
 func SnakeCase(s string) string {
@@ -31,6 +38,17 @@ func SnakeCase(s string) string {
 
 func UpperCamelCase(s string) string {
 	return camelCase(s, true)
+}
+
+func CamelCase(s string) string {
+	return camelCase(s, false)
+}
+
+func GoName(s string) string {
+	name := goNameRexp.ReplaceAllString(strings.ReplaceAll(s, ".", "_"), "")
+	name = firstDigitsRexp.ReplaceAllString(name, "")
+
+	return name
 }
 
 func camelCase(s string, upper bool) string {

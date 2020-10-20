@@ -1,2 +1,2 @@
 # Place staging overrides here
-LOGGER_LEVEL: WARN
+EXAMPLE_VALUE: example_value_stg

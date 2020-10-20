@@ -2,11 +2,11 @@
 // source: strings.proto
 
 /*
-Package v1 is a self-registering gRPC and JSON+Swagger service definition.
+Package strings is a self-registering gRPC and JSON+Swagger service definition.
 
 It conforms to the github.com/utrack/clay/v2/transport Service interface.
 */
-package v1
+package strings
 
 import (
 	"bytes"
@@ -16,7 +16,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
-	"strings"
+	strings_0 "strings"
 
 	"github.com/go-chi/chi"
 	"github.com/go-openapi/spec"
@@ -41,7 +41,7 @@ var _ runtime.Marshaler
 var _ bytes.Buffer
 var _ context.Context
 var _ fmt.Formatter
-var _ strings.Reader
+var _ strings_0.Reader
 var _ errors.Frame
 var _ httpruntime.Marshaler
 var _ http.Handler
@@ -202,7 +202,7 @@ type Strings_httpClient struct {
 // NewStringsHTTPClient creates new HTTP client for StringsServer.
 // Pass addr in format "http://host[:port]".
 func NewStringsHTTPClient(c *http.Client, addr string) *Strings_httpClient {
-	if strings.HasSuffix(addr, "/") {
+	if strings_0.HasSuffix(addr, "/") {
 		addr = addr[:len(addr)-1]
 	}
 	return &Strings_httpClient{c: c, host: addr}

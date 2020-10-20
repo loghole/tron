@@ -3,9 +3,9 @@ GO_TEST_PACKAGES = $(shell go list ./... | egrep -v '(pkg|cmd)')
 gomod:
 	go mod download
 
-gotest:
+test:
 	go test -race -v -cover -coverprofile coverage.out $(GO_TEST_PACKAGES)
 
-golint:
+lint:
 	golangci-lint run -v
 	cd cmd/tron && golangci-lint run -v

@@ -8,6 +8,8 @@ type TronMKData struct {
 	Mainfile    string
 	Dockerfile  string
 	DockerImage string
+	AppName     string
+	ServiceName string
 }
 
 func NewTronMKData(mainfile, dockerfile, module string) *TronMKData {
@@ -17,10 +19,15 @@ func NewTronMKData(mainfile, dockerfile, module string) *TronMKData {
 		Dockerfile:  dockerfile,
 		DockerImage: module,
 		Mainfile:    mainfile,
+		AppName:     module,
 	}
 
 	if len(parts) > 1 {
 		data.DockerImage = strings.Join(parts[len(parts)-2:], "/")
+	}
+
+	if len(parts) > 1 {
+		data.ServiceName = parts[len(parts)-1]
 	}
 
 	return data
@@ -34,6 +41,12 @@ LOCAL_BIN:=$(CURDIR)/bin
 DOCKERFILE   = {{ .Dockerfile }}
 DOCKER_IMAGE = {{ .DockerImage }}
 VERSION     ?= $$(git describe --tags --always)
+
+LDFLAGS:=-X 'github.com/loghole/tron/internal/app.ServiceName={{ .ServiceName }}' \
+		 -X 'github.com/loghole/tron/internal/app.AppName={{ .AppName }}' \
+		 -X 'github.com/loghole/tron/internal/app.GitHash=$(git rev-parse HEAD)' \
+		 -X 'github.com/loghole/tron/internal/app.Version=$(git describe --tags --always)' \
+		 -X 'github.com/loghole/tron/internal/app.BuildAt=$(date --utc +%FT%TZ)'
 
 .PHONY: .generate
 .generate:
@@ -62,10 +75,10 @@ generate-config:
 .bin-deps:
 	$(info #Installing binary dependencies...)
 
-gotest:
+test:
 	go test -race -v -cover -coverprofile coverage.out $(GO_TEST_PACKAGES)
 
-golint:
+lint:
 	golangci-lint run -v
 
 docker-image:
@@ -76,7 +89,7 @@ docker-image:
 	.
 
 run-local:
-	go run {{ .Mainfile }} --local-config-enabled
+	go run -ldflags "$(LDFLAGS)" {{ .Mainfile }} --local-config-enabled
 `
 
 const Makefile = `include tron.mk

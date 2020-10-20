@@ -2,7 +2,6 @@ package app
 
 import (
 	"crypto/tls"
-	"net/http"
 	"os"
 	"syscall"
 
@@ -24,9 +23,8 @@ type Options struct {
 	ExitSignals   []os.Signal
 
 	// Run options.
-	TLSConfig       *tls.Config
-	GRPCOptions     []grpc.ServerOption
-	HTTPMiddlewares []func(http.Handler) http.Handler
+	TLSConfig   *tls.Config
+	GRPCOptions []grpc.ServerOption
 
 	options []RunOption
 }

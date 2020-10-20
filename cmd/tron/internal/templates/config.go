@@ -4,7 +4,6 @@ import (
 	"strings"
 
 	"github.com/loghole/tron/cmd/tron/internal/helpers"
-	"github.com/loghole/tron/cmd/tron/internal/models"
 )
 
 type ConfigData struct {
@@ -17,9 +16,7 @@ type ConfigValue struct {
 }
 
 func NewConfigValue(key string) ConfigValue {
-	name := models.GoNameRexp.ReplaceAllString(key, "")
-	name = models.FirstDigitsRexp.ReplaceAllString(name, "")
-	name = helpers.UpperCamelCase(name)
+	name := helpers.UpperCamelCase(helpers.GoName(key))
 
 	return ConfigValue{Name: name, Key: strings.ToLower(key)}
 }

@@ -20,7 +20,7 @@ func Values(p *project.Project, printer stdout.Printer) error {
 	data := templates.ValuesData{
 		List: []templates.Env{
 			{Key: strings.ToUpper(app.LoggerLevelEnv), Val: "info"},
-			{Key: strings.ToUpper(app.LoggerCollectorAddrEnv), Val: ""},
+			{Key: strings.ToUpper(app.LoggerCollectorAddrEnv), Val: "\"\""},
 			{Key: strings.ToUpper(app.LoggerDisableStdoutEnv), Val: "false"},
 			{Key: strings.ToUpper(app.JaegerAddrEnv), Val: "127.0.0.1:6831"},
 			{Key: strings.ToUpper(app.HTTPPortEnv), Val: "8080"},

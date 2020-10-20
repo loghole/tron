@@ -17,17 +17,17 @@ EXAMPLE_VALUE: example_value
 `
 
 const ValuesLocalTemplate = `# Place config values for LOCAL development here
-LOGGER_LEVEL: DEBUG
+LOGGER_LEVEL: debug
 `
 
 const ValuesDevTemplate = `# Place develop overrides here
-LOGGER_LEVEL: INFO
+EXAMPLE_VALUE: example_value_dev
 `
 
 const ValuesStgTemplate = `# Place staging overrides here
-LOGGER_LEVEL: WARN
+EXAMPLE_VALUE: example_value_stg
 `
 
 const ValuesProdTemplate = `# Place production overrides here
-LOGGER_LEVEL: WARN
+EXAMPLE_VALUE: example_value_prod
 `

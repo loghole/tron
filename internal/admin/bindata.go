@@ -9,7 +9,7 @@
 // data/swagger-ui-standalone-preset.js
 // data/swagger-ui.css
 // data/swagger-ui.js
-package swagger
+package admin
 
 import (
 	"bytes"

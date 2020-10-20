@@ -87,7 +87,7 @@ func (p *Project) MoveProtoFiles() error {
 		}
 
 		var (
-			newDir  = filepath.Join(models.ProjectPathAPI, proto.Service.PackageName)
+			newDir  = filepath.Join(models.ProjectPathAPI, proto.Version)
 			newName = proto.Service.SnakeCasedName()
 			oldPath = filepath.Join(proto.RelativeDir, proto.NameWithExt())
 			newPath = filepath.Join(newDir, models.AddProtoExt(newName))
@@ -170,31 +170,36 @@ func (p *Project) scanProtoFile(file io.Reader, proto *models.Proto) (*models.Pr
 	scanner := bufio.NewScanner(file)
 	scanner.Split(bufio.ScanLines)
 
+	var serviceName, packageName string
+
 	for scanner.Scan() {
 		if err := scanner.Err(); err != nil {
 			return nil, err
 		}
 
 		if m := models.PackageRegexp.FindStringSubmatch(scanner.Text()); len(m) > 1 {
-			if proto.Service.PackageName != "" {
+			if packageName != "" {
 				return nil, simplerr.Wrapf(ErrMultiplePackages, "'%s/%s.proto'", proto.RelativeDir, proto.Name)
 			}
 
-			proto.Service.PackageName = m[1]
-			proto.Service.Package = strings.Join([]string{p.Module, models.ProjectPathImplementation, m[1]}, "/")
+			packageName = m[1]
 		}
 
 		if m := models.ServiceRegexp.FindStringSubmatch(scanner.Text()); len(m) > 1 {
-			if proto.Service.Name != "" {
+			if serviceName != "" {
 				return nil, simplerr.Wrapf(ErrMultipleServices, "'%s/%s.proto'", proto.RelativeDir, proto.Name)
 			}
 
-			proto.Service.Name = m[1]
+			serviceName = m[1]
 		}
 
-		if proto.Service.PackageName != "" && proto.Service.Name != "" {
+		if serviceName != "" && packageName != "" {
 			break
 		}
+	}
+
+	if err := proto.SetService(p.Module, serviceName, packageName); err != nil {
+		return nil, err
 	}
 
 	return proto, nil
