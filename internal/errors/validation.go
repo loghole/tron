@@ -82,7 +82,11 @@ func (r *ErrResponse) parseValidationErr(err error) bool {
 				Code:   e3.Code(),
 				Detail: strings.Join([]string{field, e3.Error()}, ": "),
 			})
-		} else if !r.parseValidationErr(e2) {
+
+			continue
+		}
+
+		if !r.parseValidationErr(e2) {
 			return false
 		}
 	}
