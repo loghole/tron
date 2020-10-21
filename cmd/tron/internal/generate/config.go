@@ -65,6 +65,8 @@ func (c *config) run() error {
 		data.Values = append(data.Values, templates.NewConfigValue(key))
 	}
 
+	data.SortValues()
+
 	config, err := helpers.ExecTemplate(templates.ConfigConstTemplate, data)
 	if err != nil {
 		return simplerr.Wrap(err, "failed to exec template")

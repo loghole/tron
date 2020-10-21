@@ -1,6 +1,7 @@
 package templates
 
 import (
+	"sort"
 	"strings"
 
 	"github.com/loghole/tron/cmd/tron/internal/helpers"
@@ -8,6 +9,10 @@ import (
 
 type ConfigData struct {
 	Values []ConfigValue
+}
+
+func (c *ConfigData) SortValues() {
+	sort.Slice(c.Values, func(i, j int) bool { return c.Values[i].Name < c.Values[j].Name })
 }
 
 type ConfigValue struct {
