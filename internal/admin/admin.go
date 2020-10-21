@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/go-chi/chi"
+	"github.com/go-chi/chi/middleware"
 	jsoniter "github.com/json-iterator/go"
 	"github.com/utrack/clay/v2/transport"
 	"github.com/utrack/clay/v2/transport/swagger"
@@ -33,6 +34,8 @@ func (s *Handlers) InitRoutes(r chi.Router) {
 	if r == nil {
 		return
 	}
+
+	r.Mount("/debug", middleware.Profiler())
 
 	r.Mount("/docs", http.StripPrefix("/docs", http.FileServer(AssetFile())))
 

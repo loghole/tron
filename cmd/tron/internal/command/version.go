@@ -7,8 +7,8 @@ import (
 	"github.com/loghole/tron/cmd/tron/internal/stdout"
 )
 
-// lint:gochecknoglobals //tron version
-var version = "+devel"
+// nolint:gochecknoglobals //CliVersion is tron version
+var cliVersion = "+devel"
 
 type VersionCMD struct {
 	printer stdout.Printer
@@ -24,7 +24,7 @@ func (v *VersionCMD) Command() *cobra.Command {
 		Short:   "Print tron version",
 		Aliases: []string{"v"},
 		Run: func(cmd *cobra.Command, args []string) {
-			v.printer.Printf(color.FgBlack, "Tron version: %s\n", color.YellowString(version))
+			v.printer.Printf(color.FgBlack, "Tron version: %s\n", color.YellowString(cliVersion))
 		},
 	}
 }
