@@ -170,35 +170,35 @@ func (p *Project) scanProtoFile(file io.Reader, proto *models.Proto) (*models.Pr
 	scanner := bufio.NewScanner(file)
 	scanner.Split(bufio.ScanLines)
 
-	var serviceName, packageName string
+	var srv, pkg string
 
 	for scanner.Scan() {
-		if err := scanner.Err(); err != nil {
-			return nil, err
-		}
-
 		if m := models.PackageRegexp.FindStringSubmatch(scanner.Text()); len(m) > 1 {
-			if packageName != "" {
+			if pkg != "" {
 				return nil, simplerr.Wrapf(ErrMultiplePackages, "'%s/%s.proto'", proto.RelativeDir, proto.Name)
 			}
 
-			packageName = m[1]
+			pkg = m[1]
 		}
 
 		if m := models.ServiceRegexp.FindStringSubmatch(scanner.Text()); len(m) > 1 {
-			if serviceName != "" {
+			if srv != "" {
 				return nil, simplerr.Wrapf(ErrMultipleServices, "'%s/%s.proto'", proto.RelativeDir, proto.Name)
 			}
 
-			serviceName = m[1]
+			srv = m[1]
 		}
 
-		if serviceName != "" && packageName != "" {
-			break
+		if m := models.ImportRegexp.FindStringSubmatch(scanner.Text()); len(m) > 1 {
+			proto.Imports = append(proto.Imports, m[1])
 		}
 	}
 
-	if err := proto.SetService(p.Module, serviceName, packageName); err != nil {
+	if err := scanner.Err(); err != nil {
+		return nil, err
+	}
+
+	if err := proto.SetService(p.Module, srv, pkg); err != nil {
 		return nil, err
 	}
 

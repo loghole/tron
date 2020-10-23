@@ -34,6 +34,7 @@ type Proto struct {
 	RelativeDir string
 	Service     Service
 	Version     string
+	Imports     []string
 }
 
 func (p *Proto) NameWithExt() string {
@@ -47,16 +48,22 @@ func (p *Proto) SetService(module, srv, pkg string) error {
 
 	p.Version = ProtoPkgVersionRegexp.FindStringSubmatch(pkg)[1]
 
-	p.Service = Service{
-		Name: srv,
-		Import: strings.Join([]string{
-			module,
-			ProjectPathImplementation,
-			strings.ToLower(strings.ReplaceAll(pkg, ".", "/")),
-		}, "/"),
-		Alias:   helpers.CamelCase(helpers.GoName(strings.ReplaceAll(pkg, ".", "_"))),
-		Package: strings.ReplaceAll(pkg, ".", string(filepath.Separator)),
+	switch {
+	case srv != "":
+		p.Service.WithImpl = true
+		p.Service.Name = strings.Title(srv)
+	default:
+		parts := strings.Split(pkg, ".")
+		p.Service.Name = strings.Title(parts[len(parts)-2])
 	}
+
+	p.Service.Alias = helpers.CamelCase(helpers.GoName(strings.ReplaceAll(pkg, ".", "_")))
+	p.Service.Package = strings.ReplaceAll(pkg, ".", string(filepath.Separator))
+	p.Service.Import = strings.Join([]string{
+		module,
+		ProjectPathImplementation,
+		strings.ToLower(strings.ReplaceAll(pkg, ".", "/")),
+	}, "/")
 
 	return nil
 }
@@ -66,10 +73,11 @@ func AddProtoExt(name string) string {
 }
 
 type Service struct {
-	Name    string
-	Import  string
-	Alias   string
-	Package string
+	Name     string
+	Import   string
+	Alias    string
+	Package  string
+	WithImpl bool
 }
 
 func (s *Service) SnakeCasedName() string {

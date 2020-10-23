@@ -106,13 +106,19 @@ func main() {
 
 	var (
 		{{ range $proto := .Protos -}}
+			{{- if $proto.Service.WithImpl -}}
 			{{ $proto.Service.Variable }} = {{ $proto.Service.Alias }}.New{{ $proto.Service.Name }}()
+			{{ end -}}
 		{{ end }}
 	)
 
 	if err := app.WithRunOptions().Run(
-			{{- range $proto := .Protos -}} {{ $proto.Service.Variable }},
-	{{- end -}}); err != nil {
+			{{- range $proto := .Protos -}} 
+			{{- if $proto.Service.WithImpl -}}
+			{{ $proto.Service.Variable }},
+			{{- end -}}
+			{{- end -}}
+		); err != nil {
 		app.Logger().Fatalf("can't run app: %v", err)
 	}
 

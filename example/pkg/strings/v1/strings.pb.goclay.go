@@ -2,21 +2,22 @@
 // source: strings.proto
 
 /*
-Package strings is a self-registering gRPC and JSON+Swagger service definition.
+Package stringsV1 is a self-registering gRPC and JSON+Swagger service definition.
 
 It conforms to the github.com/utrack/clay/v2/transport Service interface.
 */
-package strings
+package stringsV1
 
 import (
 	"bytes"
 	"context"
 	"encoding/base64"
+	typesV1 "example/pkg/types/v1"
 	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/url"
-	strings_0 "strings"
+	"strings"
 
 	"github.com/go-chi/chi"
 	"github.com/go-openapi/spec"
@@ -41,7 +42,7 @@ var _ runtime.Marshaler
 var _ bytes.Buffer
 var _ context.Context
 var _ fmt.Formatter
-var _ strings_0.Reader
+var _ strings.Reader
 var _ errors.Frame
 var _ httpruntime.Marshaler
 var _ http.Handler
@@ -202,13 +203,13 @@ type Strings_httpClient struct {
 // NewStringsHTTPClient creates new HTTP client for StringsServer.
 // Pass addr in format "http://host[:port]".
 func NewStringsHTTPClient(c *http.Client, addr string) *Strings_httpClient {
-	if strings_0.HasSuffix(addr, "/") {
+	if strings.HasSuffix(addr, "/") {
 		addr = addr[:len(addr)-1]
 	}
 	return &Strings_httpClient{c: c, host: addr}
 }
 
-func (c *Strings_httpClient) ToUpper(ctx context.Context, in *String, opts ...grpc.CallOption) (*String, error) {
+func (c *Strings_httpClient) ToUpper(ctx context.Context, in *typesV1.String, opts ...grpc.CallOption) (*typesV1.String, error) {
 	mw, err := httpclient.NewMiddlewareGRPC(opts)
 	if err != nil {
 		return nil, err
@@ -248,14 +249,14 @@ func (c *Strings_httpClient) ToUpper(ctx context.Context, in *String, opts ...gr
 		return nil, errors.Errorf("%v %v: server returned HTTP %v: '%v'", req.Method, req.URL.String(), rsp.StatusCode, string(b))
 	}
 
-	ret := String{}
+	ret := typesV1.String{}
 
 	err = m.Unmarshal(rsp.Body, &ret)
 
 	return &ret, errors.Wrap(err, "can't unmarshal response")
 }
 
-func (c *Strings_httpClient) GetInfo(ctx context.Context, in *String, opts ...grpc.CallOption) (*String, error) {
+func (c *Strings_httpClient) GetInfo(ctx context.Context, in *typesV1.String, opts ...grpc.CallOption) (*typesV1.String, error) {
 	mw, err := httpclient.NewMiddlewareGRPC(opts)
 	if err != nil {
 		return nil, err
@@ -295,7 +296,7 @@ func (c *Strings_httpClient) GetInfo(ctx context.Context, in *String, opts ...gr
 		return nil, errors.Errorf("%v %v: server returned HTTP %v: '%v'", req.Method, req.URL.String(), rsp.StatusCode, string(b))
 	}
 
-	ret := String{}
+	ret := typesV1.String{}
 
 	err = m.Unmarshal(rsp.Body, &ret)
 
@@ -306,7 +307,7 @@ func (c *Strings_httpClient) GetInfo(ctx context.Context, in *String, opts ...gr
 var (
 	pattern_goclay_Strings_ToUpper_0 = "/api/v1/strings/upper/{str}"
 
-	pattern_goclay_Strings_ToUpper_0_builder = func(in *String) string {
+	pattern_goclay_Strings_ToUpper_0_builder = func(in *typesV1.String) string {
 		values := url.Values{}
 
 		u := url.URL{
@@ -320,7 +321,7 @@ var (
 
 	pattern_goclay_Strings_GetInfo_0 = "/api/v1/strings/info"
 
-	pattern_goclay_Strings_GetInfo_0_builder = func(in *String) string {
+	pattern_goclay_Strings_GetInfo_0_builder = func(in *typesV1.String) string {
 		values := url.Values{}
 		values.Add("str", fmt.Sprintf("%s", in.Str))
 
@@ -338,7 +339,7 @@ var (
 var (
 	unmarshaler_goclay_Strings_ToUpper_0 = func(r *http.Request) func(interface{}) error {
 		return func(rif interface{}) error {
-			req := rif.(*String)
+			req := rif.(*typesV1.String)
 
 			if err := errors.Wrap(runtime.PopulateQueryParameters(req, r.URL.Query(), unmarshaler_goclay_Strings_ToUpper_0_boundParams), "couldn't populate query parameters"); err != nil {
 				return httpruntime.TransformUnmarshalerError(err)
@@ -360,7 +361,7 @@ var (
 
 	unmarshaler_goclay_Strings_GetInfo_0 = func(r *http.Request) func(interface{}) error {
 		return func(rif interface{}) error {
-			req := rif.(*String)
+			req := rif.(*typesV1.String)
 
 			if err := errors.Wrap(runtime.PopulateQueryParameters(req, r.URL.Query(), unmarshaler_goclay_Strings_GetInfo_0_boundParams), "couldn't populate query parameters"); err != nil {
 				return httpruntime.TransformUnmarshalerError(err)
@@ -398,7 +399,6 @@ var _swaggerDef_strings_proto = []byte(`{
         "parameters": [
           {
             "name": "str",
-            "description": "string.",
             "in": "query",
             "required": false,
             "type": "string"
@@ -424,7 +424,6 @@ var _swaggerDef_strings_proto = []byte(`{
         "parameters": [
           {
             "name": "str",
-            "description": "string",
             "in": "path",
             "required": true,
             "type": "string"
@@ -441,8 +440,7 @@ var _swaggerDef_strings_proto = []byte(`{
       "type": "object",
       "properties": {
         "str": {
-          "type": "string",
-          "title": "string"
+          "type": "string"
         }
       }
     }

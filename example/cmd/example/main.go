@@ -1,11 +1,11 @@
 package main
 
 import (
+	config "example/config"
+	stringsV1 "example/internal/app/controllers/strings/v1"
 	log "log"
 
 	tron "github.com/loghole/tron"
-	config "github.com/loghole/tron/example/config"
-	stringsV1 "github.com/loghole/tron/example/internal/app/controllers/strings/v1"
 )
 
 func main() {

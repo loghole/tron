@@ -4,11 +4,11 @@
 LOCAL_BIN:=$(CURDIR)/bin
 
 DOCKERFILE   = .deploy/docker/Dockerfile
-DOCKER_IMAGE = tron/example
+DOCKER_IMAGE = example
 VERSION     ?= $$(git describe --tags --always)
 
-LDFLAGS:=-X 'github.com/loghole/tron/internal/app.ServiceName=example' \
-		 -X 'github.com/loghole/tron/internal/app.AppName=github.com/loghole/tron/example' \
+LDFLAGS:=-X 'github.com/loghole/tron/internal/app.ServiceName=' \
+		 -X 'github.com/loghole/tron/internal/app.AppName=example' \
 		 -X 'github.com/loghole/tron/internal/app.GitHash=$(git rev-parse HEAD)' \
 		 -X 'github.com/loghole/tron/internal/app.Version=$(git describe --tags --always)' \
 		 -X 'github.com/loghole/tron/internal/app.BuildAt=$(date --utc +%FT%TZ)'
