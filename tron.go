@@ -6,6 +6,7 @@ import (
 	"os/signal"
 
 	"github.com/go-chi/chi"
+	"github.com/go-chi/cors"
 	"github.com/lissteron/simplerr"
 	"github.com/loghole/lhw/zap"
 	"github.com/loghole/tracing"
@@ -59,6 +60,7 @@ func New(options ...app.Option) (*App, error) {
 		WithUnaryInterceptor(grpc.SimpleErrorServerInterceptor()),
 	)
 	a.Router().Use(tracehttp.NewMiddleware(a.Tracer()).Middleware)
+	a.Router().Use(cors.New(a.opts.CorsOptions).Handler)
 
 	a.logger.With("app info", a.info).Infof("init app")
 
