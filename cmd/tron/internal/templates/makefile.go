@@ -40,13 +40,16 @@ LOCAL_BIN:=$(CURDIR)/bin
 
 DOCKERFILE   = {{ .Dockerfile }}
 DOCKER_IMAGE = {{ .DockerImage }}
-VERSION     ?= $$(git describe --tags --always)
+
+VERSION  := $(shell git describe --tags --always)
+GIT_HASH := $(shell git rev-parse HEAD)
+BUILD_TS := $(shell date +%FT%T%z)
 
 LDFLAGS:=-X 'github.com/loghole/tron/internal/app.ServiceName={{ .ServiceName }}' \
 		 -X 'github.com/loghole/tron/internal/app.AppName={{ .AppName }}' \
-		 -X 'github.com/loghole/tron/internal/app.GitHash=$(git rev-parse HEAD)' \
-		 -X 'github.com/loghole/tron/internal/app.Version=$(git describe --tags --always)' \
-		 -X 'github.com/loghole/tron/internal/app.BuildAt=$(date --utc +%FT%TZ)'
+		 -X 'github.com/loghole/tron/internal/app.GitHash=$(GIT_HASH)' \
+		 -X 'github.com/loghole/tron/internal/app.Version=$(VERSION)' \
+		 -X 'github.com/loghole/tron/internal/app.BuildAt=$(BUILD_TS)'
 
 .PHONY: .generate
 .generate:
