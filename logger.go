@@ -13,11 +13,11 @@ type logger struct {
 	tracelog trace.Logger
 }
 
-func (l *logger) init(info *Info) (err error) {
+func (l *logger) init(info *Info, opts *app.Options) (err error) {
 	l.Logger, err = zap.NewLogger(&zap.Config{
 		Level:         viper.GetString(app.LoggerLevelEnv),
 		CollectorURL:  viper.GetString(app.LoggerCollectorAddrEnv),
-		Hostname:      info.ServiceName,
+		Hostname:      opts.Hostname,
 		Namespace:     info.Namespace,
 		Source:        info.ServiceName,
 		BuildCommit:   info.GitHash,

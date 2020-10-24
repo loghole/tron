@@ -8,7 +8,6 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
-	"os"
 	"path"
 	"strings"
 
@@ -90,44 +89,13 @@ func (v *vendorPB) run() (err error) {
 
 func (v *vendorPB) scanProtos(protos []*models.Proto) error {
 	for _, proto := range protos {
-		if err := v.scanFile(proto.Path); err != nil {
-			return err
+		for _, val := range proto.Imports {
+			if _, ok := v.exists[val]; ok {
+				continue
+			}
+
+			v.exists[val], v.imports = struct{}{}, append(v.imports, val)
 		}
-	}
-
-	return nil
-}
-
-func (v *vendorPB) scanFile(filepath string) error {
-	file, err := os.Open(filepath)
-	if err != nil {
-		return err
-	}
-
-	defer helpers.Close(file)
-
-	return v.findImports(file)
-}
-
-func (v *vendorPB) findImports(r io.Reader) error {
-	scanner := bufio.NewScanner(r)
-	scanner.Split(bufio.ScanLines)
-
-	for scanner.Scan() {
-		if err := scanner.Err(); err != nil {
-			return err
-		}
-
-		m := models.ImportRegexp.FindStringSubmatch(scanner.Text())
-		if len(m) == 0 {
-			continue
-		}
-
-		if _, ok := v.exists[m[0]]; ok {
-			continue
-		}
-
-		v.exists[m[1]], v.imports = struct{}{}, append(v.imports, m[1])
 	}
 
 	return nil
@@ -197,4 +165,28 @@ func (v *vendorPB) importLink(s string) (string, bool) {
 	}
 
 	return "", false
+}
+
+func (v *vendorPB) findImports(r io.Reader) error {
+	scanner := bufio.NewScanner(r)
+	scanner.Split(bufio.ScanLines)
+
+	for scanner.Scan() {
+		if err := scanner.Err(); err != nil {
+			return err
+		}
+
+		m := models.ImportRegexp.FindStringSubmatch(scanner.Text())
+		if len(m) == 0 {
+			continue
+		}
+
+		if _, ok := v.exists[m[0]]; ok {
+			continue
+		}
+
+		v.exists[m[1]], v.imports = struct{}{}, append(v.imports, m[1])
+	}
+
+	return nil
 }

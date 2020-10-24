@@ -1,7 +1,9 @@
 package admin
 
 import (
+	"net"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/go-chi/chi"
@@ -13,8 +15,10 @@ import (
 	"github.com/loghole/tron/internal/app"
 )
 
+const adminToPublicPort = 2
+
 type Handlers struct {
-	desc []byte
+	desc transport.ServiceDesc
 	info *app.Info
 }
 
@@ -25,9 +29,7 @@ func NewHandlers(info *app.Info, services ...transport.Service) *Handlers {
 		descs = append(descs, service.GetDescription())
 	}
 
-	return &Handlers{desc: transport.NewCompoundServiceDesc(descs...).SwaggerDef(
-		swagger.WithVersion(info.Version), swagger.WithTitle(info.AppName),
-	)}
+	return &Handlers{desc: transport.NewCompoundServiceDesc(descs...), info: info}
 }
 
 func (s *Handlers) InitRoutes(r chi.Router) {
@@ -35,13 +37,11 @@ func (s *Handlers) InitRoutes(r chi.Router) {
 		return
 	}
 
+	r.Get("/info", s.serviceInfoHandler)
+
 	r.Mount("/debug", middleware.Profiler())
 
 	r.Mount("/docs", http.StripPrefix("/docs", http.FileServer(AssetFile())))
-
-	r.HandleFunc("/swagger.json", func(w http.ResponseWriter, r *http.Request) {
-		_, _ = w.Write(s.desc)
-	})
 
 	r.Get("/docs", func(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/docs/", http.StatusMovedPermanently)
@@ -51,10 +51,10 @@ func (s *Handlers) InitRoutes(r chi.Router) {
 		http.Redirect(w, r, "/swagger.json", http.StatusMovedPermanently)
 	})
 
-	r.Get("/info", s.writeServiceInfo)
+	r.HandleFunc("/swagger.json", s.swaggerDefHandler)
 }
 
-func (s *Handlers) writeServiceInfo(w http.ResponseWriter, r *http.Request) {
+func (s *Handlers) serviceInfoHandler(w http.ResponseWriter, r *http.Request) {
 	info := map[string]interface{}{
 		"InstanceUUID": s.info.InstanceUUID,
 		"ServiceName":  s.info.ServiceName,
@@ -68,4 +68,20 @@ func (s *Handlers) writeServiceInfo(w http.ResponseWriter, r *http.Request) {
 	}
 
 	_ = jsoniter.NewEncoder(w).Encode(info)
+}
+
+func (s *Handlers) swaggerDefHandler(w http.ResponseWriter, r *http.Request) {
+	if host, port, err := net.SplitHostPort(r.Host); err == nil {
+		if port, err := strconv.Atoi(port); err == nil {
+			r.Host = net.JoinHostPort(host, strconv.Itoa(port-adminToPublicPort))
+		}
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+
+	_, _ = w.Write(s.desc.SwaggerDef(
+		swagger.WithVersion(s.info.Version),
+		swagger.WithTitle(s.info.AppName),
+		swagger.WithHost(r.Host),
+	))
 }

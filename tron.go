@@ -41,7 +41,7 @@ func New(options ...app.Option) (*App, error) {
 
 	a := &App{opts: opts, info: initInfo()}
 
-	if err := a.logger.init(a.info); err != nil {
+	if err := a.logger.init(a.info, a.opts); err != nil {
 		return nil, simplerr.Wrap(err, "init logger failed")
 	}
 
