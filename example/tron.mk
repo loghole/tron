@@ -10,7 +10,7 @@ VERSION  := $(shell git describe --tags --always)
 GIT_HASH := $(shell git rev-parse HEAD)
 BUILD_TS := $(shell date +%FT%T%z)
 
-LDFLAGS:=-X 'github.com/loghole/tron/internal/app.ServiceName=' \
+LDFLAGS:=-X 'github.com/loghole/tron/internal/app.ServiceName=example' \
 		 -X 'github.com/loghole/tron/internal/app.AppName=example' \
 		 -X 'github.com/loghole/tron/internal/app.GitHash=$(GIT_HASH)' \
 		 -X 'github.com/loghole/tron/internal/app.Version=$(VERSION)' \
