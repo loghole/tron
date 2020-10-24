@@ -1,0 +1,9 @@
+syntax = "proto3";
+
+package types.v1;
+
+option go_package = "typesV1";
+
+message String {
+  string str = 1;
+}

@@ -98,19 +98,27 @@ func main() {
 		{{ pkg "log" }}Fatalf("can't create app: %s", err)
 	}
 
+	defer app.Close()
+
 	app.Logger().Info(config.GetExampleValue())
 
 	// Init all ..
 
 	var (
 		{{ range $proto := .Protos -}}
-			{{ $proto.Service.SnakeCasedName }} = {{ pkg $proto.Service.Package }}New{{ $proto.Service.Name }}()
-		{{- end }}
+			{{- if $proto.Service.WithImpl -}}
+			{{ $proto.Service.Variable }} = {{ $proto.Service.Alias }}.New{{ $proto.Service.Name }}()
+			{{ end -}}
+		{{ end }}
 	)
 
 	if err := app.WithRunOptions().Run(
-			{{- range $proto := .Protos -}} {{ $proto.Service.SnakeCasedName }},
-	{{- end -}}); err != nil {
+			{{- range $proto := .Protos -}} 
+			{{- if $proto.Service.WithImpl -}}
+			{{ $proto.Service.Variable }},
+			{{- end -}}
+			{{- end -}}
+		); err != nil {
 		app.Logger().Fatalf("can't run app: %v", err)
 	}
 

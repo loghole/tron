@@ -2,6 +2,7 @@ package generate
 
 import (
 	"go/format"
+	"log"
 	"path/filepath"
 	"strings"
 
@@ -31,22 +32,32 @@ func Mainfile(p *project.Project, printer stdout.Printer) error {
 	data.AddImport("github.com/loghole/tron")
 	data.AddImport(strings.Join([]string{p.Module, "config"}, "/"))
 
-	for _, p := range p.Protos {
-		data.AddImport(p.Service.Package)
+	for _, proto := range p.Protos {
+		if !proto.Service.WithImpl {
+			continue
+		}
+
+		data.AddImport(proto.Service.Import, proto.Service.Alias)
 	}
 
 	mainScript, err := helpers.ExecTemplate(templates.MainTemplate, data)
 	if err != nil {
+		log.Println(mainScript)
+
 		return simplerr.Wrap(err, "failed to exec template")
 	}
 
 	formattedBytes, err := format.Source([]byte(mainScript))
 	if err != nil {
+		log.Println(mainScript)
+
 		return simplerr.Wrap(err, "failed to format process")
 	}
 
 	formattedBytes, err = imports.Process("", formattedBytes, nil)
 	if err != nil {
+		log.Println(mainScript)
+
 		return simplerr.Wrap(err, "failed to imports process")
 	}
 

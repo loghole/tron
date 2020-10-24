@@ -6,96 +6,19 @@ import (
 	"os/signal"
 
 	"github.com/go-chi/chi"
-	"github.com/grpc-ecosystem/grpc-opentracing/go/otgrpc"
 	"github.com/lissteron/simplerr"
 	"github.com/loghole/lhw/zap"
 	"github.com/loghole/tracing"
 	"github.com/loghole/tracing/tracehttp"
 	"github.com/loghole/tracing/tracelog"
-	"github.com/spf13/viper"
 	"github.com/utrack/clay/v2/transport"
 	"golang.org/x/sync/errgroup"
 
+	"github.com/loghole/tron/internal/admin"
 	"github.com/loghole/tron/internal/app"
 	"github.com/loghole/tron/internal/config"
 	"github.com/loghole/tron/internal/grpc"
-	"github.com/loghole/tron/internal/http"
-	"github.com/loghole/tron/internal/http/swagger"
 )
-
-type servers struct {
-	publicGRPC *grpc.Server
-	publicHTTP *http.Server
-	adminHTTP  *http.Server
-}
-
-func (s *servers) init(opts *app.Options) (err error) {
-	if opts.PortAdmin == 0 {
-		opts.PortAdmin = uint16(viper.GetInt32(app.AdminPortEnv))
-	}
-
-	if opts.PortHTTP == 0 {
-		opts.PortHTTP = uint16(viper.GetInt32(app.HTTPPortEnv))
-	}
-
-	if opts.PortGRPC == 0 {
-		opts.PortGRPC = uint16(viper.GetInt32(app.GRPCPortEnv))
-	}
-
-	s.publicGRPC, err = grpc.NewServer(opts.PortGRPC, opts.GRPCOptions)
-	if err != nil {
-		return err
-	}
-
-	s.publicHTTP, err = http.NewServer(opts.PortHTTP, opts.TLSConfig)
-	if err != nil {
-		return err
-	}
-
-	s.adminHTTP, err = http.NewServer(opts.PortAdmin, nil)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-type logger struct {
-	*zap.Logger
-	traceLogger tracelog.Logger
-}
-
-func (l *logger) init(info *Info) (err error) {
-	l.Logger, err = zap.NewLogger(&zap.Config{
-		Level:         viper.GetString(app.LoggerLevelEnv),
-		CollectorURL:  viper.GetString(app.LoggerCollectorAddrEnv),
-		Hostname:      info.ServiceName,
-		Namespace:     info.Namespace,
-		Source:        info.ServiceName,
-		BuildCommit:   info.GitHash,
-		DisableStdout: viper.GetBool(app.LoggerDisableStdoutEnv),
-	})
-	if err != nil {
-		return err
-	}
-
-	l.traceLogger = tracelog.NewTraceLogger(l.Logger.SugaredLogger)
-
-	return nil
-}
-
-type tracer struct {
-	tracer *tracing.Tracer
-}
-
-func (t *tracer) init(info *Info) (err error) {
-	t.tracer, err = tracing.NewTracer(tracing.DefaultConfiguration(info.ServiceName, viper.GetString(app.JaegerAddrEnv)))
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
 
 type App struct {
 	info    *Info
@@ -118,7 +41,7 @@ func New(options ...app.Option) (*App, error) {
 
 	a := &App{opts: opts, info: initInfo()}
 
-	if err := a.logger.init(a.info); err != nil {
+	if err := a.logger.init(a.info, a.opts); err != nil {
 		return nil, simplerr.Wrap(err, "init logger failed")
 	}
 
@@ -126,11 +49,16 @@ func New(options ...app.Option) (*App, error) {
 		return nil, simplerr.Wrap(err, "init tracer failed")
 	}
 
-	// Append tracing middlewares.
-	a.opts.ApplyRunOptions(
-		WithUnaryInterceptor(otgrpc.OpenTracingServerInterceptor(a.Tracer())),
-		WithHTTPMiddleware(tracehttp.NewMiddleware(a.Tracer()).Middleware),
+	if err := a.servers.init(a.opts); err != nil {
+		return nil, simplerr.Wrap(err, "init servers failed")
+	}
+
+	// Append tracing and errors middlewares.
+	a.opts.AddRunOptions(
+		WithUnaryInterceptor(grpc.OpenTracingServerInterceptor(a.Tracer())),
+		WithUnaryInterceptor(grpc.SimpleErrorServerInterceptor()),
 	)
+	a.Router().Use(tracehttp.NewMiddleware(a.Tracer()).Middleware)
 
 	a.logger.With("app info", a.info).Infof("init app")
 
@@ -150,28 +78,40 @@ func (a *App) Logger() *zap.Logger {
 }
 
 func (a *App) TraceLogger() tracelog.Logger {
-	return a.logger.traceLogger
+	return a.logger.tracelog
 }
 
 func (a *App) Router() chi.Router {
 	return a.servers.publicHTTP.Router()
 }
 
+// Close closes tracer and logger.
+func (a *App) Close() {
+	a.tracer.Close()
+	a.logger.Close()
+}
+
 // Append some run options.
 func (a *App) WithRunOptions(opts ...app.RunOption) *App {
-	a.opts.ApplyRunOptions(opts...)
+	a.opts.AddRunOptions(opts...)
 
 	return a
 }
 
-func (a *App) Run(impl ...transport.Service) error {
-	if err := a.servers.init(a.opts); err != nil {
-		return simplerr.Wrap(err, "init servers failed")
+// Run apply run options if exists and starts servers.
+func (a *App) Run(impl ...transport.Service) error { // nolint:funlen // start app
+	if err := a.opts.ApplyRunOptions(); err != nil {
+		return simplerr.Wrap(err, "apply run options failed")
+	}
+
+	if err := a.servers.build(a.opts); err != nil {
+		return simplerr.Wrap(err, "build servers failed")
 	}
 
 	a.servers.publicGRPC.RegistryDesc(impl...)
 	a.servers.publicHTTP.RegistryDesc(impl...)
-	swagger.New(a.info.Version, impl...).InitRoutes(a.servers.adminHTTP.Router())
+
+	admin.NewHandlers(a.info, impl...).InitRoutes(a.servers.adminHTTP.Router())
 
 	a.logger.Info("starting app")
 

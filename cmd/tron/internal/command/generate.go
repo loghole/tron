@@ -89,7 +89,7 @@ func (g *GenerateCMD) runConfig() error {
 		return simplerr.Wrap(err, "generate config failed")
 	}
 
-	g.printer.Println(color.FgCyan, "\tCreated")
+	g.printer.VerbosePrintln(color.FgCyan, "\tCreated")
 
 	return nil
 }

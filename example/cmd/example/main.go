@@ -1,10 +1,10 @@
 package main
 
 import (
+	config "example/config"
+	stringsV1 "example/internal/app/controllers/strings/v1"
 	log "log"
 
-	config "github.com/loghole/example/config"
-	v1 "github.com/loghole/example/internal/app/controllers/v1"
 	tron "github.com/loghole/tron"
 )
 
@@ -14,15 +14,17 @@ func main() {
 		log.Fatalf("can't create app: %s", err)
 	}
 
+	defer app.Close()
+
 	app.Logger().Info(config.GetExampleValue())
 
 	// Init all ..
 
 	var (
-		strings = v1.NewStrings()
+		stringsV1Handler = stringsV1.NewStrings()
 	)
 
-	if err := app.WithRunOptions().Run(strings); err != nil {
+	if err := app.WithRunOptions().Run(stringsV1Handler); err != nil {
 		app.Logger().Fatalf("can't run app: %v", err)
 	}
 

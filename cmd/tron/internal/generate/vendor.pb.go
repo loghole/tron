@@ -4,14 +4,15 @@ import (
 	"bufio"
 	"bytes"
 	"errors"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"net/http"
-	"os"
 	"path"
 	"strings"
 
 	"github.com/fatih/color"
+	"github.com/lissteron/simplerr"
 
 	"github.com/loghole/tron/cmd/tron/internal/helpers"
 	"github.com/loghole/tron/cmd/tron/internal/models"
@@ -19,7 +20,16 @@ import (
 	"github.com/loghole/tron/cmd/tron/internal/stdout"
 )
 
-var ErrBadImport = errors.New("bad import")
+const (
+	github      = "github.com"
+	githubRaw   = "https://raw.githubusercontent.com"
+	importParts = 3
+)
+
+var (
+	ErrBadImport = errors.New("bad import")
+	ErrReqFailed = errors.New("request failed")
+)
 
 type vendorPB struct {
 	printer  stdout.Printer
@@ -79,44 +89,13 @@ func (v *vendorPB) run() (err error) {
 
 func (v *vendorPB) scanProtos(protos []*models.Proto) error {
 	for _, proto := range protos {
-		if err := v.scanFile(proto.Path); err != nil {
-			return err
+		for _, val := range proto.Imports {
+			if _, ok := v.exists[val]; ok {
+				continue
+			}
+
+			v.exists[val], v.imports = struct{}{}, append(v.imports, val)
 		}
-	}
-
-	return nil
-}
-
-func (v *vendorPB) scanFile(filepath string) error {
-	file, err := os.Open(filepath)
-	if err != nil {
-		return err
-	}
-
-	defer helpers.Close(file)
-
-	return v.findImports(file)
-}
-
-func (v *vendorPB) findImports(r io.Reader) error {
-	scanner := bufio.NewScanner(r)
-	scanner.Split(bufio.ScanLines)
-
-	for scanner.Scan() {
-		if err := scanner.Err(); err != nil {
-			return err
-		}
-
-		m := models.ImportRegexp.FindStringSubmatch(scanner.Text())
-		if len(m) == 0 {
-			continue
-		}
-
-		if _, ok := v.exists[m[0]]; ok {
-			continue
-		}
-
-		v.exists[m[1]], v.imports = struct{}{}, append(v.imports, m[1])
 	}
 
 	return nil
@@ -146,6 +125,10 @@ func (v *vendorPB) curlProto(name string) error {
 
 	defer helpers.Close(resp.Body)
 
+	if resp.StatusCode != http.StatusOK {
+		return simplerr.Wrapf(ErrReqFailed, "link: %s code: %d", link, resp.StatusCode)
+	}
+
 	data, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return err
@@ -172,5 +155,38 @@ func (v *vendorPB) importLink(s string) (string, bool) {
 		return strings.Join([]string{replacer, s}, ""), true
 	}
 
+	if len(parts) > importParts && strings.EqualFold(parts[0], github) {
+		parts[0] = githubRaw
+
+		part1 := strings.Join(parts[:importParts], "/")
+		part2 := strings.Join(parts[importParts:], "/")
+
+		return fmt.Sprintf("%s/master/%s", part1, part2), true
+	}
+
 	return "", false
+}
+
+func (v *vendorPB) findImports(r io.Reader) error {
+	scanner := bufio.NewScanner(r)
+	scanner.Split(bufio.ScanLines)
+
+	for scanner.Scan() {
+		if err := scanner.Err(); err != nil {
+			return err
+		}
+
+		m := models.ImportRegexp.FindStringSubmatch(scanner.Text())
+		if len(m) == 0 {
+			continue
+		}
+
+		if _, ok := v.exists[m[0]]; ok {
+			continue
+		}
+
+		v.exists[m[1]], v.imports = struct{}{}, append(v.imports, m[1])
+	}
+
+	return nil
 }

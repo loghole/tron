@@ -32,11 +32,15 @@ func main() {
 		checkCMD    = command.NewCheckCMD(printer)
 		initCMD     = command.NewInitCMD(printer)
 		generateCMD = command.NewGenerateCMD(printer)
+		upgradeCMD  = command.NewUpgradeCMD(printer)
+		versionCMD  = command.NewVersionCMD(printer)
 	)
 
 	rootCmd.AddCommand(checkCMD.Command())
 	rootCmd.AddCommand(initCMD.Command())
 	rootCmd.AddCommand(generateCMD.Command())
+	rootCmd.AddCommand(upgradeCMD.Command())
+	rootCmd.AddCommand(versionCMD.Command())
 
 	rootCmd.PersistentFlags().BoolP(FlagVerbose, "v", false, "make scratch more verbose")
 

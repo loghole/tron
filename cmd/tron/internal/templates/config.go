@@ -1,14 +1,18 @@
 package templates
 
 import (
+	"sort"
 	"strings"
 
 	"github.com/loghole/tron/cmd/tron/internal/helpers"
-	"github.com/loghole/tron/cmd/tron/internal/models"
 )
 
 type ConfigData struct {
 	Values []ConfigValue
+}
+
+func (c *ConfigData) SortValues() {
+	sort.Slice(c.Values, func(i, j int) bool { return c.Values[i].Name < c.Values[j].Name })
 }
 
 type ConfigValue struct {
@@ -17,9 +21,7 @@ type ConfigValue struct {
 }
 
 func NewConfigValue(key string) ConfigValue {
-	name := models.GoNameRexp.ReplaceAllString(key, "")
-	name = models.FirstDigitsRexp.ReplaceAllString(name, "")
-	name = helpers.UpperCamelCase(name)
+	name := helpers.UpperCamelCase(helpers.GoName(key))
 
 	return ConfigValue{Name: name, Key: strings.ToLower(key)}
 }

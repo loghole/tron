@@ -7,6 +7,7 @@ import (
 	"os/exec"
 	"path"
 	"path/filepath"
+	"strings"
 
 	"github.com/fatih/color"
 	"github.com/lissteron/simplerr"
@@ -18,9 +19,9 @@ import (
 )
 
 const (
-	cmdProtoc = "protoc"
-
-	pkgMap = "Mgoogle/protobuf/any.proto=github.com/gogo/protobuf/types," +
+	cmdProtoc   = "protoc"
+	pkgMapParts = 3
+	pkgMap      = "Mgoogle/protobuf/any.proto=github.com/gogo/protobuf/types," +
 		"Mgoogle/protobuf/api.proto=github.com/gogo/protobuf/types," +
 		"Mgoogle/protobuf/descriptor.proto=github.com/gogo/protobuf/protoc-gen-gogo/descriptor," +
 		"Mgoogle/protobuf/duration.proto=github.com/gogo/protobuf/types," +
@@ -38,7 +39,7 @@ var ErrProtoc = errors.New("protoc")
 func Protos(p *project.Project, printer stdout.Printer) error {
 	printer.VerbosePrintln(color.FgMagenta, "Generate proto files")
 
-	generator := &proto{project: p, printer: printer}
+	generator := &proto{project: p, printer: printer, pkgMap: strings.Split(pkgMap, ",")}
 
 	return generator.run()
 }
@@ -46,9 +47,12 @@ func Protos(p *project.Project, printer stdout.Printer) error {
 type proto struct {
 	project *project.Project
 	printer stdout.Printer
+	pkgMap  []string
 }
 
 func (p *proto) run() error {
+	p.initPkgMap()
+
 	for _, proto := range p.project.Protos {
 		p.printer.VerbosePrintf(color.FgBlack, "\tgenerate go-fast %s: ", proto.Service.SnakeCasedName())
 
@@ -59,6 +63,10 @@ func (p *proto) run() error {
 		}
 
 		p.printer.VerbosePrintln(color.FgGreen, "OK")
+
+		if !proto.Service.WithImpl {
+			continue
+		}
 
 		// generate go-clay
 		p.printer.VerbosePrintf(color.FgBlack, "\tgenerate go-clay %s: ", proto.Service.SnakeCasedName())
@@ -76,7 +84,7 @@ func (p *proto) run() error {
 }
 
 func (p *proto) generateGoFast(proto *models.Proto) error {
-	err := helpers.Mkdir(path.Join(models.ProjectPathPkgClients, proto.Service.PackageName, proto.Name))
+	err := helpers.Mkdir(path.Join(models.ProjectPathPkgClients, proto.Service.Package, proto.Name))
 	if err != nil {
 		return err
 	}
@@ -85,8 +93,8 @@ func (p *proto) generateGoFast(proto *models.Proto) error {
 		fmt.Sprintf("--plugin=protoc-gen-gofast=%s", path.Join(p.project.AbsPath, "bin/protoc-gen-gofast")),
 		fmt.Sprintf("-I%s:%s", proto.RelativeDir, models.ProjectPathVendorPB),
 		fmt.Sprintf("--gofast_out=%s,plugins=grpc:%s",
-			pkgMap,
-			path.Join(models.ProjectPathPkgClients, proto.Service.PackageName),
+			strings.Join(p.pkgMap, ","),
+			path.Join(models.ProjectPathPkgClients, proto.Service.Package),
 		),
 		path.Join(proto.RelativeDir, proto.NameWithExt()),
 	}
@@ -99,12 +107,12 @@ func (p *proto) generateGoFast(proto *models.Proto) error {
 }
 
 func (p *proto) generateGoClay(proto *models.Proto) error {
-	err := helpers.Mkdir(filepath.Join(models.ProjectPathImplementation, proto.Service.PackageName, proto.Name))
+	err := helpers.Mkdir(filepath.Join(models.ProjectPathImplementation, proto.Service.Package, proto.Name))
 	if err != nil {
 		return simplerr.Wrap(err, "failed to mkdir")
 	}
 
-	wd := filepath.Join(p.project.AbsPath, models.ProjectPathPkgClients, proto.Service.PackageName)
+	wd := filepath.Join(p.project.AbsPath, models.ProjectPathPkgClients, proto.Service.Package)
 
 	relToRoot, err := filepath.Rel(wd, p.project.AbsPath)
 	if err != nil {
@@ -120,8 +128,8 @@ func (p *proto) generateGoClay(proto *models.Proto) error {
 			filepath.Join(relToRoot, models.ProjectPathVendorPB),
 		),
 		fmt.Sprintf("--goclay_out=%s,impl=true,impl_path=%s,impl_type_name_tmpl=%s:.",
-			pkgMap,
-			path.Join(relToRoot, models.ProjectPathImplementation, proto.Service.PackageName),
+			strings.Join(p.pkgMap, ","),
+			path.Join(relToRoot, models.ProjectPathImplementation, proto.Service.Package),
 			models.ImplementationName,
 		),
 		path.Join(relToRoot, proto.RelativeDir, proto.NameWithExt()),
@@ -132,6 +140,42 @@ func (p *proto) generateGoClay(proto *models.Proto) error {
 	}
 
 	return nil
+}
+
+func (p *proto) initPkgMap() {
+	exists := make(map[string]struct{})
+
+	for _, proto := range p.project.Protos {
+		for _, val := range proto.Imports {
+			if !strings.HasPrefix(val, p.project.Module) {
+				continue
+			}
+
+			exists[val] = struct{}{}
+		}
+	}
+
+	for val := range exists {
+		alias := strings.TrimPrefix(val, p.project.Module)
+		alias = strings.TrimSuffix(alias, models.ProtoExt)
+
+		parts := strings.Split(alias, "/")
+
+		if len(parts) < pkgMapParts {
+			p.printer.Println(color.FgYellow, "\tcreate import alias failed: %s", val)
+
+			continue
+		}
+
+		alias = strings.Join([]string{
+			p.project.Module,
+			models.ProjectPathPkgClients,
+			parts[len(parts)-1],
+			parts[len(parts)-2],
+		}, "/")
+
+		p.pkgMap = append(p.pkgMap, fmt.Sprintf("M%s=%s", val, alias))
+	}
 }
 
 func execProtoc(wd string, args []string) error {

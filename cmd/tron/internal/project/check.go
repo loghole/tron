@@ -102,8 +102,8 @@ func (c *Checker) checkVersion(cmd *exec.Cmd, minReqVersion string) error {
 
 func (c *Checker) extractVersion(s string) (string, error) {
 	matches := models.VersionRegexp.FindStringSubmatch(s)
-	if len(matches) > 0 {
-		return matches[0], nil
+	if len(matches) > 1 {
+		return matches[1], nil
 	}
 
 	return "", ErrNotSemanticVersion

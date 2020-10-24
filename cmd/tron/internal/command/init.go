@@ -16,6 +16,7 @@ import (
 const (
 	FlagProtoDirs = "proto"
 	FlagConfig    = "config"
+	FlagVersion   = "version"
 )
 
 type InitCMD struct {
@@ -100,6 +101,10 @@ func (i *InitCMD) runInit(module string, dirs []string) (err error) {
 
 	if err := i.generate(generate.Config, generate.Mainfile); err != nil {
 		return simplerr.Wrap(err, "generate config and main files failed")
+	}
+
+	if err := helpers.Exec("go", "mod", "tidy"); err != nil {
+		return simplerr.Wrap(err, "exec 'go mod tidy' failed")
 	}
 
 	return nil

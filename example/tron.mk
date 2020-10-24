@@ -4,8 +4,14 @@
 LOCAL_BIN:=$(CURDIR)/bin
 
 DOCKERFILE   = .deploy/docker/Dockerfile
-DOCKER_IMAGE = loghole/example
+DOCKER_IMAGE = example
 VERSION     ?= $$(git describe --tags --always)
+
+LDFLAGS:=-X 'github.com/loghole/tron/internal/app.ServiceName=' \
+		 -X 'github.com/loghole/tron/internal/app.AppName=example' \
+		 -X 'github.com/loghole/tron/internal/app.GitHash=$(git rev-parse HEAD)' \
+		 -X 'github.com/loghole/tron/internal/app.Version=$(git describe --tags --always)' \
+		 -X 'github.com/loghole/tron/internal/app.BuildAt=$(date --utc +%FT%TZ)'
 
 .PHONY: .generate
 .generate:
@@ -34,10 +40,10 @@ generate-config:
 .bin-deps:
 	$(info #Installing binary dependencies...)
 
-gotest:
+test:
 	go test -race -v -cover -coverprofile coverage.out $(GO_TEST_PACKAGES)
 
-golint:
+lint:
 	golangci-lint run -v
 
 docker-image:
@@ -48,4 +54,4 @@ docker-image:
 	.
 
 run-local:
-	go run cmd/example/main.go --local-config-enabled
+	go run -ldflags "$(LDFLAGS)" cmd/example/main.go --local-config-enabled

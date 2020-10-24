@@ -15,33 +15,41 @@ import (
 )
 
 type Server struct {
-	addr string
-	lis  net.Listener
-	rout chi.Router
-	*http.Server
+	addr     string
+	listener net.Listener
+	server   *http.Server
+	router   *chi.Mux
 }
 
-func NewServer(port uint16, tlsConfig *tls.Config) (server *Server, err error) {
+func NewServer(port uint16) *Server {
 	if port == 0 {
-		return nil, nil
+		return nil
 	}
 
-	server = &Server{rout: chi.NewRouter(), addr: fmt.Sprintf("0.0.0.0:%d", port)}
+	return &Server{router: chi.NewRouter(), addr: fmt.Sprintf("0.0.0.0:%d", port)}
+}
+
+func (s *Server) BuildServer(tlsConfig *tls.Config) (err error) {
+	if s == nil {
+		return nil
+	}
 
 	switch {
 	case tlsConfig != nil:
-		server.lis, err = tls.Listen("tcp", server.addr, tlsConfig)
+		s.listener, err = tls.Listen("tcp", s.addr, tlsConfig)
 		if err != nil {
-			return nil, simplerr.Wrap(err, "create TLS listener failed")
+			return simplerr.Wrap(err, "create TLS listener failed")
 		}
 	default:
-		server.lis, err = net.Listen("tcp", server.addr)
+		s.listener, err = net.Listen("tcp", s.addr)
 		if err != nil {
-			return nil, simplerr.Wrap(err, "create TCP listener failed")
+			return simplerr.Wrap(err, "create TCP listener failed")
 		}
 	}
 
-	return server, nil
+	setClayErrorWriter()
+
+	return nil
 }
 
 func (s *Server) RegistryDesc(services ...transport.Service) {
@@ -51,7 +59,7 @@ func (s *Server) RegistryDesc(services ...transport.Service) {
 
 	for _, service := range services {
 		if service != nil {
-			service.GetDescription().RegisterHTTP(s.rout)
+			service.GetDescription().RegisterHTTP(s.router)
 		}
 	}
 }
@@ -61,7 +69,7 @@ func (s *Server) Router() chi.Router {
 		return nil
 	}
 
-	return s.rout
+	return s.router
 }
 
 func (s *Server) Serve() error {
@@ -69,13 +77,13 @@ func (s *Server) Serve() error {
 		return nil
 	}
 
-	s.Server = &http.Server{Handler: s.rout}
+	s.server = &http.Server{Handler: s.router}
 
-	if len(s.rout.Routes()) == 0 {
-		s.rout.HandleFunc("/", http.NotFound)
+	if len(s.router.Routes()) == 0 {
+		s.router.HandleFunc("/", http.NotFound)
 	}
 
-	if err := s.Server.Serve(s.lis); !errors.Is(err, http.ErrServerClosed) {
+	if err := s.server.Serve(s.listener); !errors.Is(err, http.ErrServerClosed) {
 		return err
 	}
 
@@ -90,9 +98,9 @@ func (s *Server) Close() error {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
 
-	s.Server.SetKeepAlivesEnabled(false)
+	s.server.SetKeepAlivesEnabled(false)
 
-	return s.Server.Shutdown(ctx)
+	return s.server.Shutdown(ctx)
 }
 
 func (s *Server) Addr() string {
