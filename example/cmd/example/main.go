@@ -1,10 +1,10 @@
 package main
 
 import (
-	log "log"
-
 	config "example/config"
 	stringsV1 "example/internal/app/controllers/strings/v1"
+	log "log"
+
 	tron "github.com/loghole/tron"
 )
 

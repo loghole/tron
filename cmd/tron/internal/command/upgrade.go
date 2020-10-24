@@ -38,7 +38,7 @@ func (u *Upgrade) run(cmd *cobra.Command, args []string) {
 		os.Exit(1)
 	}
 
-	upgrader, err := upgrade.New(u.printer, cliVersion)
+	upgrader, err := upgrade.New(u.printer)
 	if err != nil {
 		u.printer.Println(color.FgRed, "create upgrader failed")
 		os.Exit(1)

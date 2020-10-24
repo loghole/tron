@@ -15,6 +15,7 @@ import (
 
 	"github.com/loghole/tron/cmd/tron/internal/helpers"
 	"github.com/loghole/tron/cmd/tron/internal/stdout"
+	"github.com/loghole/tron/cmd/tron/internal/version"
 )
 
 var ErrVersionNotFound = errors.New("not found")
@@ -29,17 +30,15 @@ const (
 type Upgrade struct {
 	printer  stdout.Printer
 	releases []*release
-
-	currentVersion string
 }
 
-func New(printer stdout.Printer, currentVersion string) (*Upgrade, error) {
+func New(printer stdout.Printer) (*Upgrade, error) {
 	list, err := releasesList()
 	if err != nil {
 		return nil, simplerr.Wrap(err, "get releases list failed")
 	}
 
-	return &Upgrade{printer: printer, releases: list, currentVersion: currentVersion}, nil
+	return &Upgrade{printer: printer, releases: list}, nil
 }
 
 func (u *Upgrade) ListVersions() error {
@@ -56,13 +55,13 @@ func (u *Upgrade) ListVersions() error {
 	return nil
 }
 
-func (u *Upgrade) Upgrade(version string) error {
-	rel, err := u.findReleaseByVersion(version)
+func (u *Upgrade) Upgrade(tag string) error {
+	rel, err := u.findReleaseByTag(tag)
 	if err != nil {
-		return simplerr.Wrapf(err, "version '%s'", version)
+		return simplerr.Wrapf(err, "version '%s'", tag)
 	}
 
-	if u.currentVersion == rel.TagName {
+	if version.CliVersion == rel.TagName {
 		u.printer.Printf(color.FgBlack, "You already use version %s\n", color.CyanString(rel.TagName))
 
 		return nil
@@ -77,18 +76,18 @@ func (u *Upgrade) Upgrade(version string) error {
 	return nil
 }
 
-func (u *Upgrade) findReleaseByVersion(version string) (*release, error) {
+func (u *Upgrade) findReleaseByTag(tag string) (*release, error) {
 	if len(u.releases) == 0 {
 		u.printer.Println(color.FgCyan, "No versions available ¯\\_(ツ)_/¯")
 		os.Exit(1)
 	}
 
-	if version == "latest" {
+	if tag == "latest" {
 		return u.releases[0], nil
 	}
 
 	for _, rel := range u.releases {
-		if version == rel.TagName {
+		if tag == rel.TagName {
 			return rel, nil
 		}
 	}
