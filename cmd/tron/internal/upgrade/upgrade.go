@@ -29,22 +29,24 @@ const (
 type Upgrade struct {
 	printer  stdout.Printer
 	releases []*release
+
+	currentVersion string
 }
 
-func New(printer stdout.Printer) (*Upgrade, error) {
+func New(printer stdout.Printer, currentVersion string) (*Upgrade, error) {
 	list, err := releasesList()
 	if err != nil {
 		return nil, simplerr.Wrap(err, "get releases list failed")
 	}
 
-	return &Upgrade{printer: printer, releases: list}, nil
+	return &Upgrade{printer: printer, releases: list, currentVersion: currentVersion}, nil
 }
 
 func (u *Upgrade) ListVersions() error {
 	u.printer.Println(color.FgBlack, "Available versions")
 
-	for idx, val := range u.releases {
-		u.printer.Printf(color.FgBlack, "\t%s, published at: %s\n", color.CyanString(val.TagName), val.PublishedAt)
+	for idx, r := range u.releases {
+		u.printer.Printf(color.FgBlack, "\t%s, published at: %s\n", color.CyanString(r.TagName), r.PublishedAt)
 
 		if idx > printReleases {
 			return nil
@@ -60,6 +62,41 @@ func (u *Upgrade) Upgrade(version string) error {
 		return simplerr.Wrapf(err, "version '%s'", version)
 	}
 
+	if u.currentVersion == rel.TagName {
+		u.printer.Printf(color.FgBlack, "You already use version %s\n", color.CyanString(rel.TagName))
+
+		return nil
+	}
+
+	if err := u.downloadAndInstall(rel); err != nil {
+		return err
+	}
+
+	u.printer.Println(color.FgGreen, "Success\n")
+
+	return nil
+}
+
+func (u *Upgrade) findReleaseByVersion(version string) (*release, error) {
+	if len(u.releases) == 0 {
+		u.printer.Println(color.FgCyan, "No versions available ¯\\_(ツ)_/¯")
+		os.Exit(1)
+	}
+
+	if version == "latest" {
+		return u.releases[0], nil
+	}
+
+	for _, rel := range u.releases {
+		if version == rel.TagName {
+			return rel, nil
+		}
+	}
+
+	return nil, ErrVersionNotFound
+}
+
+func (u *Upgrade) downloadAndInstall(rel *release) error {
 	dir, err := ioutil.TempDir("", "tron-build")
 	if err != nil {
 		return simplerr.Wrap(err, "failed to create temp dir")
@@ -93,25 +130,6 @@ func (u *Upgrade) Upgrade(version string) error {
 	}
 
 	return nil
-}
-
-func (u *Upgrade) findReleaseByVersion(version string) (*release, error) {
-	if len(u.releases) == 0 {
-		u.printer.Println(color.FgCyan, "No versions available ¯\\_(ツ)_/¯")
-		os.Exit(1)
-	}
-
-	if version == "latest" {
-		return u.releases[0], nil
-	}
-
-	for _, rel := range u.releases {
-		if version == rel.TagName {
-			return rel, nil
-		}
-	}
-
-	return nil, ErrVersionNotFound
 }
 
 func releasesList() ([]*release, error) {
