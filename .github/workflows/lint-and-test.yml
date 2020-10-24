@@ -3,6 +3,7 @@ on:
   pull_request:
     branches:
       - master
+      - main
 jobs:
   golint:
     name: lint
@@ -16,9 +17,9 @@ jobs:
           version: v1.31
   gotest:
     name: test
-    runs-on: ubuntu-latest
     env:
       TZ: Europe/Moscow
+    runs-on: ubuntu-latest
     steps:
       - name: Install Go
         uses: actions/setup-go@v2
@@ -27,4 +28,4 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
       - name: Test
-        run: make gotest
+        run: make test
