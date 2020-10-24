@@ -5,6 +5,7 @@ import (
 	"os"
 	"syscall"
 
+	"github.com/go-chi/cors"
 	"github.com/loghole/lhw/zap"
 	"google.golang.org/grpc"
 )
@@ -21,6 +22,7 @@ type Options struct {
 	PortGRPC      uint16
 	LoggerOptions []zap.Option
 	ExitSignals   []os.Signal
+	CorsOptions   cors.Options
 
 	// Run options.
 	TLSConfig   *tls.Config
@@ -40,6 +42,7 @@ func NewOptions(options ...Option) (*Options, error) {
 	opts := &Options{
 		Hostname:    hostname,
 		ExitSignals: []os.Signal{syscall.SIGTERM, syscall.SIGINT},
+		CorsOptions: cors.Options{},
 	}
 
 	for _, apply := range options {

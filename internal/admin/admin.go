@@ -8,6 +8,7 @@ import (
 
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
+	"github.com/go-openapi/spec"
 	jsoniter "github.com/json-iterator/go"
 	"github.com/utrack/clay/v2/transport"
 	"github.com/utrack/clay/v2/transport/swagger"
@@ -78,10 +79,14 @@ func (s *Handlers) swaggerDefHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Methods", "GET, POST, DELETE, PUT, PATCH, OPTIONS")
+	w.Header().Set("Access-Control-Allow-Headers", "Content-Type, api_key, Authorization")
 
 	_, _ = w.Write(s.desc.SwaggerDef(
 		swagger.WithVersion(s.info.Version),
 		swagger.WithTitle(s.info.AppName),
 		swagger.WithHost(r.Host),
+		swagger.WithSecurityDefinitions(map[string]*spec.SecurityScheme{}),
 	))
 }
