@@ -44,7 +44,7 @@ generate-config:
 	$(info #Installing binary dependencies...)
 
 test:
-	go test -race -v -cover -coverprofile coverage.out $(GO_TEST_PACKAGES)
+	go test -race -v -cover -coverprofile coverage.out ./...
 
 lint:
 	golangci-lint run -v
