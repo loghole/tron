@@ -2,6 +2,7 @@ package upgrade
 
 import (
 	"errors"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"os"
@@ -21,9 +22,9 @@ import (
 var ErrVersionNotFound = errors.New("not found")
 
 const (
+	repositoryURL = "https://github.com/loghole/tron.git"
 	releasesURL   = "https://api.github.com/repos/loghole/tron/releases"
 	cmdGit        = "git"
-	cmdMake       = "make"
 	printReleases = 10
 )
 
@@ -71,7 +72,7 @@ func (u *Upgrade) Upgrade(tag string) error {
 		return err
 	}
 
-	u.printer.Println(color.FgGreen, "Success\n")
+	u.printer.Println(color.FgGreen, "Success")
 
 	return nil
 }
@@ -103,9 +104,23 @@ func (u *Upgrade) downloadAndInstall(rel *release) error {
 
 	defer os.RemoveAll(dir)
 
-	u.printer.Printf(color.Reset, "Download %s\n", color.CyanString(rel.TagName))
+	u.printer.Printf(color.Reset, "Download tron %s\n", color.CyanString(rel.TagName))
 
-	cmd := exec.Command(cmdGit, "clone", "https://github.com/loghole/tron.git")
+	if err := u.download(rel, dir); err != nil {
+		return simplerr.Wrap(err, "failed to download")
+	}
+
+	u.printer.Println(color.Reset, "Install tron...")
+
+	if err := u.install(rel, dir); err != nil {
+		return simplerr.Wrap(err, "failed to install")
+	}
+
+	return nil
+}
+
+func (u *Upgrade) download(rel *release, dir string) error {
+	cmd := exec.Command(cmdGit, "clone", repositoryURL)
 	cmd.Dir = dir
 
 	if err := cmd.Run(); err != nil {
@@ -119,9 +134,19 @@ func (u *Upgrade) downloadAndInstall(rel *release) error {
 		return simplerr.Wrapf(err, "failed to run %s", cmd.String())
 	}
 
-	u.printer.Println(color.Reset, "Build...\n")
+	return nil
+}
 
-	cmd = exec.Command(cmdMake, "build")
+func (u *Upgrade) install(rel *release, dir string) error {
+	args := []string{
+		`build`,
+		fmt.Sprintf(`-o %s/bin/tron`, os.Getenv("GOPATH")),
+		`-ldflags`,
+		fmt.Sprintf(`"-X 'github.com/loghole/tron/cmd/tron/internal/version.CliVersion=%s'"`, rel.TagName),
+		`*.go`,
+	}
+
+	cmd := exec.Command("go", args...) // nolint:gosec //all good
 	cmd.Dir = filepath.Join(dir, "tron", "cmd", "tron")
 
 	if err := cmd.Run(); err != nil {
