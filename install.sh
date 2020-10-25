@@ -15,7 +15,7 @@ first_install() {
 
   ldflags="-X 'github.com/loghole/tron/cmd/tron/internal/version.CliVersion=${latest}'"
 
-  cd "cmd/tron" && go build -o "$GOPATH/bin/tron" -ldflags "${ldflags}" *.go
+  cd "${tmpdir}/tron/cmd/tron" && go build -o "$(go env GOPATH)/bin/tron" -ldflags "${ldflags}" main.go
 
   rm -rf "${tmpdir}"
 }
