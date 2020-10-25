@@ -14,6 +14,7 @@ import (
 	"github.com/loghole/tron/cmd/tron/internal/project"
 	"github.com/loghole/tron/cmd/tron/internal/stdout"
 	"github.com/loghole/tron/cmd/tron/internal/templates"
+	"github.com/loghole/tron/cmd/tron/internal/version"
 	"github.com/loghole/tron/internal/app"
 )
 
@@ -59,7 +60,10 @@ func (c *config) run() error {
 		}
 	}
 
-	data := &templates.ConfigData{Values: make([]templates.ConfigValue, 0, len(c.imports))}
+	data := &templates.ConfigData{
+		TronVersion: version.CliVersion,
+		Values:      make([]templates.ConfigValue, 0, len(c.imports)),
+	}
 
 	for key := range c.imports {
 		data.Values = append(data.Values, templates.NewConfigValue(key))

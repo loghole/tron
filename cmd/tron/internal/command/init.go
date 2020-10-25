@@ -17,6 +17,7 @@ const (
 	FlagProtoDirs = "proto"
 	FlagConfig    = "config"
 	FlagVersion   = "version"
+	FlagList      = "list"
 )
 
 type InitCMD struct {
@@ -48,10 +49,7 @@ func (i *InitCMD) run(cmd *cobra.Command, args []string) {
 		os.Exit(1)
 	}
 
-	var (
-		module string
-		err    error
-	)
+	var module string
 
 	if len(args) > 0 {
 		module = args[0]
