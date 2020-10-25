@@ -5,11 +5,13 @@ first_install() {
 
   echo "downloading files into ${tmpdir}"
 
-  cd "${tmpdir}" && git clone https://github.com/loghole/tron.git
+  cd "${tmpdir}" && git clone https://github.com/loghole/tron.git 2>/dev/null
 
-  latest=$(cd "${tmpdir}" && git describe --tags --always | perl -pe 's/cmd\/tron\///')
+  latest=$(cd "${tmpdir}/tron" && git describe --tags --abbrev=0)
 
-  cd "${tmpdir}" && git checkout "$(latest)"
+  cd "${tmpdir}/tron" && git checkout "${latest}" 2>/dev/null
+
+  echo "build tron ${latest}"
 
   cd "${tmpdir}/tron/cmd/tron" && make build
 

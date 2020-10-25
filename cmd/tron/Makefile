@@ -1,4 +1,4 @@
-VERSION  := $(shell git describe --tags --always | perl -pe 's/cmd\/tron\///')
+VERSION  := $(shell git describe --tags --always)
 LDFLAGS  := -X 'github.com/loghole/tron/cmd/tron/internal/version.CliVersion=$(VERSION)'
 TRON_BIN := $(GOPATH)/bin/tron
 
