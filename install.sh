@@ -13,7 +13,9 @@ first_install() {
 
   echo "build tron ${latest}"
 
-  cd "${tmpdir}/tron/cmd/tron" && make build
+  ldflags="-X 'github.com/loghole/tron/cmd/tron/internal/version.CliVersion=${latest}'"
+
+  cd "cmd/tron" && go build -o "$GOPATH/bin/tron" -ldflags "${ldflags}" *.go
 
   rm -rf "${tmpdir}"
 }
