@@ -69,7 +69,7 @@ func (i *InitCMD) run(cmd *cobra.Command, args []string) {
 }
 
 func (i *InitCMD) runInit(module string, dirs []string) (err error) {
-	i.printer.VerbosePrintln(color.FgBlack, "Init project")
+	i.printer.VerbosePrintln(color.Reset, "Init project")
 
 	i.project, err = project.NewProject(module, i.printer)
 	if err != nil {

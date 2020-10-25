@@ -54,7 +54,7 @@ func (p *proto) run() error {
 	p.initPkgMap()
 
 	for _, proto := range p.project.Protos {
-		p.printer.VerbosePrintf(color.FgBlack, "\tgenerate go-fast %s: ", proto.Service.SnakeCasedName())
+		p.printer.VerbosePrintf(color.Reset, "\tgenerate go-fast %s: ", proto.Service.SnakeCasedName())
 
 		if err := p.generateGoFast(proto); err != nil {
 			p.printer.VerbosePrintln(color.FgRed, "ERROR: %v", err)
@@ -69,7 +69,7 @@ func (p *proto) run() error {
 		}
 
 		// generate go-clay
-		p.printer.VerbosePrintf(color.FgBlack, "\tgenerate go-clay %s: ", proto.Service.SnakeCasedName())
+		p.printer.VerbosePrintf(color.Reset, "\tgenerate go-clay %s: ", proto.Service.SnakeCasedName())
 
 		if err := p.generateGoClay(proto); err != nil {
 			p.printer.VerbosePrintln(color.FgRed, "ERROR: %v", err)

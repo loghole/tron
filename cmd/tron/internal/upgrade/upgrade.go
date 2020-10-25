@@ -42,10 +42,10 @@ func New(printer stdout.Printer) (*Upgrade, error) {
 }
 
 func (u *Upgrade) ListVersions() error {
-	u.printer.Println(color.FgBlack, "Available versions")
+	u.printer.Println(color.Reset, "Available versions")
 
 	for idx, r := range u.releases {
-		u.printer.Printf(color.FgBlack, "\t%s, published at: %s\n", color.CyanString(r.TagName), r.PublishedAt)
+		u.printer.Printf(color.Reset, "\t%s, published at: %s\n", color.CyanString(r.TagName), r.PublishedAt)
 
 		if idx > printReleases {
 			return nil
@@ -62,7 +62,7 @@ func (u *Upgrade) Upgrade(tag string) error {
 	}
 
 	if version.CliVersion == rel.TagName {
-		u.printer.Printf(color.FgBlack, "You already use version %s\n", color.CyanString(rel.TagName))
+		u.printer.Printf(color.Reset, "You already use version %s\n", color.CyanString(rel.TagName))
 
 		return nil
 	}
@@ -103,7 +103,7 @@ func (u *Upgrade) downloadAndInstall(rel *release) error {
 
 	defer os.RemoveAll(dir)
 
-	u.printer.Printf(color.FgBlack, "Download %s\n", color.CyanString(rel.TagName))
+	u.printer.Printf(color.Reset, "Download %s\n", color.CyanString(rel.TagName))
 
 	cmd := exec.Command(cmdGit, "clone", "https://github.com/loghole/tron.git")
 	cmd.Dir = dir
@@ -119,7 +119,7 @@ func (u *Upgrade) downloadAndInstall(rel *release) error {
 		return simplerr.Wrapf(err, "failed to run %s", cmd.String())
 	}
 
-	u.printer.Println(color.FgBlack, "Build...\n")
+	u.printer.Println(color.Reset, "Build...\n")
 
 	cmd = exec.Command(cmdMake, "build")
 	cmd.Dir = filepath.Join(dir, "tron", "cmd", "tron")

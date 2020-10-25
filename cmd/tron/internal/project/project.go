@@ -97,7 +97,7 @@ func (p *Project) MoveProtoFiles() error {
 			continue
 		}
 
-		p.printer.VerbosePrintf(color.FgBlack, "\tmove proto %s >> %s", oldPath, newPath)
+		p.printer.VerbosePrintf(color.Reset, "\tmove proto %s >> %s", oldPath, newPath)
 
 		data, err := ioutil.ReadFile(proto.Path)
 		if err != nil {
@@ -159,7 +159,7 @@ func (p *Project) getProtoFileInfo(path string, info os.FileInfo, err error) err
 		return err
 	}
 
-	p.printer.VerbosePrintf(color.FgBlack, "\tcollected proto '%s%s.proto'\n", proto.Path, proto.Name)
+	p.printer.VerbosePrintf(color.Reset, "\tcollected proto '%s%s.proto'\n", proto.Path, proto.Name)
 
 	p.Protos = append(p.Protos, proto)
 

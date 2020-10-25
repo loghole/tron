@@ -47,7 +47,7 @@ func (c *Checker) CheckRequirements() (failed bool) {
 	}
 
 	for _, check := range checks {
-		c.printer.VerbosePrintf(color.FgBlack, "\t%s version: ", check.name)
+		c.printer.VerbosePrintf(color.Reset, "\t%s version: ", check.name)
 
 		if err := check.fn(); err != nil {
 			c.printer.VerbosePrintf(color.FgRed, "FAIL: %v\n", err)
