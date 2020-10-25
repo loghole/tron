@@ -5,7 +5,7 @@
 ##### install tron: 
 
 ```
-curl -sSfL https://raw.githubusercontent.com/loghole/tron/master/install.sh | sh
+curl -sSfL https://raw.githubusercontent.com/loghole/tron/main/install.sh | sh
 tron version
 ```
 
