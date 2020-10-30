@@ -66,7 +66,7 @@ func (v *vendorPB) run() (err error) {
 	for val := ""; len(v.imports) > 0; {
 		val, v.imports = v.imports[0], v.imports[1:]
 
-		v.printer.VerbosePrintf(color.FgBlack, "\tvendor %s: ", val)
+		v.printer.VerbosePrintf(color.Reset, "\tvendor %s: ", val)
 
 		switch {
 		case strings.HasPrefix(val, v.project.Module):

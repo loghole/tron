@@ -22,7 +22,7 @@ func (v *VersionCMD) Command() *cobra.Command {
 		Short:   "Print tron version",
 		Aliases: []string{"v"},
 		Run: func(cmd *cobra.Command, args []string) {
-			v.printer.Printf(color.FgBlack, "Tron version: %s\n", color.YellowString(version.CliVersion))
+			v.printer.Printf(color.Reset, "Tron version: %s\n", color.YellowString(version.CliVersion))
 		},
 	}
 }

@@ -2,13 +2,14 @@ package upgrade
 
 import (
 	"errors"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"os"
 	"os/exec"
 	"path/filepath"
-	"strings"
 
+	"github.com/Masterminds/semver"
 	"github.com/fatih/color"
 	jsoniter "github.com/json-iterator/go"
 	"github.com/lissteron/simplerr"
@@ -21,10 +22,15 @@ import (
 var ErrVersionNotFound = errors.New("not found")
 
 const (
+	repositoryURL = "https://github.com/loghole/tron.git"
 	releasesURL   = "https://api.github.com/repos/loghole/tron/releases"
-	cmdGit        = "git"
-	cmdMake       = "make"
-	printReleases = 10
+	versionLdflag = `-X 'github.com/loghole/tron/cmd/tron/internal/version.CliVersion=%s'`
+
+	minTronVersion = "v0.3.0"
+	printReleases  = 10
+
+	cmdGit = "git"
+	cmdGo  = "go"
 )
 
 type Upgrade struct {
@@ -42,10 +48,10 @@ func New(printer stdout.Printer) (*Upgrade, error) {
 }
 
 func (u *Upgrade) ListVersions() error {
-	u.printer.Println(color.FgBlack, "Available versions")
+	u.printer.Println(color.Reset, "Available versions:")
 
 	for idx, r := range u.releases {
-		u.printer.Printf(color.FgBlack, "\t%s, published at: %s\n", color.CyanString(r.TagName), r.PublishedAt)
+		u.printer.Printf(color.Reset, "\t%s, published at: %s\n", color.CyanString(r.TagName), r.PublishedAt)
 
 		if idx > printReleases {
 			return nil
@@ -62,7 +68,7 @@ func (u *Upgrade) Upgrade(tag string) error {
 	}
 
 	if version.CliVersion == rel.TagName {
-		u.printer.Printf(color.FgBlack, "You already use version %s\n", color.CyanString(rel.TagName))
+		u.printer.Printf(color.Reset, "You already use version %s\n", color.CyanString(rel.TagName))
 
 		return nil
 	}
@@ -71,7 +77,7 @@ func (u *Upgrade) Upgrade(tag string) error {
 		return err
 	}
 
-	u.printer.Println(color.FgGreen, "Success\n")
+	u.printer.Println(color.FgGreen, "Success")
 
 	return nil
 }
@@ -103,9 +109,23 @@ func (u *Upgrade) downloadAndInstall(rel *release) error {
 
 	defer os.RemoveAll(dir)
 
-	u.printer.Printf(color.FgBlack, "Download %s\n", color.CyanString(rel.TagName))
+	u.printer.Printf(color.Reset, "Download tron %s\n", color.CyanString(rel.TagName))
 
-	cmd := exec.Command(cmdGit, "clone", "https://github.com/loghole/tron.git")
+	if err := u.download(rel, dir); err != nil {
+		return simplerr.Wrap(err, "failed to download")
+	}
+
+	u.printer.Println(color.Reset, "Install tron...")
+
+	if err := u.install(rel, dir); err != nil {
+		return simplerr.Wrap(err, "failed to install")
+	}
+
+	return nil
+}
+
+func (u *Upgrade) download(rel *release, dir string) error {
+	cmd := exec.Command(cmdGit, "clone", repositoryURL)
 	cmd.Dir = dir
 
 	if err := cmd.Run(); err != nil {
@@ -119,9 +139,18 @@ func (u *Upgrade) downloadAndInstall(rel *release) error {
 		return simplerr.Wrapf(err, "failed to run %s", cmd.String())
 	}
 
-	u.printer.Println(color.FgBlack, "Build...\n")
+	return nil
+}
 
-	cmd = exec.Command(cmdMake, "build")
+func (u *Upgrade) install(rel *release, dir string) error {
+	path, err := binaryPath()
+	if err != nil {
+		return simplerr.Wrapf(err, "failed to get binary path %v", err)
+	}
+
+	args := []string{`build`, `-o`, path, `-ldflags`, fmt.Sprintf(versionLdflag, rel.TagName), `main.go`}
+
+	cmd := exec.Command(cmdGo, args...) // nolint:gosec //all good
 	cmd.Dir = filepath.Join(dir, "tron", "cmd", "tron")
 
 	if err := cmd.Run(); err != nil {
@@ -147,8 +176,13 @@ func releasesList() ([]*release, error) {
 
 	result := make([]*release, 0, len(dest))
 
+	constraint, err := semver.NewConstraint(">= " + minTronVersion)
+	if err != nil {
+		return nil, simplerr.Wrap(err, "build semver constraint failed")
+	}
+
 	for _, rel := range dest {
-		if strings.Contains(rel.TagName, "cmd/tron/") {
+		if !constraint.Check(rel.version()) {
 			continue
 		}
 
@@ -156,4 +190,13 @@ func releasesList() ([]*release, error) {
 	}
 
 	return result, nil
+}
+
+func binaryPath() (string, error) {
+	binaryPath, err := os.Executable()
+	if err != nil {
+		return "", err
+	}
+
+	return filepath.EvalSymlinks(binaryPath)
 }
