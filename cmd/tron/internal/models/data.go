@@ -73,11 +73,12 @@ func AddProtoExt(name string) string {
 }
 
 type Service struct {
-	Name     string
-	Import   string
-	Alias    string
-	Package  string
-	WithImpl bool
+	Name      string
+	Import    string
+	Alias     string
+	Package   string
+	GoPackage string
+	WithImpl  bool
 }
 
 func (s *Service) SnakeCasedName() string {

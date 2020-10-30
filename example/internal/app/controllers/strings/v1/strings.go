@@ -5,11 +5,12 @@ package stringsV1
 
 import (
 	desc "example/pkg/strings/v1"
-
-	"github.com/utrack/clay/v2/transport"
+	"github.com/loghole/tron/transport"
 )
 
-type Implementation struct{}
+type Implementation struct{
+	desc.UnimplementedStringsServer
+}
 
 // NewStrings create new Implementation
 func NewStrings() *Implementation {

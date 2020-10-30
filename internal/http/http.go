@@ -10,8 +10,10 @@ import (
 	"time"
 
 	"github.com/go-chi/chi"
+	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/lissteron/simplerr"
-	"github.com/utrack/clay/v2/transport"
+
+	"github.com/loghole/tron/transport"
 )
 
 type Server struct {
@@ -57,11 +59,15 @@ func (s *Server) RegistryDesc(services ...transport.Service) {
 		return
 	}
 
+	mux := runtime.NewServeMux()
+
 	for _, service := range services {
 		if service != nil {
-			service.GetDescription().RegisterHTTP(s.router)
+			service.GetDescription().RegisterHTTP(mux)
 		}
 	}
+
+	s.router.Handle("/*", mux)
 }
 
 func (s *Server) Router() chi.Router {

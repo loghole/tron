@@ -1,9 +1,15 @@
 syntax = "proto3";
 
+import "google/protobuf/struct.proto";
+
 package types.v1;
 
-option go_package = "typesV1";
+option go_package = ".;typesV1";
 
 message String {
   string str = 1;
+}
+
+message StringJSON {
+  google.protobuf.Value data = 1;
 }
