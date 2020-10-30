@@ -53,9 +53,10 @@ func (r *ErrResponse) parseErr(err error) {
 	code := simplerr.GetCode(err)
 	r.GRPCStatus = codes.Code(code.GRPC())
 
-	if code.HTTP() == http.StatusBadRequest {
-		validationErr, ok := errors.Unwrap(err).(validation.Errors)
-		if ok && r.parseValidationErr(validationErr) {
+	var validationErrs validation.Errors
+
+	if errors.As(err, &validationErrs) {
+		if r.parseValidationErr(validationErrs) {
 			return
 		}
 	}
@@ -70,23 +71,26 @@ func (r *ErrResponse) parseErr(err error) {
 	})
 }
 
-func (r *ErrResponse) parseValidationErr(err error) bool {
-	e1, ok := err.(validation.Errors)
-	if !ok {
-		return false
-	}
+func (r *ErrResponse) parseValidationErr(list validation.Errors) bool {
+	for field, err := range list {
+		var validationErr validation.Error
 
-	for field, e2 := range e1 {
-		if e3, ok := e2.(validation.Error); ok {
+		if errors.As(err, &validationErr) {
 			r.Errors = append(r.Errors, Error{
-				Code:   e3.Code(),
-				Detail: strings.Join([]string{field, e3.Error()}, ": "),
+				Code:   validationErr.Code(),
+				Detail: strings.Join([]string{field, validationErr.Error()}, ": "),
 			})
 
 			continue
 		}
 
-		if !r.parseValidationErr(e2) {
+		var validationErrs validation.Errors
+
+		if !errors.As(err, &validationErrs) {
+			return false
+		}
+
+		if !r.parseValidationErr(validationErrs) {
 			return false
 		}
 	}
