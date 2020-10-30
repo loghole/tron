@@ -24,7 +24,7 @@ var ErrVersionNotFound = errors.New("not found")
 const (
 	repositoryURL = "https://github.com/loghole/tron.git"
 	releasesURL   = "https://api.github.com/repos/loghole/tron/releases"
-	versionLdflag = `"-X 'github.com/loghole/tron/cmd/tron/internal/version.CliVersion=%s'"`
+	versionLdflag = `-X 'github.com/loghole/tron/cmd/tron/internal/version.CliVersion=%s'`
 
 	minTronVersion = "v0.3.0"
 	printReleases  = 10
@@ -143,14 +143,12 @@ func (u *Upgrade) download(rel *release, dir string) error {
 }
 
 func (u *Upgrade) install(rel *release, dir string) error {
-	args := []string{
-		`build`,
-		`-o`,
-		fmt.Sprintf(`%s/bin/tron`, os.Getenv("GOPATH")),
-		`-ldflags`,
-		fmt.Sprintf(versionLdflag, rel.TagName),
-		`*.go`,
+	path, err := binaryPath()
+	if err != nil {
+		return simplerr.Wrapf(err, "failed to get binary path %v", err)
 	}
+
+	args := []string{`build`, `-o`, path, `-ldflags`, fmt.Sprintf(versionLdflag, rel.TagName), `main.go`}
 
 	cmd := exec.Command(cmdGo, args...) // nolint:gosec //all good
 	cmd.Dir = filepath.Join(dir, "tron", "cmd", "tron")
@@ -192,4 +190,13 @@ func releasesList() ([]*release, error) {
 	}
 
 	return result, nil
+}
+
+func binaryPath() (string, error) {
+	binaryPath, err := os.Executable()
+	if err != nil {
+		return "", err
+	}
+
+	return filepath.EvalSymlinks(binaryPath)
 }
