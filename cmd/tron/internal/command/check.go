@@ -22,7 +22,7 @@ func (c *Check) Command() *cobra.Command {
 	return &cobra.Command{
 		Use:   "check",
 		Short: "Check system requirements",
-		Long:  `Check if system compatible with current version of scratch.`,
+		Long:  `Check if system compatible with current version.`,
 		Run:   c.run,
 	}
 }

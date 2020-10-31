@@ -24,8 +24,8 @@ func NewGenerateCMD(printer stdout.Printer) *GenerateCMD {
 func (g *GenerateCMD) Command() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "generate",
-		Short: "Generate...",
-		Long:  "Various generate...",
+		Short: "Generate project pkg and implementation from proto api",
+		Long:  "Generate project pkg and implementation from proto api",
 		Run:   g.run,
 	}
 
