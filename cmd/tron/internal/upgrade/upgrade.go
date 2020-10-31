@@ -51,7 +51,11 @@ func (u *Upgrade) ListVersions() error {
 	u.printer.Println(color.Reset, "Available versions:")
 
 	for idx, r := range u.releases {
-		u.printer.Printf(color.Reset, "\t%s, published at: %s\n", color.CyanString(r.TagName), r.PublishedAt)
+		if version.CliVersion == r.TagName {
+			u.printer.Printf(color.FgGreen, "\t%s, published at: %s, already installed\n", r.TagName, r.PublishedAt)
+		} else {
+			u.printer.Printf(color.Reset, "\t%s, published at: %s\n", color.CyanString(r.TagName), r.PublishedAt)
+		}
 
 		if idx > printReleases {
 			return nil

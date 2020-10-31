@@ -42,7 +42,7 @@ func main() {
 	rootCmd.AddCommand(upgradeCMD.Command())
 	rootCmd.AddCommand(versionCMD.Command())
 
-	rootCmd.PersistentFlags().BoolP(FlagVerbose, "v", false, "make scratch more verbose")
+	rootCmd.PersistentFlags().BoolP(FlagVerbose, "v", false, "make tron more verbose")
 
 	cobra.OnInitialize(func() {
 		verbose, err := rootCmd.Flags().GetBool("verbose")
