@@ -12,14 +12,14 @@ import (
 	"github.com/loghole/tron/cmd/tron/internal/stdout"
 )
 
-func GoMod(p *project.Project, printer stdout.Printer) error {
-	printer.VerbosePrintln(color.FgMagenta, "Initialise go mod")
+func Git(p *project.Project, printer stdout.Printer) error {
+	printer.VerbosePrintln(color.FgMagenta, "Initialise git")
 
-	path := filepath.Join(p.AbsPath, models.GoModFile)
+	path := filepath.Join(p.AbsPath, models.GitDir)
 
 	if _, err := os.Stat(path); err != nil {
 		if os.IsNotExist(err) {
-			return helpers.Exec(p.AbsPath, "go", "mod", "init", p.Module)
+			return helpers.Exec(p.AbsPath, "git", "init")
 		}
 
 		return err

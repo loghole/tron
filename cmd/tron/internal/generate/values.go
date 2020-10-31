@@ -1,6 +1,7 @@
 package generate
 
 import (
+	"path/filepath"
 	"strings"
 
 	"github.com/fatih/color"
@@ -22,7 +23,7 @@ func Values(p *project.Project, printer stdout.Printer) error {
 			{Key: strings.ToUpper(app.LoggerLevelEnv), Val: `info`},
 			{Key: strings.ToUpper(app.LoggerCollectorAddrEnv), Val: `""`},
 			{Key: strings.ToUpper(app.LoggerDisableStdoutEnv), Val: `false`},
-			{Key: strings.ToUpper(app.JaegerAddrEnv), Val: `127.0.0.1:6831`},
+			{Key: strings.ToUpper(app.JaegerAddrEnv), Val: `""`},
 			{Key: strings.ToUpper(app.HTTPPortEnv), Val: `8080`},
 			{Key: strings.ToUpper(app.GRPCPortEnv), Val: `8081`},
 			{Key: strings.ToUpper(app.AdminPortEnv), Val: `8082`},
@@ -34,24 +35,21 @@ func Values(p *project.Project, printer stdout.Printer) error {
 		return simplerr.Wrap(err, "failed to exec template")
 	}
 
-	if err := helpers.WriteWithConfirm(models.ValuesBaseFilepath, []byte(values)); err != nil {
-		return simplerr.Wrap(err, "failed to write file")
+	writers := []struct {
+		path string
+		data string
+	}{
+		{models.ValuesBaseFilepath, values},
+		{models.ValuesDevFilepath, templates.ValuesDevTemplate},
+		{models.ValuesLocalFilepath, templates.ValuesLocalTemplate},
+		{models.ValuesStgFilepath, templates.ValuesStgTemplate},
+		{models.ValuesProdFilepath, templates.ValuesProdTemplate},
 	}
 
-	if err := helpers.WriteWithConfirm(models.ValuesDevFilepath, []byte(templates.ValuesDevTemplate)); err != nil {
-		return simplerr.Wrap(err, "failed to write file")
-	}
-
-	if err := helpers.WriteWithConfirm(models.ValuesLocalFilepath, []byte(templates.ValuesLocalTemplate)); err != nil {
-		return simplerr.Wrap(err, "failed to write file")
-	}
-
-	if err := helpers.WriteWithConfirm(models.ValuesStgFilepath, []byte(templates.ValuesStgTemplate)); err != nil {
-		return simplerr.Wrap(err, "failed to write file")
-	}
-
-	if err := helpers.WriteWithConfirm(models.ValuesProdFilepath, []byte(templates.ValuesProdTemplate)); err != nil {
-		return simplerr.Wrap(err, "failed to write file")
+	for _, wr := range writers {
+		if err := helpers.WriteWithConfirm(filepath.Join(p.AbsPath, wr.path), []byte(wr.data)); err != nil {
+			return simplerr.Wrap(err, "failed to write file")
+		}
 	}
 
 	return nil

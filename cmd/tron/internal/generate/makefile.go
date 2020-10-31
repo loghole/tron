@@ -2,7 +2,6 @@ package generate
 
 import (
 	"path/filepath"
-	"strings"
 
 	"github.com/fatih/color"
 	"github.com/lissteron/simplerr"
@@ -17,22 +16,20 @@ import (
 func Makefile(p *project.Project, printer stdout.Printer) error {
 	printer.VerbosePrintln(color.FgMagenta, "Generate Makefile")
 
-	data := templates.NewTronMKData(
-		strings.Join([]string{models.CmdDir, p.Name, models.MainFile}, "/"),
-		models.DockerfileFilepath,
-		p.Module,
-	)
+	data := templates.NewTronMKData(p)
 
 	tronMK, err := helpers.ExecTemplate(templates.TronMK, data)
 	if err != nil {
 		return simplerr.Wrap(err, "failed to exec template")
 	}
 
-	if err := helpers.WriteToFile(models.TronMKFilepath, []byte(tronMK)); err != nil {
+	path := filepath.Join(p.AbsPath, models.TronMKFilepath)
+
+	if err := helpers.WriteToFile(path, []byte(tronMK)); err != nil {
 		return err
 	}
 
-	path := filepath.Join(p.AbsPath, models.MakefileFilepath)
+	path = filepath.Join(p.AbsPath, models.MakefileFilepath)
 
 	if err := helpers.WriteWithConfirm(path, []byte(templates.Makefile)); err != nil {
 		return err

@@ -20,10 +20,11 @@ func NewCheckCMD(printer stdout.Printer) *Check {
 
 func (c *Check) Command() *cobra.Command {
 	return &cobra.Command{
-		Use:   "check",
-		Short: "Check system requirements",
-		Long:  `Check if system compatible with current version.`,
-		Run:   c.run,
+		Use:     "check",
+		Short:   "Check system requirements",
+		Long:    "Check if system compatible with current version.",
+		Example: "tron check",
+		Run:     c.run,
 	}
 }
 

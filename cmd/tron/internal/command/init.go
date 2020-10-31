@@ -35,12 +35,20 @@ func (i *InitCMD) Command() *cobra.Command {
 		Aliases: []string{"initialize", "initialise", "create"},
 		Short:   "Initialize Application",
 		Long:    "Initialize will create a new application",
+		Example: i.example(),
 		Run:     i.run,
 	}
 
 	cmd.Flags().StringArray(FlagProtoDirs, []string{}, "directory with protos for generating your services")
 
 	return cmd
+}
+
+func (i *InitCMD) example() string {
+	return "# from project dir with proto files:\n" +
+		"tron init example --proto api\n" +
+		"# from root dir with create project dir:\n" +
+		"tron init example"
 }
 
 func (i *InitCMD) run(cmd *cobra.Command, args []string) {
@@ -57,11 +65,13 @@ func (i *InitCMD) run(cmd *cobra.Command, args []string) {
 
 	protoDirs, err := cmd.Flags().GetStringArray(FlagProtoDirs)
 	if err != nil {
-		panic(err)
+		helpers.PrintCommandHelp(cmd)
+		os.Exit(1)
 	}
 
 	if err := i.runInit(module, protoDirs); err != nil {
-		i.printer.Println(color.FgRed, "Init failed: %v", err)
+		i.printer.Printf(color.FgRed, "Init failed: %v\n", err)
+		helpers.PrintCommandHelp(cmd)
 		os.Exit(1)
 	}
 
@@ -84,7 +94,9 @@ func (i *InitCMD) runInit(module string, dirs []string) (err error) {
 		return simplerr.Wrap(err, "move proto files failed")
 	}
 
-	if err := i.generate(generate.GoMod,
+	if err := i.generate(
+		generate.Git,
+		generate.GoMod,
 		generate.Makefile,
 		generate.Linter,
 		generate.Gitignore,
@@ -93,7 +105,7 @@ func (i *InitCMD) runInit(module string, dirs []string) (err error) {
 		return simplerr.Wrap(err, "generate files failed")
 	}
 
-	if err := helpers.Exec("make", "generate"); err != nil {
+	if err := helpers.Exec(i.project.AbsPath, "make", "generate"); err != nil {
 		return simplerr.Wrap(err, "exec 'make generate' failed")
 	}
 
@@ -101,7 +113,7 @@ func (i *InitCMD) runInit(module string, dirs []string) (err error) {
 		return simplerr.Wrap(err, "generate config and main files failed")
 	}
 
-	if err := helpers.Exec("go", "mod", "tidy"); err != nil {
+	if err := helpers.Exec(i.project.AbsPath,"go", "mod", "tidy"); err != nil {
 		return simplerr.Wrap(err, "exec 'go mod tidy' failed")
 	}
 

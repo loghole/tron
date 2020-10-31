@@ -14,6 +14,7 @@ const (
 )
 
 const (
+	GitDir    = ".git"
 	MainFile  = "main.go"
 	GoModFile = "go.mod"
 	CmdDir    = "cmd"

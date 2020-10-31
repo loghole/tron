@@ -109,7 +109,7 @@ func (v *vendorPB) copyProto(name string) error {
 		return err
 	}
 
-	return helpers.WriteToFile(path.Join(models.ProjectPathVendorPB, name), data)
+	return helpers.WriteToFile(path.Join(v.project.AbsPath, models.ProjectPathVendorPB, name), data)
 }
 
 func (v *vendorPB) curlProto(name string) error {
@@ -138,7 +138,7 @@ func (v *vendorPB) curlProto(name string) error {
 		return err
 	}
 
-	return helpers.WriteToFile(path.Join(models.ProjectPathVendorPB, name), data)
+	return helpers.WriteToFile(path.Join(v.project.AbsPath, models.ProjectPathVendorPB, name), data)
 }
 
 func (v *vendorPB) importLink(s string) (string, bool) {

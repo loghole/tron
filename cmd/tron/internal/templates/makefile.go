@@ -3,6 +3,8 @@ package templates
 import (
 	"strings"
 
+	"github.com/loghole/tron/cmd/tron/internal/models"
+	"github.com/loghole/tron/cmd/tron/internal/project"
 	"github.com/loghole/tron/cmd/tron/internal/version"
 )
 
@@ -15,23 +17,20 @@ type TronMKData struct {
 	TronVersion string
 }
 
-func NewTronMKData(mainfile, dockerfile, module string) *TronMKData {
-	parts := strings.Split(module, "/")
+func NewTronMKData(p *project.Project) *TronMKData {
+	parts := strings.Split(p.Module, "/")
 
 	data := &TronMKData{
-		Dockerfile:  dockerfile,
-		DockerImage: module,
-		Mainfile:    mainfile,
-		AppName:     module,
+		Dockerfile:  models.DockerfileFilepath,
+		DockerImage: p.Module,
+		AppName:     p.Module,
+		ServiceName: p.Name,
+		Mainfile:    strings.Join([]string{models.CmdDir, p.Name, models.MainFile}, "/"),
 		TronVersion: version.CliVersion,
 	}
 
 	if len(parts) > 1 {
 		data.DockerImage = strings.Join(parts[len(parts)-2:], "/")
-	}
-
-	if len(parts) > 1 {
-		data.ServiceName = parts[len(parts)-1]
 	}
 
 	return data
