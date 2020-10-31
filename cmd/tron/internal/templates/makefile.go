@@ -82,7 +82,7 @@ generate-config:
 .bin-deps:
 	$(info #Installing binary dependencies...)
 
-test:
+gotest:
 	go test -race -v -cover -coverprofile coverage.out ./...
 
 lint:

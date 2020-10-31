@@ -33,7 +33,7 @@ func (u *Upgrade) Command() *cobra.Command {
 }
 
 func (u *Upgrade) run(cmd *cobra.Command, args []string) {
-	if ok := project.NewChecker(u.printer).CheckRequirements(); !ok {
+	if ok := project.NewChecker(u.printer).CheckGolang(); !ok {
 		u.printer.Println(color.FgRed, "Requirements check failed")
 		os.Exit(1)
 	}
