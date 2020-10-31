@@ -35,29 +35,34 @@ func NewChecker(printer stdout.Printer) *Checker {
 }
 
 func (c *Checker) CheckRequirements() (failed bool) {
-	c.printer.VerbosePrint(color.FgMagenta, "Check system requirements:\n")
+	return c.checkRequirements(map[string]func() error{
+		"git":    c.checkGitVersion,
+		"golang": c.checkGoVersion,
+		"protoc": c.checkProtocVersion,
+	})
+}
 
-	checks := []struct {
-		name string
-		fn   func() error
-	}{
-		{name: "git", fn: c.checkGitVersion},
-		{name: "golang", fn: c.checkGoVersion},
-		{name: "protoc", fn: c.checkProtocVersion},
-	}
+func (c *Checker) CheckGolang() (failed bool) {
+	return c.checkRequirements(map[string]func() error{
+		"golang": c.checkGoVersion,
+	})
+}
 
-	for _, check := range checks {
-		c.printer.VerbosePrintf(color.Reset, "\t%s version: ", check.name)
+func (c *Checker) checkRequirements(checks map[string]func() error) (failed bool) {
+	c.printer.Print(color.FgMagenta, "Check system requirements:\n")
 
-		if err := check.fn(); err != nil {
-			c.printer.VerbosePrintf(color.FgRed, "FAIL: %v\n", err)
+	for name, check := range checks {
+		c.printer.Printf(color.Reset, "\t%s version: ", name)
+
+		if err := check(); err != nil {
+			c.printer.Printf(color.FgRed, "FAIL: %v\n", err)
 
 			failed = true
 
 			continue
 		}
 
-		c.printer.VerbosePrint(color.FgGreen, "OK\n")
+		c.printer.Print(color.FgGreen, "OK\n")
 	}
 
 	return !failed

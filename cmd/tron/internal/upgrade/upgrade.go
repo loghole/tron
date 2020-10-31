@@ -26,7 +26,7 @@ const (
 	releasesURL   = "https://api.github.com/repos/loghole/tron/releases"
 	versionLdflag = `-X 'github.com/loghole/tron/cmd/tron/internal/version.CliVersion=%s'`
 
-	minTronVersion = "v0.3.0"
+	tronMinVersion = "v0.4.0"
 	printReleases  = 10
 
 	cmdGit = "git"
@@ -176,7 +176,7 @@ func releasesList() ([]*release, error) {
 
 	result := make([]*release, 0, len(dest))
 
-	constraint, err := semver.NewConstraint(">= " + minTronVersion)
+	constraint, err := semver.NewConstraint(">= " + tronMinVersion)
 	if err != nil {
 		return nil, simplerr.Wrap(err, "build semver constraint failed")
 	}
