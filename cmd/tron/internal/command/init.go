@@ -35,20 +35,16 @@ func (i *InitCMD) Command() *cobra.Command {
 		Aliases: []string{"initialize", "initialise", "create"},
 		Short:   "Initialize Application",
 		Long:    "Initialize will create a new application",
-		Example: i.example(),
-		Run:     i.run,
+		Example: "# from project dir with proto files:\n" +
+			"tron init github.com/loghole/example --proto api\n" +
+			"# from root dir with create project dir:\n" +
+			"tron init github.com/loghole/example",
+		Run: i.run,
 	}
 
 	cmd.Flags().StringArray(FlagProtoDirs, []string{}, "directory with protos for generating your services")
 
 	return cmd
-}
-
-func (i *InitCMD) example() string {
-	return "# from project dir with proto files:\n" +
-		"tron init github.com/loghole/example --proto api\n" +
-		"# from root dir with create project dir:\n" +
-		"tron init github.com/loghole/example"
 }
 
 func (i *InitCMD) run(cmd *cobra.Command, args []string) {
@@ -113,7 +109,7 @@ func (i *InitCMD) runInit(module string, dirs []string) (err error) {
 		return simplerr.Wrap(err, "generate config and main files failed")
 	}
 
-	if err := helpers.Exec(i.project.AbsPath,"go", "mod", "tidy"); err != nil {
+	if err := helpers.Exec(i.project.AbsPath, "go", "mod", "tidy"); err != nil {
 		return simplerr.Wrap(err, "exec 'go mod tidy' failed")
 	}
 

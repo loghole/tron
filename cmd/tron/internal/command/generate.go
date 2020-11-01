@@ -24,24 +24,20 @@ func NewGenerateCMD(printer stdout.Printer) *GenerateCMD {
 
 func (g *GenerateCMD) Command() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:     "generate",
-		Short:   "Generate project pkg and implementation from proto api",
-		Long:    "Generate project pkg and implementation from proto api",
-		Example: g.example(),
-		Run:     g.run,
+		Use:   "generate",
+		Short: "Generate project pkg and implementation from proto api",
+		Long:  "Generate project pkg and implementation from proto api",
+		Example: "# generate config constants from deploy values:\n" +
+			"tron generate --config\n" +
+			"# generate proto pkg and service implementations from protos:\n" +
+			"tron generate --proto=api",
+		Run: g.run,
 	}
 
 	cmd.Flags().StringArray(FlagProtoDirs, []string{}, "directory with protos for generating your services")
 	cmd.Flags().Bool(FlagConfig, false, "Generate config helpers from values")
 
 	return cmd
-}
-
-func (g *GenerateCMD) example() string {
-	return "# generate config constants from deploy values:\n" +
-		"tron generate --config\n" +
-		"# generate proto pkg and service implementations from protos:\n" +
-		"tron generate --proto=api"
 }
 
 func (g *GenerateCMD) run(cmd *cobra.Command, args []string) {

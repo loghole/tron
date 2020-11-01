@@ -8,5 +8,6 @@ import (
 
 func PrintCommandHelp(cmd *cobra.Command) {
 	fmt.Println()
+
 	_ = cmd.Help()
 }

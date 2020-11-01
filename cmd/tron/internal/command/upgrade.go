@@ -21,10 +21,15 @@ func NewUpgradeCMD(printer stdout.Printer) *Upgrade {
 
 func (u *Upgrade) Command() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:     "upgrade",
-		Short:   "Self-upgrade tron tool",
-		Example: u.example(),
-		Run:     u.run,
+		Use:   "upgrade",
+		Short: "Self-upgrade tron tool",
+		Example: "# upgrade by version tag:\n" +
+			"tron upgrade --version v0.4.0\n" +
+			"# upgrade to latest version:\n" +
+			"tron upgrade\n" +
+			"# get versions list:\n" +
+			"tron upgrade --list",
+		Run: u.run,
 	}
 
 	cmd.Flags().String(FlagVersion, "latest", "semver tag <v1.2.3>")
@@ -33,20 +38,10 @@ func (u *Upgrade) Command() *cobra.Command {
 	return cmd
 }
 
-func (u *Upgrade) example() string {
-	return "# upgrade by version tag:\n" +
-		"tron upgrade --version v0.4.0\n" +
-		"# upgrade to latest version:\n" +
-		"tron upgrade\n"+
-		"# get versions list:\n" +
-		"tron upgrade --list"
-
-}
-
 func (u *Upgrade) run(cmd *cobra.Command, args []string) {
 	upgrader, err := upgrade.New(u.printer)
 	if err != nil {
-		u.printer.Println(color.FgRed, "create upgrader failed")
+		u.printer.Printf(color.FgRed, "Create upgrader failed: %v\n", err)
 		os.Exit(1)
 	}
 
@@ -62,7 +57,7 @@ func (u *Upgrade) run(cmd *cobra.Command, args []string) {
 
 	if list {
 		if err := upgrader.ListVersions(); err != nil {
-			u.printer.Println(color.FgRed, "list versions failed")
+			u.printer.Printf(color.FgRed, "List versions failed: %v\n", err)
 			os.Exit(1)
 		}
 
