@@ -46,9 +46,9 @@ func (i *InitCMD) Command() *cobra.Command {
 
 func (i *InitCMD) example() string {
 	return "# from project dir with proto files:\n" +
-		"tron init example --proto api\n" +
+		"tron init github.com/loghole/example --proto api\n" +
 		"# from root dir with create project dir:\n" +
-		"tron init example"
+		"tron init github.com/loghole/example"
 }
 
 func (i *InitCMD) run(cmd *cobra.Command, args []string) {
