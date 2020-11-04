@@ -14,6 +14,7 @@ const (
 )
 
 const (
+	GitDir    = ".git"
 	MainFile  = "main.go"
 	GoModFile = "go.mod"
 	CmdDir    = "cmd"
@@ -28,6 +29,7 @@ const (
 	GitignoreFilepath    = ".gitignore"
 	TronMKFilepath       = "tron.mk"
 	MakefileFilepath     = "Makefile"
+	ReadmeMDFilepath     = "README.md"
 	ConfigConstFilepath  = "config" + sep + "constants.go"
 	ConfigFilepath       = "config" + sep + "config.go"
 )

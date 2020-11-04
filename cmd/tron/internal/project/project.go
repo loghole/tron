@@ -33,25 +33,17 @@ type Project struct {
 }
 
 func NewProject(module string, printer stdout.Printer) (project *Project, err error) {
-	if module == "" {
-		module, err = moduleFromGoMod()
-		if err != nil {
-			return nil, ErrEmptyModule
-		}
-	}
-
-	parts := strings.Split(module, "/")
-
-	project = &Project{
-		Module:  module,
-		Name:    parts[len(parts)-1],
-		Protos:  make([]*models.Proto, 0),
-		printer: printer,
-	}
-
-	project.AbsPath, err = os.Getwd()
+	module, absPath, err := moduleAndAbsPath(module)
 	if err != nil {
 		return nil, err
+	}
+
+	project = &Project{
+		AbsPath: absPath,
+		Module:  module,
+		Name:    helpers.ModuleName(module),
+		Protos:  make([]*models.Proto, 0),
+		printer: printer,
 	}
 
 	return project, nil
@@ -60,13 +52,18 @@ func NewProject(module string, printer stdout.Printer) (project *Project, err er
 func (p *Project) FindProtoFiles(dirs ...string) error {
 	p.printer.VerbosePrintln(color.FgMagenta, "Find proto files")
 
+	if len(dirs) == 0 {
+		return filepath.Walk(p.AbsPath, p.getProtoFileInfo)
+	}
+
 	for _, dir := range dirs {
-		absPath, err := filepath.Abs(dir)
-		if err != nil {
-			return err
-		}
+		absPath := filepath.Join(p.AbsPath, dir)
 
 		if _, err := os.Stat(absPath); err != nil {
+			if os.IsNotExist(err) {
+				continue
+			}
+
 			return err
 		}
 
@@ -126,11 +123,7 @@ func (p *Project) getProtoFileInfo(path string, info os.FileInfo, err error) err
 		return err
 	}
 
-	if info.IsDir() {
-		return nil
-	}
-
-	if filepath.Ext(path) != models.ProtoExt {
+	if info.IsDir() || filepath.Ext(path) != models.ProtoExt || strings.Contains(path, models.ProjectPathVendorPB) {
 		return nil
 	}
 
@@ -203,6 +196,36 @@ func (p *Project) scanProtoFile(file io.Reader, proto *models.Proto) (*models.Pr
 	}
 
 	return proto, nil
+}
+
+func moduleAndAbsPath(input string) (module, absPath string, err error) {
+	switch {
+	case input == "":
+		module, err = moduleFromGoMod()
+	default:
+		module = input
+	}
+
+	if err != nil || module == "" {
+		return "", "", ErrEmptyModule
+	}
+
+	absPath, err = os.Getwd()
+	if err != nil {
+		return "", "", err
+	}
+
+	if strings.HasSuffix(absPath, helpers.ModuleName(module)) {
+		return module, absPath, nil
+	}
+
+	absPath = filepath.Join(absPath, helpers.ModuleName(module))
+
+	if err := helpers.MkdirWithConfirm(absPath); err != nil {
+		return "", "", err
+	}
+
+	return module, absPath, nil
 }
 
 func moduleFromGoMod() (string, error) {

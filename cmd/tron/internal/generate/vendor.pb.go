@@ -3,7 +3,6 @@ package generate
 import (
 	"bufio"
 	"bytes"
-	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -24,11 +23,6 @@ const (
 	github      = "github.com"
 	githubRaw   = "https://raw.githubusercontent.com"
 	importParts = 3
-)
-
-var (
-	ErrBadImport = errors.New("bad import")
-	ErrReqFailed = errors.New("request failed")
 )
 
 type vendorPB struct {
@@ -109,7 +103,7 @@ func (v *vendorPB) copyProto(name string) error {
 		return err
 	}
 
-	return helpers.WriteToFile(path.Join(models.ProjectPathVendorPB, name), data)
+	return helpers.WriteToFile(path.Join(v.project.AbsPath, models.ProjectPathVendorPB, name), data)
 }
 
 func (v *vendorPB) curlProto(name string) error {
@@ -138,7 +132,7 @@ func (v *vendorPB) curlProto(name string) error {
 		return err
 	}
 
-	return helpers.WriteToFile(path.Join(models.ProjectPathVendorPB, name), data)
+	return helpers.WriteToFile(path.Join(v.project.AbsPath, models.ProjectPathVendorPB, name), data)
 }
 
 func (v *vendorPB) importLink(s string) (string, bool) {

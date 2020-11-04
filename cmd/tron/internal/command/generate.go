@@ -8,6 +8,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/loghole/tron/cmd/tron/internal/generate"
+	"github.com/loghole/tron/cmd/tron/internal/helpers"
 	"github.com/loghole/tron/cmd/tron/internal/project"
 	"github.com/loghole/tron/cmd/tron/internal/stdout"
 )
@@ -26,7 +27,11 @@ func (g *GenerateCMD) Command() *cobra.Command {
 		Use:   "generate",
 		Short: "Generate project pkg and implementation from proto api",
 		Long:  "Generate project pkg and implementation from proto api",
-		Run:   g.run,
+		Example: "# generate config constants from deploy values:\n" +
+			"tron generate --config\n" +
+			"# generate proto pkg and service implementations from protos:\n" +
+			"tron generate --proto=api",
+		Run: g.run,
 	}
 
 	cmd.Flags().StringArray(FlagProtoDirs, []string{}, "directory with protos for generating your services")
@@ -38,24 +43,28 @@ func (g *GenerateCMD) Command() *cobra.Command {
 func (g *GenerateCMD) run(cmd *cobra.Command, args []string) {
 	protoDirs, err := cmd.Flags().GetStringArray(FlagProtoDirs)
 	if err != nil {
-		panic(err)
+		helpers.PrintCommandHelp(cmd)
+		os.Exit(1)
 	}
 
 	if len(protoDirs) > 0 {
 		if err := g.runProto(protoDirs); err != nil {
-			g.printer.Println(color.FgRed, "Generate protos failed: %v", err)
+			g.printer.Printf(color.FgRed, "Generate protos failed: %v\n", err)
+			helpers.PrintCommandHelp(cmd)
 			os.Exit(1)
 		}
 	}
 
 	config, err := cmd.Flags().GetBool(FlagConfig)
 	if err != nil {
-		panic(err)
+		helpers.PrintCommandHelp(cmd)
+		os.Exit(1)
 	}
 
 	if config {
 		if err := g.runConfig(); err != nil {
-			g.printer.Println(color.FgRed, "Generate config failed: %v", err)
+			g.printer.Printf(color.FgRed, "Generate config failed: %v\n", err)
+			helpers.PrintCommandHelp(cmd)
 			os.Exit(1)
 		}
 	}

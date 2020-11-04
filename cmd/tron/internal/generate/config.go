@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"go/format"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/fatih/color"
@@ -19,6 +20,7 @@ import (
 )
 
 type config struct {
+	project  *project.Project
 	printer  stdout.Printer
 	imports  map[string]struct{}
 	internal map[string]struct{}
@@ -27,6 +29,7 @@ type config struct {
 
 func Config(p *project.Project, printer stdout.Printer) error {
 	generator := &config{
+		project: p,
 		printer: printer,
 		imports: make(map[string]struct{}),
 		files: []string{
@@ -81,21 +84,25 @@ func (c *config) run() error {
 		return simplerr.Wrap(err, "failed to format config")
 	}
 
-	if err := helpers.WriteToFile(models.ConfigConstFilepath, formatted); err != nil {
+	if err := helpers.WriteToFile(
+		filepath.Join(c.project.AbsPath, models.ConfigConstFilepath),
+		formatted); err != nil {
 		return err
 	}
 
-	if err := helpers.WriteWithConfirm(models.ConfigFilepath, []byte(templates.ConfigTemplate)); err != nil {
+	if err := helpers.WriteWithConfirm(
+		filepath.Join(c.project.AbsPath, models.ConfigFilepath),
+		[]byte(templates.ConfigTemplate)); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (c *config) parseFile(filepath string) error {
-	file, err := os.Open(filepath)
+func (c *config) parseFile(path string) error {
+	file, err := os.Open(filepath.Join(c.project.AbsPath, path))
 	if err != nil {
-		return simplerr.Wrapf(err, "open file '%s' failed", filepath)
+		return simplerr.Wrapf(err, "open file '%s' failed", path)
 	}
 
 	defer helpers.Close(file)
