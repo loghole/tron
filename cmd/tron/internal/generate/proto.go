@@ -2,7 +2,6 @@ package generate
 
 import (
 	"bytes"
-	"errors"
 	"fmt"
 	"os/exec"
 	"path"
@@ -33,8 +32,6 @@ const (
 		"Mgoogle/protobuf/type.proto=github.com/gogo/protobuf/types," +
 		"Mgoogle/protobuf/wrappers.proto=github.com/gogo/protobuf/types"
 )
-
-var ErrProtoc = errors.New("protoc")
 
 func Protos(p *project.Project, printer stdout.Printer) error {
 	printer.VerbosePrintln(color.FgMagenta, "Generate proto files")

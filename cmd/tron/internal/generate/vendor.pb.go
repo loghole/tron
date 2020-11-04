@@ -3,7 +3,6 @@ package generate
 import (
 	"bufio"
 	"bytes"
-	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -24,11 +23,6 @@ const (
 	github      = "github.com"
 	githubRaw   = "https://raw.githubusercontent.com"
 	importParts = 3
-)
-
-var (
-	ErrBadImport = errors.New("bad import")
-	ErrReqFailed = errors.New("request failed")
 )
 
 type vendorPB struct {

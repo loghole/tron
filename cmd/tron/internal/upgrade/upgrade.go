@@ -38,10 +38,15 @@ type Upgrade struct {
 	releases []*release
 }
 
-func New(printer stdout.Printer) (*Upgrade, error) {
+func New(printer stdout.Printer, stable bool) (*Upgrade, error) {
 	list, err := releasesList()
 	if err != nil {
 		return nil, simplerr.Wrap(err, "get releases list failed")
+	}
+
+	list, err = filterReleases(list, stable)
+	if err != nil {
+		return nil, simplerr.Wrap(err, "filter releases list failed")
 	}
 
 	return &Upgrade{printer: printer, releases: list}, nil
@@ -164,6 +169,29 @@ func (u *Upgrade) install(rel *release, dir string) error {
 	return nil
 }
 
+func filterReleases(list []*release, stable bool) ([]*release, error) {
+	result := make([]*release, 0, len(list))
+
+	minVersion, err := semver.NewVersion(tronMinVersion)
+	if err != nil {
+		return nil, simplerr.Wrap(err, "parse min semver version failed")
+	}
+
+	for _, rel := range list {
+		if minVersion.Compare(rel.version()) >= 0 {
+			continue
+		}
+
+		if stable && rel.version().Prerelease() != "" {
+			continue
+		}
+
+		result = append(result, rel)
+	}
+
+	return result, nil
+}
+
 func releasesList() ([]*release, error) {
 	resp, err := http.Get(releasesURL) // nolint:gosec,bodyclose,noctx //body is closed
 	if err != nil {
@@ -172,25 +200,10 @@ func releasesList() ([]*release, error) {
 
 	defer helpers.Close(resp.Body)
 
-	dest := make([]*release, 0)
+	result := make([]*release, 0)
 
-	if err := jsoniter.NewDecoder(resp.Body).Decode(&dest); err != nil {
+	if err := jsoniter.NewDecoder(resp.Body).Decode(&result); err != nil {
 		return nil, simplerr.Wrap(err, "unmarshal failed")
-	}
-
-	result := make([]*release, 0, len(dest))
-
-	constraint, err := semver.NewConstraint(">= " + tronMinVersion)
-	if err != nil {
-		return nil, simplerr.Wrap(err, "build semver constraint failed")
-	}
-
-	for _, rel := range dest {
-		if !constraint.Check(rel.version()) {
-			continue
-		}
-
-		result = append(result, rel)
 	}
 
 	return result, nil

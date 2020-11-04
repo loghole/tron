@@ -1,6 +1,7 @@
 package command
 
 import (
+	"errors"
 	"os"
 
 	"github.com/fatih/color"
@@ -18,6 +19,7 @@ const (
 	FlagConfig    = "config"
 	FlagVersion   = "version"
 	FlagList      = "list"
+	FlagUnstable  = "unstable"
 )
 
 type InitCMD struct {
@@ -75,7 +77,7 @@ func (i *InitCMD) run(cmd *cobra.Command, args []string) {
 }
 
 func (i *InitCMD) runInit(module string, dirs []string) (err error) {
-	i.printer.VerbosePrintln(color.Reset, "Init project")
+	i.printer.VerbosePrintln(color.FgMagenta, "Init project")
 
 	i.project, err = project.NewProject(module, i.printer)
 	if err != nil {
@@ -97,11 +99,14 @@ func (i *InitCMD) runInit(module string, dirs []string) (err error) {
 		generate.Linter,
 		generate.Gitignore,
 		generate.Dockerfile,
-		generate.Values); err != nil {
+		generate.Values,
+		generate.ReadmeMD); err != nil {
 		return simplerr.Wrap(err, "generate files failed")
 	}
 
-	if err := helpers.Exec(i.project.AbsPath, "make", "generate"); err != nil {
+	i.printer.VerbosePrintln(color.FgMagenta, "Generate files from proto api")
+
+	if err := helpers.ExecWithPrint(i.project.AbsPath, "make", "generate"); err != nil {
 		return simplerr.Wrap(err, "exec 'make generate' failed")
 	}
 
@@ -119,6 +124,10 @@ func (i *InitCMD) runInit(module string, dirs []string) (err error) {
 func (i *InitCMD) generate(list ...generate.Generator) error {
 	for _, gen := range list {
 		if err := gen(i.project, i.printer); err != nil {
+			if errors.Is(err, generate.ErrAlreadyExists) {
+				continue
+			}
+
 			return err
 		}
 

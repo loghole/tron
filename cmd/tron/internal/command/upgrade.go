@@ -6,6 +6,7 @@ import (
 	"github.com/fatih/color"
 	"github.com/spf13/cobra"
 
+	"github.com/loghole/tron/cmd/tron/internal/helpers"
 	"github.com/loghole/tron/cmd/tron/internal/project"
 	"github.com/loghole/tron/cmd/tron/internal/stdout"
 	"github.com/loghole/tron/cmd/tron/internal/upgrade"
@@ -34,25 +35,35 @@ func (u *Upgrade) Command() *cobra.Command {
 
 	cmd.Flags().String(FlagVersion, "latest", "semver tag <v1.2.3>")
 	cmd.Flags().Bool(FlagList, false, "list available versions")
+	cmd.Flags().Bool(FlagUnstable, false, "unstable tron versions <v1.2.3-rc2.0>")
 
 	return cmd
 }
 
 func (u *Upgrade) run(cmd *cobra.Command, args []string) {
-	upgrader, err := upgrade.New(u.printer)
+	unstable, err := cmd.Flags().GetBool(FlagUnstable)
+	if err != nil {
+		helpers.PrintCommandHelp(cmd)
+		os.Exit(1)
+	}
+
+	upgrader, err := upgrade.New(u.printer, !unstable)
 	if err != nil {
 		u.printer.Printf(color.FgRed, "Create upgrader failed: %v\n", err)
+		helpers.PrintCommandHelp(cmd)
 		os.Exit(1)
 	}
 
 	version, err := cmd.Flags().GetString(FlagVersion)
 	if err != nil {
-		panic(err)
+		helpers.PrintCommandHelp(cmd)
+		os.Exit(1)
 	}
 
 	list, err := cmd.Flags().GetBool(FlagList)
 	if err != nil {
-		panic(err)
+		helpers.PrintCommandHelp(cmd)
+		os.Exit(1)
 	}
 
 	if list {

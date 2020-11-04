@@ -13,17 +13,13 @@ import (
 )
 
 func GoMod(p *project.Project, printer stdout.Printer) error {
-	printer.VerbosePrintln(color.FgMagenta, "Initialise go mod")
-
 	path := filepath.Join(p.AbsPath, models.GoModFile)
 
-	if _, err := os.Stat(path); err != nil {
-		if os.IsNotExist(err) {
-			return helpers.Exec(p.AbsPath, "go", "mod", "init", p.Module)
-		}
+	if _, err := os.Stat(path); os.IsNotExist(err) {
+		printer.VerbosePrintln(color.FgMagenta, "Initialise go mod")
 
-		return err
+		return helpers.Exec(p.AbsPath, "go", "mod", "init", p.Module)
 	}
 
-	return nil
+	return ErrAlreadyExists
 }

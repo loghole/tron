@@ -44,8 +44,8 @@ LOCAL_BIN:=$(CURDIR)/bin
 DOCKERFILE   = {{ .Dockerfile }}
 DOCKER_IMAGE = {{ .DockerImage }}
 
-VERSION  := $(shell git describe --tags --always)
-GIT_HASH := $(shell git rev-parse HEAD)
+VERSION  := $(shell git describe --exact-match --abbrev=0 --tags 2> /dev/null)
+GIT_HASH := $(shell git rev-parse HEAD 2> /dev/null)
 BUILD_TS := $(shell date +%FT%T%z)
 
 LDFLAGS:=-X 'github.com/loghole/tron/internal/app.ServiceName={{ .ServiceName }}' \
@@ -60,7 +60,7 @@ LDFLAGS:=-X 'github.com/loghole/tron/internal/app.ServiceName={{ .ServiceName }}
 
 # generate code from proto and config
 .PHONY: generate
-generate: .bin-deps .pb-deps .generate
+generate: .pb-deps .generate
 
 # generate code from proto but without downloading proto deps
 .PHONY: fast-generate
@@ -76,10 +76,6 @@ generate-config:
 	$(info #Installing proto dependencies...)
 	GOBIN=$(LOCAL_BIN) go install github.com/gogo/protobuf/protoc-gen-gofast
 	GOBIN=$(LOCAL_BIN) go install github.com/utrack/clay/v2/cmd/protoc-gen-goclay
-
-.PHONY: .bin-deps
-.bin-deps:
-	$(info #Installing binary dependencies...)
 
 gotest:
 	go test -race -v -cover -coverprofile coverage.out ./...

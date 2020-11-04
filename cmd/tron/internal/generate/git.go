@@ -13,17 +13,13 @@ import (
 )
 
 func Git(p *project.Project, printer stdout.Printer) error {
-	printer.VerbosePrintln(color.FgMagenta, "Initialise git")
-
 	path := filepath.Join(p.AbsPath, models.GitDir)
 
-	if _, err := os.Stat(path); err != nil {
-		if os.IsNotExist(err) {
-			return helpers.Exec(p.AbsPath, "git", "init")
-		}
+	if _, err := os.Stat(path); os.IsNotExist(err) {
+		printer.VerbosePrintln(color.FgMagenta, "Initialise git")
 
-		return err
+		return helpers.Exec(p.AbsPath, "git", "init")
 	}
 
-	return nil
+	return ErrAlreadyExists
 }
