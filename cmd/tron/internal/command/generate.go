@@ -47,6 +47,13 @@ func (g *GenerateCMD) run(cmd *cobra.Command, args []string) {
 		os.Exit(1)
 	}
 
+	g.project, err = project.NewProject("", g.printer)
+	if err != nil {
+		g.printer.Printf(color.FgRed, "Parse project failed: %v\n", err)
+		helpers.PrintCommandHelp(cmd)
+		os.Exit(1)
+	}
+
 	if len(protoDirs) > 0 {
 		if err := g.runProto(protoDirs); err != nil {
 			g.printer.Printf(color.FgRed, "Generate protos failed: %v\n", err)
@@ -73,11 +80,6 @@ func (g *GenerateCMD) run(cmd *cobra.Command, args []string) {
 }
 
 func (g *GenerateCMD) runProto(dirs []string) (err error) {
-	g.project, err = project.NewProject("", g.printer)
-	if err != nil {
-		return simplerr.Wrap(err, "parse project failed")
-	}
-
 	if err := g.project.FindProtoFiles(dirs...); err != nil {
 		return simplerr.Wrap(err, "find proto files failed")
 	}
