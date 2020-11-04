@@ -1,6 +1,7 @@
 package tron
 
 import (
+	"github.com/lissteron/simplerr"
 	"github.com/spf13/viper"
 
 	"github.com/loghole/tron/internal/app"
@@ -38,15 +39,15 @@ func (s *servers) init(opts *app.Options) (err error) {
 
 func (s *servers) build(opts *app.Options) error {
 	if err := s.publicGRPC.BuildServer(opts.TLSConfig, opts.GRPCOptions); err != nil {
-		return err
+		return simplerr.Wrap(err, "failed to build public grpc server")
 	}
 
 	if err := s.publicHTTP.BuildServer(opts.TLSConfig); err != nil {
-		return err
+		return simplerr.Wrap(err, "failed to build public http server")
 	}
 
 	if err := s.adminHTTP.BuildServer(nil); err != nil {
-		return err
+		return simplerr.Wrap(err, "failed to build admin http server")
 	}
 
 	return nil

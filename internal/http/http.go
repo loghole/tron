@@ -84,7 +84,7 @@ func (s *Server) Serve() error {
 	}
 
 	if err := s.server.Serve(s.listener); !errors.Is(err, http.ErrServerClosed) {
-		return err
+		return simplerr.Wrap(err, "serve http failed")
 	}
 
 	return nil

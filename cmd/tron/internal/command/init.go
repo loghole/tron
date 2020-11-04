@@ -50,7 +50,7 @@ func (i *InitCMD) Command() *cobra.Command {
 }
 
 func (i *InitCMD) run(cmd *cobra.Command, args []string) {
-	if ok := project.NewChecker(i.printer).CheckRequirements(); !ok {
+	if ok := project.NewChecker(i.printer).CheckInitRequirements(); !ok {
 		i.printer.Println(color.FgRed, "Requirements check failed")
 		os.Exit(1)
 	}
@@ -73,7 +73,7 @@ func (i *InitCMD) run(cmd *cobra.Command, args []string) {
 		os.Exit(1)
 	}
 
-	i.printer.Println(color.FgGreen, "Success\n")
+	i.printer.Println(color.FgGreen, "Success")
 }
 
 func (i *InitCMD) runInit(module string, dirs []string) (err error) {
@@ -104,11 +104,13 @@ func (i *InitCMD) runInit(module string, dirs []string) (err error) {
 		return simplerr.Wrap(err, "generate files failed")
 	}
 
-	i.printer.VerbosePrintln(color.FgMagenta, "Generate files from proto api")
+	i.printer.Println(color.FgMagenta, "Generate files from proto api if exists")
 
 	if err := helpers.ExecWithPrint(i.project.AbsPath, "make", "generate"); err != nil {
 		return simplerr.Wrap(err, "exec 'make generate' failed")
 	}
+
+	i.printer.Println(color.FgMagenta, "Generate config and main files")
 
 	if err := i.generate(generate.Config, generate.Mainfile); err != nil {
 		return simplerr.Wrap(err, "generate config and main files failed")

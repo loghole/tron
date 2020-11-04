@@ -86,8 +86,6 @@ func (u *Upgrade) Upgrade(tag string) error {
 		return err
 	}
 
-	u.printer.Println(color.FgGreen, "Success")
-
 	return nil
 }
 

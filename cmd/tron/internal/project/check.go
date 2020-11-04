@@ -34,7 +34,7 @@ func NewChecker(printer stdout.Printer) *Checker {
 	}
 }
 
-func (c *Checker) CheckRequirements() (failed bool) {
+func (c *Checker) CheckAllRequirements() (failed bool) {
 	return c.checkRequirements(map[string]func() error{
 		"git":    c.checkGitVersion,
 		"golang": c.checkGoVersion,
@@ -42,9 +42,22 @@ func (c *Checker) CheckRequirements() (failed bool) {
 	})
 }
 
+func (c *Checker) CheckInitRequirements() (failed bool) {
+	return c.checkRequirements(map[string]func() error{
+		"git":    c.checkGitVersion,
+		"golang": c.checkGoVersion,
+	})
+}
+
 func (c *Checker) CheckGolang() (failed bool) {
 	return c.checkRequirements(map[string]func() error{
 		"golang": c.checkGoVersion,
+	})
+}
+
+func (c *Checker) CheckProtoc() (failed bool) {
+	return c.checkRequirements(map[string]func() error{
+		"protoc": c.checkProtocVersion,
 	})
 }
 

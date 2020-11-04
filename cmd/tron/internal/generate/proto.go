@@ -38,6 +38,8 @@ func Protos(p *project.Project, printer stdout.Printer) error {
 
 	generator := &proto{project: p, printer: printer, pkgMap: strings.Split(pkgMap, ",")}
 
+	generator.initPkgMap()
+
 	return generator.run()
 }
 
@@ -48,8 +50,6 @@ type proto struct {
 }
 
 func (p *proto) run() error {
-	p.initPkgMap()
-
 	for _, proto := range p.project.Protos {
 		p.printer.VerbosePrintf(color.Reset, "\tgenerate go-fast %s: ", proto.Service.SnakeCasedName())
 

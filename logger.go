@@ -1,6 +1,7 @@
 package tron
 
 import (
+	"github.com/lissteron/simplerr"
 	"github.com/loghole/lhw/zap"
 	trace "github.com/loghole/tracing/tracelog"
 	"github.com/spf13/viper"
@@ -24,7 +25,7 @@ func (l *logger) init(info *Info, opts *app.Options) (err error) {
 		DisableStdout: viper.GetBool(app.LoggerDisableStdoutEnv),
 	})
 	if err != nil {
-		return err
+		return simplerr.Wrap(err, "init logger failed")
 	}
 
 	l.tracelog = trace.NewTraceLogger(l.Logger.SugaredLogger)

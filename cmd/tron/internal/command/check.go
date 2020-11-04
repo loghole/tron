@@ -29,10 +29,10 @@ func (c *Check) Command() *cobra.Command {
 }
 
 func (c *Check) run(cmd *cobra.Command, args []string) {
-	if ok := project.NewChecker(c.printer).CheckRequirements(); !ok {
+	if ok := project.NewChecker(c.printer).CheckAllRequirements(); !ok {
 		c.printer.Println(color.FgHiRed, "Requirements check failed")
 		os.Exit(1)
 	}
 
-	c.printer.Println(color.FgGreen, "Success\n")
+	c.printer.Println(color.FgGreen, "Success")
 }

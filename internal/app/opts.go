@@ -6,6 +6,7 @@ import (
 	"syscall"
 
 	"github.com/go-chi/cors"
+	"github.com/lissteron/simplerr"
 	"github.com/loghole/lhw/zap"
 	"google.golang.org/grpc"
 )
@@ -36,7 +37,7 @@ func NewOptions(options ...Option) (*Options, error) {
 
 	hostname, err := os.Hostname()
 	if err != nil {
-		return nil, err
+		return nil, simplerr.Wrap(err, "get hostname failed")
 	}
 
 	opts := &Options{
