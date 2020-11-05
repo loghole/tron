@@ -33,7 +33,7 @@ type App struct {
 func New(options ...app.Option) (*App, error) {
 	opts, err := app.NewOptions(options...)
 	if err != nil {
-		return nil, err
+		return nil, simplerr.Wrap(err, "apply opts failed")
 	}
 
 	if err := config.Init(); err != nil {
@@ -43,11 +43,11 @@ func New(options ...app.Option) (*App, error) {
 	a := &App{opts: opts, info: initInfo()}
 
 	if err := a.logger.init(a.info, a.opts); err != nil {
-		return nil, simplerr.Wrap(err, "init logger failed")
+		return nil, err
 	}
 
 	if err := a.tracer.init(a.info); err != nil {
-		return nil, simplerr.Wrap(err, "init tracer failed")
+		return nil, err
 	}
 
 	if err := a.servers.init(a.opts); err != nil {

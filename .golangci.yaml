@@ -1,12 +1,11 @@
 run:
   tests: false
-  skip-dirs:
-    - scripts
 linters:
   enable-all: true
   disable:
     - godot
     - gci
+    - exhaustivestruct
 linters-settings:
   gocritic:
     enabled-tags:
@@ -15,3 +14,5 @@ linters-settings:
       - performance
       - diagnostic
       - opinionated
+service:
+  golangci-lint-version: 1.32.x

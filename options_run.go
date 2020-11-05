@@ -3,6 +3,7 @@ package tron
 import (
 	"crypto/tls"
 
+	"github.com/lissteron/simplerr"
 	"google.golang.org/grpc"
 
 	"github.com/loghole/tron/internal/app"
@@ -36,6 +37,6 @@ func WithTLSKeyPair(certFile, keyFile string) RunOption {
 		opts.TLSConfig.Certificates = make([]tls.Certificate, 1)
 		opts.TLSConfig.Certificates[0], err = tls.LoadX509KeyPair(certFile, keyFile)
 
-		return err
+		return simplerr.Wrap(err, "load X509 key pair failed")
 	}
 }

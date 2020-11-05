@@ -49,6 +49,10 @@ func NewProject(module string, printer stdout.Printer) (project *Project, err er
 	return project, nil
 }
 
+func (p *Project) WithoutProtos() bool {
+	return len(p.Protos) == 0
+}
+
 func (p *Project) FindProtoFiles(dirs ...string) error {
 	p.printer.VerbosePrintln(color.FgMagenta, "Find proto files")
 

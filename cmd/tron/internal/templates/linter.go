@@ -3,13 +3,12 @@ package templates
 const GolangCILintTemplate = `# More info on config here: https://github.com/golangci/golangci-lint#config-file
 run:
   tests: false
-  skip-dirs:
-  - scripts
 linters:
   enable-all: true
   disable:
    - godot
    - gci
+   - exhaustivestruct
 linters-settings:
   gocritic:
     enabled-tags:
@@ -19,5 +18,5 @@ linters-settings:
       - diagnostic
       - opinionated
 service:
-  golangci-lint-version: 1.31.x
+  golangci-lint-version: 1.32.x
 `

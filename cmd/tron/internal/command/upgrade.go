@@ -84,4 +84,6 @@ func (u *Upgrade) run(cmd *cobra.Command, args []string) {
 		u.printer.Printf(color.FgRed, "Upgrade failed: %v\n", err)
 		os.Exit(1)
 	}
+
+	u.printer.Println(color.FgGreen, "Success")
 }
