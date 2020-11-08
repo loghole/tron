@@ -50,9 +50,6 @@ type Error struct {
 }
 
 func (r *ErrResponse) parseErr(err error) {
-	code := simplerr.GetCode(err)
-	r.GRPCStatus = codes.Code(code.GRPC())
-
 	var validationErrs validation.Errors
 
 	if errors.As(err, &validationErrs) {
@@ -60,6 +57,13 @@ func (r *ErrResponse) parseErr(err error) {
 			return
 		}
 	}
+
+	if errC := simplerr.GetWithCode(err); errC != nil {
+		err = errC
+	}
+
+	code := simplerr.GetCode(err)
+	r.GRPCStatus = codes.Code(code.GRPC())
 
 	if httpCode := code.HTTP(); httpCode > 0 {
 		r.Status = httpCode
