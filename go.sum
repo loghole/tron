@@ -159,8 +159,8 @@ github.com/kr/pretty v0.1.0/go.mod h1:dAy3ld7l9f0ibDNOQOHHMYYIIbhfbHSm3C4ZsoJORN
 github.com/kr/pty v1.1.1/go.mod h1:pFQYn66WHrOpPYNljwOMqo10TkYh1fy3cYio2l3bCsQ=
 github.com/kr/text v0.1.0 h1:45sCR5RtlFHMR4UwH9sdQ5TC8v0qDQCHnXt+kaKSTVE=
 github.com/kr/text v0.1.0/go.mod h1:4Jbv+DJW3UT/LiOwJeYQe1efqtUx/iVham/4vfdArNI=
-github.com/lissteron/simplerr v0.5.0 h1:wmpYjAG+ZkHGmwRoxLLoausYpb6ZjopPCdvf0P6su7Q=
-github.com/lissteron/simplerr v0.5.0/go.mod h1:LbXZHkxZf76N0rWsUr9Nk9jkxjP2IpdnUI3/r/gqp3E=
+github.com/lissteron/simplerr v0.6.1 h1:rbLO8bjy2WxmsuNGU6wTNfwEqPURBV6T6MIy/MM0M+8=
+github.com/lissteron/simplerr v0.6.1/go.mod h1:LbXZHkxZf76N0rWsUr9Nk9jkxjP2IpdnUI3/r/gqp3E=
 github.com/loghole/lhw v0.4.3 h1:ppwyeWk4Y7j6XMphqe8IBI45B9yLXyBmWZ6JE4jHhq0=
 github.com/loghole/lhw v0.4.3/go.mod h1:4fkE4CA1cDylZbtbG4jQhIqS/Zm59CYGqeyUbPQkJ8k=
 github.com/loghole/tracing v0.11.0 h1:cC2wcTLm6ZOMwnP6hbXvIZmc8hnqWYFI36Y8ilDwJew=
