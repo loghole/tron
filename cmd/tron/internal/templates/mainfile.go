@@ -107,7 +107,7 @@ func main() {
 	var (
 		{{ range $proto := .Protos -}}
 			{{- if $proto.Service.WithImpl -}}
-			{{ $proto.Service.Variable }} = {{ $proto.Service.Alias }}.New{{ $proto.Service.Name }}()
+			{{ $proto.Service.GoImportAlias }}Handler = {{ $proto.Service.GoImportAlias }}.NewImplementation()
 			{{ end -}}
 		{{ end }}
 	)
@@ -115,7 +115,7 @@ func main() {
 	if err := app.WithRunOptions().Run(
 			{{- range $proto := .Protos -}} 
 			{{- if $proto.Service.WithImpl -}}
-			{{ $proto.Service.Variable }},
+			{{ $proto.Service.GoImportAlias }}Handler,
 			{{- end -}}
 			{{- end -}}
 		); err != nil {

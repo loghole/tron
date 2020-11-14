@@ -5,12 +5,13 @@ package stringsV1
 import (
 	context "context"
 	errors "errors"
+	stringsV1 "example/pkg/strings/v1"
 	typesV1 "example/pkg/types/v1"
 )
 
-func (i *Implementation) ToUpper(
+func (i *Implementation) List(
 	ctx context.Context,
 	req *typesV1.String,
-) (resp *typesV1.String, err error) {
-	return nil, errors.New("method ToUpper unimplemented")
+) (resp *stringsV1.ListResp, err error) {
+	return nil, errors.New("method List unimplemented")
 }

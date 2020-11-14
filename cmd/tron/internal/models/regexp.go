@@ -11,6 +11,5 @@ var (
 	ImportRegexp          = regexp.MustCompile(`^import "([^"]+)";$`)
 	ServiceRegexp         = regexp.MustCompile(`^service (\S+) {`)
 	PackageRegexp         = regexp.MustCompile(`^package ([^;]+);$`)
-	GoPackageRegexp       = regexp.MustCompile(`^option go_package "([^"]+)"$`)
 	ModuleRegexp          = regexp.MustCompile(`^module (.+)$`)
 )

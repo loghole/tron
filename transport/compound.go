@@ -56,6 +56,7 @@ func (c *swagJoiner) AddDefinition(buf []byte) error {
 
 	if c.result == nil {
 		c.result = def
+
 		return nil
 	}
 
@@ -70,9 +71,11 @@ func (c *swagJoiner) SumDefinitions() []byte {
 	if c.result == nil {
 		c.result = map[string]interface{}{}
 	}
+
 	ret, err := json.Marshal(c.result)
 	if err != nil {
 		panic(err)
 	}
+
 	return ret
 }

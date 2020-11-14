@@ -195,7 +195,7 @@ func (p *Project) scanProtoFile(file io.Reader, proto *models.Proto) (*models.Pr
 		return nil, err
 	}
 
-	if err := proto.SetService(p.Module, srv, pkg); err != nil {
+	if err := proto.SetService(srv, pkg); err != nil {
 		return nil, err
 	}
 

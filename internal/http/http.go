@@ -49,8 +49,6 @@ func (s *Server) BuildServer(tlsConfig *tls.Config) (err error) {
 		}
 	}
 
-	setClayErrorWriter()
-
 	return nil
 }
 
@@ -59,7 +57,7 @@ func (s *Server) RegistryDesc(services ...transport.Service) {
 		return
 	}
 
-	mux := runtime.NewServeMux()
+	mux := runtime.NewServeMux(runtime.WithErrorHandler(ErrorWriter()))
 
 	for _, service := range services {
 		if service != nil {

@@ -3,8 +3,6 @@ package generate
 import (
 	"bytes"
 	"fmt"
-	"io/ioutil"
-	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
@@ -16,8 +14,6 @@ import (
 	"github.com/loghole/tron/cmd/tron/internal/models"
 	"github.com/loghole/tron/cmd/tron/internal/project"
 	"github.com/loghole/tron/cmd/tron/internal/stdout"
-	"github.com/loghole/tron/cmd/tron/internal/templates"
-	"github.com/loghole/tron/cmd/tron/internal/version"
 )
 
 const (
@@ -57,7 +53,7 @@ func (p *proto) run() error {
 		// Generate protoc-gen-go and gateway.
 		p.printer.VerbosePrintf(color.Reset, "\tgenerate protoc-gen-go %s: ", proto.Service.SnakeCasedName())
 
-		if err := p.generateProtocGenGoAndGW(proto); err != nil {
+		if err := p.generateProtocGenGo(proto); err != nil {
 			p.printer.VerbosePrintf(color.FgRed, "ERROR: %v\n", err)
 		}
 
@@ -76,24 +72,30 @@ func (p *proto) run() error {
 	return nil
 }
 
-func (p *proto) generateProtocGenGoAndGW(proto *models.Proto) error {
-	err := helpers.Mkdir(filepath.Join(models.ProjectPathPkgClients, proto.Service.Package, proto.Name))
-	if err != nil {
+func (p *proto) generateProtocGenGo(proto *models.Proto) error {
+	if err := helpers.Mkdir(proto.PkgFilePath()); err != nil {
 		return err
 	}
 
-	outputPath := filepath.Join(models.ProjectPathPkgClients, proto.Service.Package)
+	var (
+		outputPath = filepath.Join(proto.PkgDirPath())
+		pkgMap     = strings.Join(p.pkgMap, ",")
+	)
 
 	args := []string{
-		fmt.Sprintf("--plugin=protoc-gen-go=%s", filepath.Join(p.project.AbsPath, "bin/protoc-gen-go")),
-		fmt.Sprintf("--plugin=protoc-gen-go-grpc=%s", filepath.Join(p.project.AbsPath, "bin/protoc-gen-go-grpc")),
-		fmt.Sprintf("--plugin=protoc-gen-grpc-gateway=%s", filepath.Join(p.project.AbsPath, "bin/protoc-gen-grpc-gateway")),
-		fmt.Sprintf("--plugin=protoc-gen-openapiv2=%s", filepath.Join(p.project.AbsPath, "bin/protoc-gen-openapiv2")),
+		fmt.Sprintf("--plugin=protoc-gen-go=%s",
+			filepath.Join(p.project.AbsPath, "bin", "protoc-gen-go")),
+		fmt.Sprintf("--plugin=protoc-gen-go-grpc=%s",
+			filepath.Join(p.project.AbsPath, "bin", "protoc-gen-go-grpc")),
+		fmt.Sprintf("--plugin=protoc-gen-grpc-gateway=%s",
+			filepath.Join(p.project.AbsPath, "bin", "protoc-gen-grpc-gateway")),
+		fmt.Sprintf("--plugin=protoc-gen-openapiv2=%s",
+			filepath.Join(p.project.AbsPath, "bin", "protoc-gen-openapiv2")),
 		fmt.Sprintf("-I%s:%s", proto.RelativeDir, models.ProjectPathVendorPB),
-		fmt.Sprintf("--go_out=%s:%s", strings.Join(p.pkgMap, ","), outputPath),
-		fmt.Sprintf("--go-grpc_out=%s:%s", strings.Join(p.pkgMap, ","), outputPath),
-		fmt.Sprintf("--grpc-gateway_out=%s:%s", strings.Join(p.pkgMap, ","), outputPath),
-		fmt.Sprintf("--openapiv2_out=%s:%s", strings.Join(p.pkgMap, ","), outputPath),
+		fmt.Sprintf("--go_out=%s:%s", pkgMap, outputPath),
+		fmt.Sprintf("--go-grpc_out=%s:%s", pkgMap, outputPath),
+		fmt.Sprintf("--grpc-gateway_out=%s:%s", pkgMap, outputPath),
+		fmt.Sprintf("--openapiv2_out=%s:%s", pkgMap, outputPath),
 		"--grpc-gateway_opt", "logtostderr=true",
 		"--openapiv2_opt", "fqn_for_openapi_name=true",
 		filepath.Join(proto.RelativeDir, proto.NameWithExt()),
@@ -107,59 +109,29 @@ func (p *proto) generateProtocGenGoAndGW(proto *models.Proto) error {
 }
 
 func (p *proto) generateTransport(proto *models.Proto) error {
-	err := helpers.Mkdir(filepath.Join(models.ProjectPathPkgClients, proto.Service.Package, proto.Name))
-	if err != nil {
+	if err := helpers.Mkdir(proto.PkgFilePath()); err != nil {
 		return err
 	}
 
-	if !proto.Service.WithImpl {
-		return nil
+	var (
+		outputPath = filepath.Join(proto.PkgDirPath())
+		pkgMap     = strings.Join(p.pkgMap, ",")
+	)
+
+	args := []string{
+		fmt.Sprintf("--plugin=protoc-gen-tron=%s", filepath.Join(p.project.AbsPath, "bin", "protoc-gen-tron")),
+		fmt.Sprintf("-I%s:%s", proto.RelativeDir, models.ProjectPathVendorPB),
+		fmt.Sprintf("--tron_out=%s:%s", pkgMap, outputPath),
+		"--tron_opt",
+		fmt.Sprintf("impl-path=%s,pkg-path=%s", models.ProjectPathImplementation, models.ProjectPathPkgClients),
+		filepath.Join(proto.RelativeDir, proto.NameWithExt()),
 	}
 
-	data := templates.TransportData{
-		TronVersion: version.CliVersion,
-		GoPackage:   proto.Service.Package, // TODO parse package name from option.
-		ServiceName: proto.Service.Name,
-	}
-
-	data.Swagger, err = p.readSwaggerFile(proto)
-	if err != nil {
-		return fmt.Errorf("can't read swagger file: %w", err)
-	}
-
-	transport, err := helpers.ExecTemplate(templates.Transport, data)
-	if err != nil {
-		return simplerr.Wrap(err, "failed to exec template")
-	}
-
-	path := filepath.Join(
-		p.project.AbsPath,
-		models.ProjectPathPkgClients,
-		proto.Service.Package,
-		fmt.Sprintf("%s.bp.transport.go", strings.ToLower(proto.Service.Name)))
-
-	if err := helpers.WriteToFile(path, []byte(transport)); err != nil {
-		return err
+	if err := execProtoc(p.project.AbsPath, args); err != nil {
+		return simplerr.Wrap(err, "generate protoc-gen-go")
 	}
 
 	return nil
-}
-
-func (p *proto) readSwaggerFile(proto *models.Proto) (string, error) {
-	path := filepath.Join(
-		p.project.AbsPath,
-		models.ProjectPathPkgClients,
-		proto.Service.Package,
-		fmt.Sprintf("%s.swagger.json", strings.ToLower(proto.Service.Name)))
-
-	data, err := ioutil.ReadFile(path)
-	if err != nil {
-		return "", err
-	}
-
-	defer os.Remove(path)
-
-	return strings.Join([]string{"`", string(data), "`"}, ""), err
 }
 
 func (p *proto) initPkgMap() {

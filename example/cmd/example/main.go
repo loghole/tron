@@ -1,10 +1,9 @@
 package main
 
 import (
-	log "log"
-
 	config "example/config"
 	stringsV1 "example/internal/app/controllers/strings/v1"
+	log "log"
 
 	tron "github.com/loghole/tron"
 )
@@ -22,7 +21,7 @@ func main() {
 	// Init all ..
 
 	var (
-		stringsV1Handler = stringsV1.NewStrings()
+		stringsV1Handler = stringsV1.NewImplementation()
 	)
 
 	if err := app.WithRunOptions().Run(stringsV1Handler); err != nil {

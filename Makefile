@@ -9,6 +9,7 @@ test:
 lint:
 	golangci-lint run -v
 	cd cmd/tron && golangci-lint run -v
+	cd cmd/protoc-gen-tron && golangci-lint run -v
 
 update-swagger:
 	rm -fr /tmp/swagger-ui
