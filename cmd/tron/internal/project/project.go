@@ -244,13 +244,13 @@ func moduleFromGoMod() (string, error) {
 	scanner.Split(bufio.ScanLines)
 
 	for scanner.Scan() {
-		if err := scanner.Err(); err != nil {
-			return "", err
-		}
-
 		if m := models.ModuleRegexp.FindStringSubmatch(scanner.Text()); len(m) > 1 {
 			return m[1], nil
 		}
+	}
+
+	if err := scanner.Err(); err != nil {
+		return "", err
 	}
 
 	return "", ErrModuleNotFound

@@ -21,7 +21,7 @@ type StringsClient interface {
 	// Method to upper
 	ToUpper(ctx context.Context, in *v1.String, opts ...grpc.CallOption) (*v1.String, error)
 	GetInfo(ctx context.Context, in *v1.String, opts ...grpc.CallOption) (*v1.String, error)
-	List(ctx context.Context, in *v1.String, opts ...grpc.CallOption) (*ListResp, error)
+	List(ctx context.Context, in *v1.String, opts ...grpc.CallOption) (*v1.String, error)
 }
 
 type stringsClient struct {
@@ -50,8 +50,8 @@ func (c *stringsClient) GetInfo(ctx context.Context, in *v1.String, opts ...grpc
 	return out, nil
 }
 
-func (c *stringsClient) List(ctx context.Context, in *v1.String, opts ...grpc.CallOption) (*ListResp, error) {
-	out := new(ListResp)
+func (c *stringsClient) List(ctx context.Context, in *v1.String, opts ...grpc.CallOption) (*v1.String, error) {
+	out := new(v1.String)
 	err := c.cc.Invoke(ctx, "/strings.v1.Strings/List", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -66,7 +66,7 @@ type StringsServer interface {
 	// Method to upper
 	ToUpper(context.Context, *v1.String) (*v1.String, error)
 	GetInfo(context.Context, *v1.String) (*v1.String, error)
-	List(context.Context, *v1.String) (*ListResp, error)
+	List(context.Context, *v1.String) (*v1.String, error)
 	mustEmbedUnimplementedStringsServer()
 }
 
@@ -80,7 +80,7 @@ func (UnimplementedStringsServer) ToUpper(context.Context, *v1.String) (*v1.Stri
 func (UnimplementedStringsServer) GetInfo(context.Context, *v1.String) (*v1.String, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetInfo not implemented")
 }
-func (UnimplementedStringsServer) List(context.Context, *v1.String) (*ListResp, error) {
+func (UnimplementedStringsServer) List(context.Context, *v1.String) (*v1.String, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method List not implemented")
 }
 func (UnimplementedStringsServer) mustEmbedUnimplementedStringsServer() {}

@@ -1,14 +1,19 @@
 package generate
 
 import (
+	"bufio"
 	"bytes"
 	"fmt"
+	"io"
+	"log"
+	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
 
 	"github.com/fatih/color"
 	"github.com/lissteron/simplerr"
+	"golang.org/x/tools/imports"
 
 	"github.com/loghole/tron/cmd/tron/internal/helpers"
 	"github.com/loghole/tron/cmd/tron/internal/models"
@@ -55,6 +60,8 @@ func (p *proto) run() error {
 
 		if err := p.generateProtocGenGo(proto); err != nil {
 			p.printer.VerbosePrintf(color.FgRed, "ERROR: %v\n", err)
+
+			return err
 		}
 
 		p.printer.VerbosePrintln(color.FgGreen, "OK")
@@ -64,6 +71,19 @@ func (p *proto) run() error {
 
 		if err := p.generateTransport(proto); err != nil {
 			p.printer.VerbosePrintf(color.FgRed, "ERROR: %v\n", err)
+
+			return err
+		}
+
+		p.printer.VerbosePrintln(color.FgGreen, "OK")
+
+		// Generate tron types.
+		p.printer.VerbosePrintf(color.Reset, "\tapply tron options %s: ", proto.Service.SnakeCasedName())
+
+		if err := p.applyTronOptions(proto); err != nil {
+			p.printer.VerbosePrintf(color.FgRed, "ERROR: %v\n", err)
+
+			return err
 		}
 
 		p.printer.VerbosePrintln(color.FgGreen, "OK")
@@ -134,6 +154,34 @@ func (p *proto) generateTransport(proto *models.Proto) error {
 	return nil
 }
 
+func (p *proto) applyTronOptions(proto *models.Proto) error {
+	file, err := os.OpenFile(proto.PkgGoTypesFilePath(), os.O_RDWR, 0666)
+	if err != nil {
+		return fmt.Errorf("can't open file '%s': %w", proto.PkgGoTypesFilePath(), err)
+	}
+
+	defer helpers.Close(file)
+
+	result, err := p.scanAndWriteTronOptions(file)
+	if err != nil {
+		return fmt.Errorf("can't apply tron options: %w", err)
+	}
+
+	if err := file.Truncate(0); err != nil {
+		return fmt.Errorf("can't truncate file '%s': %w", proto.PkgGoTypesFilePath(), err)
+	}
+
+	if _, err := file.Seek(0, 0); err != nil {
+		return fmt.Errorf("can't seek file '%s': %w", proto.PkgGoTypesFilePath(), err)
+	}
+
+	if _, err := file.Write(result); err != nil {
+		return fmt.Errorf("can't write data to file '%s': %w", proto.PkgGoTypesFilePath(), err)
+	}
+
+	return nil
+}
+
 func (p *proto) initPkgMap() {
 	exists := make(map[string]struct{})
 
@@ -168,6 +216,43 @@ func (p *proto) initPkgMap() {
 
 		p.pkgMap = append(p.pkgMap, fmt.Sprintf("M%s=%s", val, alias))
 	}
+}
+
+func (p *proto) scanAndWriteTronOptions(r io.Reader) ([]byte, error) {
+	buf := make([]string, 0)
+
+	scanner := bufio.NewScanner(r)
+	scanner.Split(bufio.ScanLines)
+
+	for scanner.Scan() {
+		if !strings.Contains(scanner.Text(), models.TronOptionsTag) {
+			buf = append(buf, scanner.Text())
+
+			continue
+		}
+
+		opts, ok := models.ParseTronOptions(scanner.Text())
+		if !ok {
+			continue
+		}
+
+		buf = append(buf, opts.Apply(scanner.Text()))
+	}
+
+	if err := scanner.Err(); err != nil {
+		return nil, fmt.Errorf("scanner err: %w", err)
+	}
+
+	result := strings.Join(buf, "\n")
+
+	formattedBytes, err := imports.Process("", []byte(result), nil)
+	if err != nil {
+		log.Println(result)
+
+		return nil, simplerr.Wrap(err, "failed to imports process")
+	}
+
+	return formattedBytes, nil
 }
 
 func execProtoc(wd string, args []string) error {
