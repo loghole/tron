@@ -7,12 +7,14 @@
 package typesV1
 
 import (
+	"encoding/json"
+	reflect "reflect"
+	sync "sync"
+
 	types "github.com/gogo/protobuf/types"
 	proto "github.com/golang/protobuf/proto"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
-	reflect "reflect"
-	sync "sync"
 )
 
 const (
@@ -31,8 +33,8 @@ type String struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Str  string `protobuf:"bytes,1,opt,name=str,proto3" json:"str,omitempty"`
-	Data []byte `protobuf:"bytes,2,opt,name=data,proto3" json:"data,omitempty"` // TRON OPTION json.RawMessage
+	Str  string          `protobuf:"bytes,1,opt,name=str,proto3" json:"str,omitempty"`
+	Data json.RawMessage `protobuf:"bytes,2,opt,name=data,proto3" json:"data,omitempty"` // tron_option:json
 }
 
 func (x *String) Reset() {

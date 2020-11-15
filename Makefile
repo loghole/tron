@@ -3,13 +3,12 @@ GO_TEST_PACKAGES = $(shell go list ./... | egrep -v '(pkg|cmd)')
 gomod:
 	go mod download
 
-test:
+gotest:
 	go test -race -v -cover -coverprofile coverage.out $(GO_TEST_PACKAGES)
 
 lint:
 	golangci-lint run -v
 	cd cmd/tron && golangci-lint run -v
-	cd cmd/protoc-gen-tron && golangci-lint run -v
 
 update-swagger:
 	rm -fr /tmp/swagger-ui

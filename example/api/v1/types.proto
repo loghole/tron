@@ -8,7 +8,7 @@ option go_package = ".;typesV1";
 
 message String {
   string str = 1;
-  bytes data = 2; // TRON OPTION json.RawMessage
+  bytes data = 2; // tron_option:json
 }
 
 message StringJSON {

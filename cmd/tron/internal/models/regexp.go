@@ -12,4 +12,5 @@ var (
 	ServiceRegexp         = regexp.MustCompile(`^service (\S+) {`)
 	PackageRegexp         = regexp.MustCompile(`^package ([^;]+);$`)
 	ModuleRegexp          = regexp.MustCompile(`^module (.+)$`)
+	TronOptions           = regexp.MustCompile(`tron_option:(\S+)`)
 )

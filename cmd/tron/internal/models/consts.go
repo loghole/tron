@@ -47,3 +47,9 @@ const (
 const (
 	ProjectImportImplementation = InternalDir + "/" + AppDir + "/" + ControllersDir
 )
+
+const (
+	TronOptionsSep = ","
+	TronOptionsTag = "tron_option:"
+	TronOptionJSON = "json"
+)

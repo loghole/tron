@@ -57,7 +57,10 @@ func (s *Server) RegistryDesc(services ...transport.Service) {
 		return
 	}
 
-	mux := runtime.NewServeMux(runtime.WithErrorHandler(ErrorWriter()))
+	mux := runtime.NewServeMux(
+		runtime.WithErrorHandler(ErrorWriter()),
+		runtime.WithMarshalerOption(runtime.MIMEWildcard, newMarshaler()),
+	)
 
 	for _, service := range services {
 		if service != nil {
