@@ -37,7 +37,7 @@ func Mainfile(p *project.Project, printer stdout.Printer) error {
 			continue
 		}
 
-		data.AddImport(proto.Service.Import, proto.Service.Alias)
+		data.AddImport(proto.Service.GoImplImport(p.Module), proto.Service.GoImportAlias())
 	}
 
 	mainScript, err := helpers.ExecTemplate(templates.MainTemplate, data)

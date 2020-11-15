@@ -12,13 +12,13 @@ import (
 	"github.com/loghole/tracing"
 	"github.com/loghole/tracing/tracehttp"
 	"github.com/loghole/tracing/tracelog"
-	"github.com/utrack/clay/v2/transport"
 	"golang.org/x/sync/errgroup"
 
 	"github.com/loghole/tron/internal/admin"
 	"github.com/loghole/tron/internal/app"
 	"github.com/loghole/tron/internal/config"
 	"github.com/loghole/tron/internal/grpc"
+	"github.com/loghole/tron/transport"
 )
 
 type App struct {

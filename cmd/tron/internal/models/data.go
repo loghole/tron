@@ -2,7 +2,6 @@ package models
 
 import (
 	"errors"
-	"fmt"
 	"path/filepath"
 	"strings"
 
@@ -41,29 +40,29 @@ func (p *Proto) NameWithExt() string {
 	return p.Name + ProtoExt
 }
 
-func (p *Proto) SetService(module, srv, pkg string) error {
+func (p *Proto) PkgFilePath() string {
+	return filepath.Join(ProjectPathPkgClients, filepath.Join(p.Service.PackageParts...), p.NameWithExt())
+}
+
+func (p *Proto) PkgDirPath() string {
+	return filepath.Join(ProjectPathPkgClients, filepath.Join(p.Service.PackageParts...))
+}
+
+func (p *Proto) SetService(srv, pkg string) error {
 	if !ProtoPkgVersionRegexp.MatchString(pkg) {
 		return simplerr.Wrap(ErrInvalidProtoPkgName, "use '.v{{ integer }}' at the end of the name")
 	}
 
 	p.Version = ProtoPkgVersionRegexp.FindStringSubmatch(pkg)[1]
+	p.Service.PackageParts = strings.Split(pkg, ".")
 
 	switch {
 	case srv != "":
 		p.Service.WithImpl = true
 		p.Service.Name = strings.Title(srv)
 	default:
-		parts := strings.Split(pkg, ".")
-		p.Service.Name = strings.Title(parts[len(parts)-2])
+		p.Service.Name = strings.Title(p.Service.PackageParts[len(p.Service.PackageParts)-2])
 	}
-
-	p.Service.Alias = helpers.CamelCase(helpers.GoName(strings.ReplaceAll(pkg, ".", "_")))
-	p.Service.Package = strings.ReplaceAll(pkg, ".", string(filepath.Separator))
-	p.Service.Import = strings.Join([]string{
-		module,
-		ProjectPathImplementation,
-		strings.ToLower(strings.ReplaceAll(pkg, ".", "/")),
-	}, "/")
 
 	return nil
 }
@@ -73,17 +72,19 @@ func AddProtoExt(name string) string {
 }
 
 type Service struct {
-	Name     string
-	Import   string
-	Alias    string
-	Package  string
-	WithImpl bool
+	PackageParts []string
+	Name         string
+	WithImpl     bool
+}
+
+func (s *Service) GoImplImport(module string) string {
+	return strings.Join([]string{module, ProjectImportImplementation, strings.Join(s.PackageParts, "/")}, "/")
+}
+
+func (s *Service) GoImportAlias() string {
+	return helpers.CamelCase(helpers.GoName(strings.Join(s.PackageParts, ".")))
 }
 
 func (s *Service) SnakeCasedName() string {
 	return helpers.SnakeCase(s.Name)
-}
-
-func (s *Service) Variable() string {
-	return fmt.Sprintf("%sHandler", s.Alias)
 }

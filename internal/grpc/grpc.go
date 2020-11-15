@@ -6,8 +6,9 @@ import (
 	"net"
 
 	"github.com/lissteron/simplerr"
-	"github.com/utrack/clay/v2/transport"
 	"google.golang.org/grpc"
+
+	"github.com/loghole/tron/transport"
 )
 
 type Server struct {
