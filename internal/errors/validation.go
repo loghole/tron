@@ -15,20 +15,20 @@ import (
 )
 
 type ErrResponse struct {
-	Status     int        `json:"-"`
-	GRPCStatus codes.Code `json:"-"`
-	Errors     []Error    `json:"errors"`
+	httpStatus int
+	grpcStatus codes.Code
+	Errors     []Error `json:"errors"`
 }
 
 func ParseError(err error) *ErrResponse {
-	resp := &ErrResponse{Status: http.StatusInternalServerError}
+	resp := &ErrResponse{httpStatus: http.StatusInternalServerError}
 	resp.parseErr(err)
 
 	return resp
 }
 
-func (r *ErrResponse) ToStatus() *status.Status {
-	st := status.New(r.GRPCStatus, r.GRPCStatus.String())
+func (r *ErrResponse) GRPCStatus() *status.Status {
+	st := status.New(r.grpcStatus, r.grpcStatus.String())
 
 	for _, val := range r.Errors {
 		stNew, err := st.WithDetails(&errdetails.DebugInfo{
@@ -42,6 +42,14 @@ func (r *ErrResponse) ToStatus() *status.Status {
 	}
 
 	return st
+}
+
+func (r *ErrResponse) HTTPStatus() int {
+	return r.httpStatus
+}
+
+func (r *ErrResponse) Error() string {
+	return r.GRPCStatus().Err().Error()
 }
 
 type Error struct {
@@ -63,10 +71,10 @@ func (r *ErrResponse) parseErr(err error) {
 	}
 
 	code := simplerr.GetCode(err)
-	r.GRPCStatus = codes.Code(code.GRPC())
+	r.grpcStatus = codes.Code(code.GRPC())
 
 	if httpCode := code.HTTP(); httpCode > 0 {
-		r.Status = httpCode
+		r.httpStatus = httpCode
 	}
 
 	r.Errors = append(r.Errors, Error{
@@ -99,7 +107,7 @@ func (r *ErrResponse) parseValidationErr(list validation.Errors) bool {
 		}
 	}
 
-	r.Status = http.StatusBadRequest
+	r.httpStatus = http.StatusBadRequest
 
 	return true
 }

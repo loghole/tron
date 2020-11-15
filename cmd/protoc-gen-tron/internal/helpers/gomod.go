@@ -2,6 +2,7 @@ package helpers
 
 import (
 	"bufio"
+	"errors"
 	"fmt"
 	"go/format"
 	"os"
@@ -9,6 +10,8 @@ import (
 
 	"golang.org/x/tools/imports"
 )
+
+var ErrModuleNotFound = errors.New("module not found")
 
 func ModuleFromGoMod() (string, error) {
 	file, err := os.Open("go.mod")
@@ -24,16 +27,16 @@ func ModuleFromGoMod() (string, error) {
 	scanner.Split(bufio.ScanLines)
 
 	for scanner.Scan() {
-		if err := scanner.Err(); err != nil {
-			return "", err
-		}
-
 		if m := rgxp.FindStringSubmatch(scanner.Text()); len(m) > 1 {
 			return m[1], nil
 		}
 	}
 
-	return "", fmt.Errorf("module not found")
+	if err := scanner.Err(); err != nil {
+		return "", fmt.Errorf("scan failed: %w", err)
+	}
+
+	return "", ErrModuleNotFound
 }
 
 func FormatGoFile(data string) ([]byte, error) {

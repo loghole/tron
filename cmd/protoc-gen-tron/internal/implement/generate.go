@@ -11,6 +11,8 @@ import (
 	"github.com/loghole/tron/cmd/protoc-gen-tron/internal/helpers"
 )
 
+const handlerName = "handler.go"
+
 func Generate(f *protogen.File, implPath, pkgPath, module string) error {
 	if len(f.Services) == 0 {
 		return nil
@@ -23,11 +25,11 @@ func Generate(f *protogen.File, implPath, pkgPath, module string) error {
 	}
 
 	if err := generateImplementation(f, service, implPath, pkgPath, module); err != nil {
-		return err
+		return fmt.Errorf("can't generate implementation: %w", err)
 	}
 
-	if err := generateHandlers(f, service, implPath, pkgPath, module); err != nil {
-		return err
+	if err := generateMethods(f, service, implPath, pkgPath, module); err != nil {
+		return fmt.Errorf("can't generate method: %w", err)
 	}
 
 	return nil
@@ -37,7 +39,7 @@ func generateImplementation(f *protogen.File, s *protogen.Service, implPath, pkg
 	path := filepath.Join(
 		implPath,
 		strings.ReplaceAll(*f.Proto.Package, ".", string(filepath.Separator)),
-		"handler.go",
+		handlerName,
 	)
 
 	if _, err := os.Stat(path); os.IsNotExist(err) {
@@ -49,7 +51,7 @@ func generateImplementation(f *protogen.File, s *protogen.Service, implPath, pkg
 
 		template, err := helpers.ExecTemplate(HandlerTemplate, handlerData)
 		if err != nil {
-			return err
+			return fmt.Errorf("can't exec template: %w", err)
 		}
 
 		result, err := helpers.FormatGoFile(template)
@@ -58,14 +60,14 @@ func generateImplementation(f *protogen.File, s *protogen.Service, implPath, pkg
 		}
 
 		if err := helpers.WriteToFile(path, result); err != nil {
-			return err
+			return fmt.Errorf("can't write file: %w", err)
 		}
 	}
 
 	return nil
 }
 
-func generateHandlers(f *protogen.File, s *protogen.Service, implPath, pkgPath, module string) error {
+func generateMethods(f *protogen.File, s *protogen.Service, implPath, pkgPath, module string) error {
 	for _, method := range s.Methods {
 		path := filepath.Join(
 			implPath,
@@ -88,7 +90,7 @@ func generateHandlers(f *protogen.File, s *protogen.Service, implPath, pkgPath, 
 
 			template, err := helpers.ExecTemplate(MethodTemplate, methodData)
 			if err != nil {
-				return err
+				return fmt.Errorf("can't exec template: %w", err)
 			}
 
 			result, err := helpers.FormatGoFile(template)
@@ -97,7 +99,7 @@ func generateHandlers(f *protogen.File, s *protogen.Service, implPath, pkgPath, 
 			}
 
 			if err := helpers.WriteToFile(path, result); err != nil {
-				return err
+				return fmt.Errorf("can't write file: %w", err)
 			}
 		}
 	}

@@ -36,10 +36,6 @@ func SnakeCase(s string) string {
 	return string(out)
 }
 
-func UpperCamelCase(s string) string {
-	return camelCase(s, true)
-}
-
 func CamelCase(s string) string {
 	return camelCase(s, false)
 }

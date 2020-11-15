@@ -19,17 +19,18 @@ var (
 	ErrEmptyPackage    = errors.New("empty package")
 )
 
-var (
-	showVersion = flag.Bool("version", false, "print the version and exit")
-	pkgPath     = flag.String("pkg-path", "", "pkg generated file path")
-	implPath    = flag.String("impl-path", "", "pkg generated file path")
-)
-
 func main() {
+	var (
+		showVersion = flag.Bool("version", false, "print the version and exit")
+		pkgPath     = flag.String("pkg-path", "", "pkg generated file path")
+		implPath    = flag.String("impl-path", "", "pkg generated file path")
+	)
+
 	flag.Parse()
 
 	if *showVersion {
 		fmt.Printf("protoc-gen-tron %v\n", version.CliVersion)
+
 		return
 	}
 

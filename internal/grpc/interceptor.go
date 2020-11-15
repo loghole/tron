@@ -51,7 +51,7 @@ func SimpleErrorServerInterceptor() grpc.UnaryServerInterceptor {
 	) (resp interface{}, err error) {
 		resp, err = handler(ctx, req)
 		if err != nil {
-			return resp, internalErr.ParseError(err).ToStatus().Err()
+			return resp, internalErr.ParseError(err)
 		}
 
 		return resp, err

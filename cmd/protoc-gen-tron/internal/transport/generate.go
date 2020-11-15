@@ -3,7 +3,6 @@ package transport
 import (
 	"fmt"
 	"io/ioutil"
-	"log"
 	"os"
 	"path/filepath"
 	"strings"
@@ -44,7 +43,8 @@ func Generate(p *protogen.Plugin, f *protogen.File) {
 	g.P("}")
 	g.P()
 
-	g.P("func New", descName, "(i ", service.GoName, "Server) ", g.QualifiedGoIdent(transportPackage.Ident("ServiceDesc")), " {")
+	g.P("func New", descName, "(i ", service.GoName, "Server) ",
+		g.QualifiedGoIdent(transportPackage.Ident("ServiceDesc")), " {")
 	g.P("return &", descName, "{svc: i}")
 	g.P("}")
 	g.P()
@@ -54,8 +54,10 @@ func Generate(p *protogen.Plugin, f *protogen.File) {
 	g.P("}")
 	g.P()
 
-	g.P("func(d *", descName, ") RegisterHTTP(mux *", g.QualifiedGoIdent(runtimePackage.Ident("ServeMux")), ") {")
-	g.P("Register", service.GoName, "HandlerServer(", g.QualifiedGoIdent(contextPackage.Ident("Background()")), ", mux, d.svc)")
+	g.P("func(d *", descName, ") RegisterHTTP(mux *",
+		g.QualifiedGoIdent(runtimePackage.Ident("ServeMux")), ") {")
+	g.P("Register", service.GoName, "HandlerServer(",
+		g.QualifiedGoIdent(contextPackage.Ident("Background()")), ", mux, d.svc)")
 	g.P("}")
 	g.P()
 
@@ -74,7 +76,6 @@ func readSwaggerFile(pkg, filePrefix string) string {
 
 	data, err := ioutil.ReadFile(path)
 	if err != nil {
-		log.Println(err)
 		return "{}"
 	}
 
