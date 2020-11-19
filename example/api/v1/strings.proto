@@ -16,8 +16,4 @@ service Strings {
   rpc GetInfo (types.v1.String) returns (types.v1.String) {
     option (google.api.http) = {get: "/api/v1/strings/info"};
   }
-
-  rpc List (types.v1.String) returns (types.v1.String) {
-    option (google.api.http) = {get: "/api/v1/list"};
-  };
 }

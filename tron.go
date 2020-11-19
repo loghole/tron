@@ -2,12 +2,12 @@ package tron
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"os/signal"
 
 	"github.com/go-chi/chi"
 	"github.com/go-chi/cors"
-	"github.com/lissteron/simplerr"
 	"github.com/loghole/lhw/zap"
 	"github.com/loghole/tracing"
 	"github.com/loghole/tracing/tracehttp"
@@ -33,11 +33,11 @@ type App struct {
 func New(options ...app.Option) (*App, error) {
 	opts, err := app.NewOptions(options...)
 	if err != nil {
-		return nil, simplerr.Wrap(err, "apply opts failed")
+		return nil, fmt.Errorf("apply opts failed: %w", err)
 	}
 
-	if err := config.Init(); err != nil {
-		return nil, simplerr.Wrap(err, "init config failed")
+	if err := config.Init(opts); err != nil {
+		return nil, fmt.Errorf("init config failed: %w", err)
 	}
 
 	a := &App{opts: opts, info: initInfo()}
@@ -51,7 +51,7 @@ func New(options ...app.Option) (*App, error) {
 	}
 
 	if err := a.servers.init(a.opts); err != nil {
-		return nil, simplerr.Wrap(err, "init servers failed")
+		return nil, fmt.Errorf("init servers failed: %w", err)
 	}
 
 	// Append tracing and errors middlewares.
@@ -59,8 +59,11 @@ func New(options ...app.Option) (*App, error) {
 		WithUnaryInterceptor(grpc.OpenTracingServerInterceptor(a.Tracer())),
 		WithUnaryInterceptor(grpc.SimpleErrorServerInterceptor()),
 	)
-	a.Router().Use(tracehttp.NewMiddleware(a.Tracer()).Middleware)
-	a.Router().Use(cors.New(a.opts.CorsOptions).Handler)
+
+	a.servers.publicHTTP.UseMiddleware(
+		tracehttp.NewMiddleware(a.Tracer()).Middleware,
+		cors.New(a.opts.CorsOptions).Handler,
+	)
 
 	a.logger.With("app info", a.info).Infof("init app")
 
@@ -103,11 +106,11 @@ func (a *App) WithRunOptions(opts ...app.RunOption) *App {
 // Run apply run options if exists and starts servers.
 func (a *App) Run(impl ...transport.Service) error { // nolint:funlen // start app
 	if err := a.opts.ApplyRunOptions(); err != nil {
-		return simplerr.Wrap(err, "apply run options failed")
+		return fmt.Errorf("apply run options failed: %w", err)
 	}
 
 	if err := a.servers.build(a.opts); err != nil {
-		return simplerr.Wrap(err, "build servers failed")
+		return fmt.Errorf("build servers failed: %w", err)
 	}
 
 	a.servers.publicGRPC.RegistryDesc(impl...)

@@ -2,11 +2,11 @@ package app
 
 import (
 	"crypto/tls"
+	"fmt"
 	"os"
 	"syscall"
 
 	"github.com/go-chi/cors"
-	"github.com/lissteron/simplerr"
 	"github.com/loghole/lhw/zap"
 	"google.golang.org/grpc"
 )
@@ -24,6 +24,7 @@ type Options struct {
 	LoggerOptions []zap.Option
 	ExitSignals   []os.Signal
 	CorsOptions   cors.Options
+	ConfigMap     map[string]interface{}
 
 	// Run options.
 	TLSConfig   *tls.Config
@@ -37,7 +38,7 @@ func NewOptions(options ...Option) (*Options, error) {
 
 	hostname, err := os.Hostname()
 	if err != nil {
-		return nil, simplerr.Wrap(err, "get hostname failed")
+		return nil, fmt.Errorf("get hostname failed: %w", err)
 	}
 
 	opts := &Options{

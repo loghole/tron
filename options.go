@@ -26,7 +26,7 @@ func WithPublicHTTP(port uint16) Option {
 	}
 }
 
-func WithPublicGRPc(port uint16) Option {
+func WithPublicGRPC(port uint16) Option {
 	return func(opts *app.Options) error {
 		opts.PortGRPC = port
 
@@ -37,6 +37,15 @@ func WithPublicGRPc(port uint16) Option {
 func WithExitSignals(sig ...os.Signal) Option {
 	return func(opts *app.Options) error {
 		opts.ExitSignals = append(opts.ExitSignals, sig...)
+
+		return nil
+	}
+}
+
+// WithConfigMap init app with config from map and envs.
+func WithConfigMap(cfg map[string]interface{}) Option {
+	return func(opts *app.Options) error {
+		opts.ConfigMap = cfg
 
 		return nil
 	}

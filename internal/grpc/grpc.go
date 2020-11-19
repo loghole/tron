@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"net"
 
-	"github.com/lissteron/simplerr"
 	"google.golang.org/grpc"
 
 	"github.com/loghole/tron/transport"
@@ -36,12 +35,12 @@ func (s *Server) BuildServer(tlsConfig *tls.Config, opts []grpc.ServerOption) (e
 	case tlsConfig != nil:
 		s.listener, err = tls.Listen("tcp", s.addr, tlsConfig)
 		if err != nil {
-			return simplerr.Wrap(err, "create TLS listener failed")
+			return fmt.Errorf("create TLS listener failed: %w", err)
 		}
 	default:
 		s.listener, err = net.Listen("tcp", s.addr)
 		if err != nil {
-			return simplerr.Wrap(err, "create TCP listener failed")
+			return fmt.Errorf("create TCP listener failed: %w", err)
 		}
 	}
 
