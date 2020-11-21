@@ -54,8 +54,9 @@ func New(options ...app.Option) (*App, error) {
 		return nil, fmt.Errorf("init servers failed: %w", err)
 	}
 
-	// Append tracing and errors middlewares.
+	// Append recover, tracing and errors middlewares.
 	a.opts.AddRunOptions(
+		WithUnaryInterceptor(grpc.RecoverServerInterceptor(a.logger.tracelog)),
 		WithUnaryInterceptor(grpc.OpenTracingServerInterceptor(a.Tracer())),
 		WithUnaryInterceptor(grpc.SimpleErrorServerInterceptor()),
 	)

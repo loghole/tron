@@ -15,20 +15,27 @@ import (
 )
 
 type ErrResponse struct {
+	rootErr    error
 	httpStatus int
 	grpcStatus codes.Code
-	Errors     []Error `json:"errors"`
+
+	Errors []Error `json:"errors"`
 }
 
 func ParseError(err error) *ErrResponse {
-	resp := &ErrResponse{httpStatus: http.StatusInternalServerError}
+	resp := &ErrResponse{
+		rootErr:    err,
+		httpStatus: http.StatusInternalServerError,
+		grpcStatus: codes.Unknown,
+	}
+
 	resp.parseErr(err)
 
 	return resp
 }
 
 func (r *ErrResponse) GRPCStatus() *status.Status {
-	st := status.New(r.grpcStatus, r.grpcStatus.String())
+	st := status.New(r.grpcStatus, r.rootErr.Error())
 
 	for _, val := range r.Errors {
 		stNew, err := st.WithDetails(&errdetails.DebugInfo{
@@ -108,6 +115,7 @@ func (r *ErrResponse) parseValidationErr(list validation.Errors) bool {
 	}
 
 	r.httpStatus = http.StatusBadRequest
+	r.grpcStatus = codes.InvalidArgument
 
 	return true
 }

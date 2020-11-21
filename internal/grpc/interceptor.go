@@ -2,14 +2,18 @@ package grpc
 
 import (
 	"context"
+	"runtime/debug"
 	"strings"
 
 	"github.com/grpc-ecosystem/grpc-opentracing/go/otgrpc"
+	"github.com/loghole/tracing/tracelog"
 	"github.com/opentracing/opentracing-go"
 	"github.com/opentracing/opentracing-go/ext"
 	optlog "github.com/opentracing/opentracing-go/log"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
+	"google.golang.org/grpc/status"
 
 	internalErr "github.com/loghole/tron/internal/errors"
 )
@@ -55,6 +59,26 @@ func SimpleErrorServerInterceptor() grpc.UnaryServerInterceptor {
 		}
 
 		return resp, err
+	}
+}
+
+func RecoverServerInterceptor(logger tracelog.Logger) grpc.UnaryServerInterceptor {
+	return func(
+		ctx context.Context,
+		req interface{},
+		info *grpc.UnaryServerInfo,
+		handler grpc.UnaryHandler,
+	) (resp interface{}, err error) {
+		defer func() {
+			if r := recover(); r != nil {
+				err = status.Errorf(codes.Internal, "recovered from panic: %v", r)
+
+				logger.With("stack_trace", string(debug.Stack())).
+					Errorf(ctx, "panic in '%s', text %v", info.FullMethod, r)
+			}
+		}()
+
+		return handler(ctx, req)
 	}
 }
 
