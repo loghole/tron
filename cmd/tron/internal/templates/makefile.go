@@ -44,7 +44,7 @@ LOCAL_BIN:=$(CURDIR)/bin
 DOCKERFILE   = {{ .Dockerfile }}
 DOCKER_IMAGE = {{ .DockerImage }}
 
-VERSION  := $(shell git describe --exact-match --abbrev=0 --tags 2> /dev/null)
+VERSION  := $(shell git describe --tags --always)
 GIT_HASH := $(shell git rev-parse HEAD 2> /dev/null)
 BUILD_TS := $(shell date +%FT%T%z)
 
@@ -89,7 +89,7 @@ lint:
 docker-image:
 	docker build \
 	-f $(DOCKERFILE) \
-	-t $(DOCKER_IMAGE) \
+	-t $(DOCKER_IMAGE):latest \
 	-t $(DOCKER_IMAGE):$(VERSION) \
 	.
 
