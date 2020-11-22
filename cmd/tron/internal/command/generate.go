@@ -76,6 +76,12 @@ func (g *GenerateCMD) run(cmd *cobra.Command, args []string) {
 		}
 	}
 
+	if err := generate.TronMK(g.project, g.printer); err != nil {
+		g.printer.Printf(color.FgRed, "Generate tron mk: %v\n", err)
+		helpers.PrintCommandHelp(cmd)
+		os.Exit(1)
+	}
+
 	g.printer.Println(color.FgGreen, "Success")
 }
 

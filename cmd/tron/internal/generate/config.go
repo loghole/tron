@@ -90,12 +90,6 @@ func (c *config) run() error {
 		return err
 	}
 
-	if err := helpers.WriteWithConfirm(
-		filepath.Join(c.project.AbsPath, models.ConfigFilepath),
-		[]byte(templates.ConfigTemplate)); err != nil {
-		return err
-	}
-
 	return nil
 }
 
@@ -132,6 +126,18 @@ func (c *config) parseFile(path string) error {
 		}
 
 		c.imports[name] = struct{}{}
+	}
+
+	return nil
+}
+
+func ConfigHelper(p *project.Project, printer stdout.Printer) error {
+	printer.VerbosePrintln(color.FgMagenta, "Generate config helper")
+
+	if err := helpers.WriteWithConfirm(
+		filepath.Join(p.AbsPath, models.ConfigFilepath),
+		[]byte(templates.ConfigTemplate)); err != nil {
+		return err
 	}
 
 	return nil

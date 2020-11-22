@@ -95,6 +95,7 @@ func (i *InitCMD) runInit(module string, dirs []string) (err error) {
 	if err := i.generate(
 		generate.Git,
 		generate.GoMod,
+		generate.TronMK,
 		generate.Makefile,
 		generate.Linter,
 		generate.Gitignore,
@@ -112,7 +113,10 @@ func (i *InitCMD) runInit(module string, dirs []string) (err error) {
 
 	i.printer.Println(color.FgMagenta, "Generate config and main files")
 
-	if err := i.generate(generate.Config, generate.Mainfile); err != nil {
+	if err := i.generate(
+		generate.Config,
+		generate.ConfigHelper,
+		generate.Mainfile); err != nil {
 		return simplerr.Wrap(err, "generate config and main files failed")
 	}
 
