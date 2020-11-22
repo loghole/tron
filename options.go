@@ -1,6 +1,7 @@
 package tron
 
 import (
+	"net"
 	"os"
 
 	"github.com/loghole/lhw/zap"
@@ -43,9 +44,51 @@ func WithExitSignals(sig ...os.Signal) Option {
 }
 
 // WithConfigMap init app with config from map and envs.
+//
+// 	Example:
+//
+//		tron.New(tron.WithConfigMap(map[string]interface{}{
+//			"namespace":         "dev",
+// 			"service_port_grpc": 35900,
+// 			"cockroach_addr":    "db_addr",
+// 			"cockroach_user":    "db_user",
+// 			"cockroach_db":      "db_name",
+//		}))
 func WithConfigMap(cfg map[string]interface{}) Option {
 	return func(opts *app.Options) error {
 		opts.ConfigMap = cfg
+
+		return nil
+	}
+}
+
+// WithGRPCListener sets net listener for grpc public server.
+// Can be used for create application tests with memory listener.
+//
+// 	Example:
+//
+//		listener := bufconn.Listen(1024*1024)
+//
+//		tron.New(tron.WithGRPCListener(listener))
+func WithGRPCListener(listener net.Listener) Option {
+	return func(opts *app.Options) error {
+		opts.GRPCListener = listener
+
+		return nil
+	}
+}
+
+// WithHTTPListener sets net listener for http public server.
+// Can be used for create application tests with memory listener.
+//
+// 	Example:
+//
+//		listener = bufconn.Listen(1024*1024)
+//
+//		tron.New(tron.WithHTTPListener(listener))
+func WithHTTPListener(listener net.Listener) Option {
+	return func(opts *app.Options) error {
+		opts.HTTPListener = listener
 
 		return nil
 	}

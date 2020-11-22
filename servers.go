@@ -17,12 +17,18 @@ type servers struct {
 }
 
 func (s *servers) init(opts *app.Options) (err error) {
-	if opts.PortAdmin == 0 {
-		opts.PortAdmin = uint16(viper.GetInt32(app.AdminPortEnv))
-	}
+	s.initPubGRPC(opts)
+	s.initPubHTTP(opts)
+	s.initAdmHTTP(opts)
 
-	if opts.PortHTTP == 0 {
-		opts.PortHTTP = uint16(viper.GetInt32(app.HTTPPortEnv))
+	return nil
+}
+
+func (s *servers) initPubGRPC(opts *app.Options) {
+	if opts.GRPCListener != nil {
+		s.publicGRPC = grpc.NewServerWithListener(opts.GRPCListener)
+
+		return
 	}
 
 	if opts.PortGRPC == 0 {
@@ -30,12 +36,28 @@ func (s *servers) init(opts *app.Options) (err error) {
 	}
 
 	s.publicGRPC = grpc.NewServer(opts.PortGRPC)
+}
+
+func (s *servers) initPubHTTP(opts *app.Options) {
+	if opts.HTTPListener != nil {
+		s.publicHTTP = http.NewServerWithListener(opts.GRPCListener)
+
+		return
+	}
+
+	if opts.PortHTTP == 0 {
+		opts.PortHTTP = uint16(viper.GetInt32(app.HTTPPortEnv))
+	}
 
 	s.publicHTTP = http.NewServer(opts.PortHTTP)
+}
+
+func (s *servers) initAdmHTTP(opts *app.Options) {
+	if opts.PortAdmin == 0 {
+		opts.PortAdmin = uint16(viper.GetInt32(app.AdminPortEnv))
+	}
 
 	s.adminHTTP = http.NewServer(opts.PortAdmin)
-
-	return nil
 }
 
 func (s *servers) build(opts *app.Options) error {

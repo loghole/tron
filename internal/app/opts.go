@@ -3,6 +3,7 @@ package app
 import (
 	"crypto/tls"
 	"fmt"
+	"net"
 	"os"
 	"syscall"
 
@@ -25,6 +26,8 @@ type Options struct {
 	ExitSignals   []os.Signal
 	CorsOptions   cors.Options
 	ConfigMap     map[string]interface{}
+	GRPCListener  net.Listener
+	HTTPListener  net.Listener
 
 	// Run options.
 	TLSConfig   *tls.Config
