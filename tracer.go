@@ -1,7 +1,8 @@
 package tron
 
 import (
-	"github.com/lissteron/simplerr"
+	"fmt"
+
 	"github.com/loghole/tracing"
 	"github.com/spf13/viper"
 
@@ -18,7 +19,7 @@ func (t *tracer) init(info *Info) (err error) {
 		viper.GetString(app.JaegerAddrEnv)),
 	)
 	if err != nil {
-		return simplerr.Wrap(err, "init tracer failed")
+		return fmt.Errorf("init tracer failed: %w", err)
 	}
 
 	return nil

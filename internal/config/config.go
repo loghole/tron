@@ -1,6 +1,7 @@
 package config
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 
@@ -10,8 +11,17 @@ import (
 	"github.com/loghole/tron/internal/app"
 )
 
-func Init() error {
+func Init(opts *app.Options) error {
 	viper.AutomaticEnv()
+
+	if opts.ConfigMap != nil {
+		return fromConfigMap(opts.ConfigMap)
+	}
+
+	return base()
+}
+
+func base() error {
 	viper.SetConfigType(app.ValuesExt)
 	viper.SetConfigName(app.ValuesBaseName)
 	viper.AddConfigPath(filepath.Join(app.DeploymentsDir, app.ValuesDir))
@@ -24,11 +34,19 @@ func Init() error {
 
 	replacer, err := os.Open(namespace.ValuesPath())
 	if err != nil {
-		return simplerr.Wrapf(err, "open values file = '%s' failed", namespace.ValuesPath())
+		return fmt.Errorf("open values file = '%s' failed: %w", namespace.ValuesPath(), err)
 	}
 
 	if err := viper.MergeConfig(replacer); err != nil {
-		return simplerr.Wrap(err, "merge config failed")
+		return fmt.Errorf("merge config failed: %w", err)
+	}
+
+	return nil
+}
+
+func fromConfigMap(v map[string]interface{}) error {
+	if err := viper.MergeConfigMap(v); err != nil {
+		return fmt.Errorf("can't merge config map: %w", err)
 	}
 
 	return nil

@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
+	jsoniter "github.com/json-iterator/go"
 	"github.com/peterbourgon/mergemap"
 	"google.golang.org/grpc"
 )
@@ -72,7 +73,7 @@ func (c *swagJoiner) SumDefinitions() []byte {
 		c.result = map[string]interface{}{}
 	}
 
-	ret, err := json.Marshal(c.result)
+	ret, err := jsoniter.Marshal(c.result)
 	if err != nil {
 		panic(err)
 	}

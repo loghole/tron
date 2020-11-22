@@ -40,43 +40,6 @@ func (d *StringsServiceDesc) SwaggerDef() []byte {
     "application/json"
   ],
   "paths": {
-    "/api/v1/list": {
-      "get": {
-        "operationId": "Strings_List",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/types.v1.String"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response.",
-            "schema": {
-              "$ref": "#/definitions/google.rpc.Status"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "str",
-            "in": "query",
-            "required": false,
-            "type": "string"
-          },
-          {
-            "name": "data",
-            "in": "query",
-            "required": false,
-            "type": "string",
-            "format": "byte"
-          }
-        ],
-        "tags": [
-          "Strings"
-        ]
-      }
-    },
     "/api/v1/strings/info": {
       "get": {
         "operationId": "Strings_GetInfo",

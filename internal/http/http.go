@@ -11,7 +11,6 @@ import (
 
 	"github.com/go-chi/chi"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
-	"github.com/lissteron/simplerr"
 
 	"github.com/loghole/tron/transport"
 )
@@ -40,12 +39,12 @@ func (s *Server) BuildServer(tlsConfig *tls.Config) (err error) {
 	case tlsConfig != nil:
 		s.listener, err = tls.Listen("tcp", s.addr, tlsConfig)
 		if err != nil {
-			return simplerr.Wrap(err, "create TLS listener failed")
+			return fmt.Errorf("create TLS listener failed: %w", err)
 		}
 	default:
 		s.listener, err = net.Listen("tcp", s.addr)
 		if err != nil {
-			return simplerr.Wrap(err, "create TCP listener failed")
+			return fmt.Errorf("create TCP listener failed: %w", err)
 		}
 	}
 
@@ -71,6 +70,14 @@ func (s *Server) RegistryDesc(services ...transport.Service) {
 	s.router.Handle("/*", mux)
 }
 
+func (s *Server) UseMiddleware(middlewares ...func(http.Handler) http.Handler) {
+	if s == nil {
+		return
+	}
+
+	s.router.Use(middlewares...)
+}
+
 func (s *Server) Router() chi.Router {
 	if s == nil {
 		return nil
@@ -91,7 +98,7 @@ func (s *Server) Serve() error {
 	}
 
 	if err := s.server.Serve(s.listener); !errors.Is(err, http.ErrServerClosed) {
-		return simplerr.Wrap(err, "serve http failed")
+		return fmt.Errorf("serve http failed: %w", err)
 	}
 
 	return nil
