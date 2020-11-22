@@ -24,12 +24,24 @@ func NewServer(port uint16) *Server {
 	return &Server{addr: fmt.Sprintf("0.0.0.0:%d", port)}
 }
 
+func NewServerWithListener(listener net.Listener) *Server {
+	if listener == nil {
+		return nil
+	}
+
+	return &Server{addr: listener.Addr().String(), listener: listener}
+}
+
 func (s *Server) BuildServer(tlsConfig *tls.Config, opts []grpc.ServerOption) (err error) {
 	if s == nil {
 		return nil
 	}
 
 	s.server = grpc.NewServer(opts...)
+
+	if s.listener != nil {
+		return nil
+	}
 
 	switch {
 	case tlsConfig != nil:

@@ -30,8 +30,20 @@ func NewServer(port uint16) *Server {
 	return &Server{router: chi.NewRouter(), addr: fmt.Sprintf("0.0.0.0:%d", port)}
 }
 
+func NewServerWithListener(listener net.Listener) *Server {
+	if listener == nil {
+		return nil
+	}
+
+	return &Server{router: chi.NewRouter(), addr: listener.Addr().String(), listener: listener}
+}
+
 func (s *Server) BuildServer(tlsConfig *tls.Config) (err error) {
 	if s == nil {
+		return nil
+	}
+
+	if s.listener != nil {
 		return nil
 	}
 
