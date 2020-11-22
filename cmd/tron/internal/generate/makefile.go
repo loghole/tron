@@ -13,8 +13,8 @@ import (
 	"github.com/loghole/tron/cmd/tron/internal/templates"
 )
 
-func Makefile(p *project.Project, printer stdout.Printer) error {
-	printer.VerbosePrintln(color.FgMagenta, "Generate Makefile")
+func TronMK(p *project.Project, printer stdout.Printer) error {
+	printer.VerbosePrintln(color.FgMagenta, "Generate Tron MK")
 
 	data := templates.NewTronMKData(p)
 
@@ -29,7 +29,13 @@ func Makefile(p *project.Project, printer stdout.Printer) error {
 		return err
 	}
 
-	path = filepath.Join(p.AbsPath, models.MakefileFilepath)
+	return nil
+}
+
+func Makefile(p *project.Project, printer stdout.Printer) error {
+	printer.VerbosePrintln(color.FgMagenta, "Generate Makefile")
+
+	path := filepath.Join(p.AbsPath, models.MakefileFilepath)
 
 	if err := helpers.WriteWithConfirm(path, []byte(templates.Makefile)); err != nil {
 		return err
