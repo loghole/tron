@@ -10,26 +10,31 @@ import (
 	"google.golang.org/grpc"
 )
 
+// CompoundServiceDesc combines several ServiceDesc.
 type CompoundServiceDesc struct {
 	svc []ServiceDesc
 }
 
+// NewCompoundServiceDesc returns new CompoundServiceDesc.
 func NewCompoundServiceDesc(desc ...ServiceDesc) *CompoundServiceDesc {
 	return &CompoundServiceDesc{svc: desc}
 }
 
+// RegisterGRPC register compounded services descs in current grpc server.
 func (d *CompoundServiceDesc) RegisterGRPC(g *grpc.Server) {
 	for _, svc := range d.svc {
 		svc.RegisterGRPC(g)
 	}
 }
 
+// RegisterHTTP register compounded services descs in current http router.
 func (d *CompoundServiceDesc) RegisterHTTP(mux *runtime.ServeMux) {
 	for _, svc := range d.svc {
 		svc.RegisterHTTP(mux)
 	}
 }
 
+// SwaggerDef returns combines swagger definitions.
 func (d *CompoundServiceDesc) SwaggerDef() []byte {
 	j := &swagJoiner{}
 

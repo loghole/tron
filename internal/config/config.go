@@ -1,3 +1,4 @@
+// Package config contains viper config initialisation method.
 package config
 
 import (
@@ -11,6 +12,7 @@ import (
 	"github.com/loghole/tron/internal/app"
 )
 
+// Init initialise viper config.
 func Init(opts *app.Options) error {
 	viper.AutomaticEnv()
 

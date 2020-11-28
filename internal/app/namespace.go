@@ -5,8 +5,10 @@ import (
 	"strings"
 )
 
+// Namespace type.
 type Namespace string
 
+// ParseNamespace return app Namespace.
 func ParseNamespace(s string) Namespace {
 	if localConfigEnabled {
 		return NamespaceLocal
@@ -28,6 +30,7 @@ func (n Namespace) String() string {
 	return string(n)
 }
 
+// ValuesPath returns config values path for current namespace.
 func (n Namespace) ValuesPath() string {
 	var name string
 

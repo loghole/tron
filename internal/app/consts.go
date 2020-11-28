@@ -1,5 +1,6 @@
 package app
 
+// Application internal config keys.
 const (
 	NamespaceEnv           = "namespace"
 	LoggerLevelEnv         = "logger_level"
@@ -11,6 +12,7 @@ const (
 	AdminPortEnv           = "service_port_admin"
 )
 
+// Default names for application files and directories.
 const (
 	DeploymentsDir  = ".deploy"
 	ValuesDir       = "config"
@@ -22,6 +24,7 @@ const (
 	ValuesProdName  = "values_prod"
 )
 
+// Namespace values.
 const (
 	NamespaceDev   Namespace = "dev"
 	NamespaceLocal Namespace = "local"

@@ -1,3 +1,4 @@
+// Package errors represents base tron error struct and parsing method.
 package errors
 
 import (
@@ -14,19 +15,24 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-type ErrResponse struct {
+// Error represents base error struct.
+type Error struct {
 	rootErr    error
 	httpStatus int
 	grpcStatus codes.Code
 
-	Errors []Error `json:"errors"`
+	Message string         `json:"message"`
+	Details []ErrorDetails `json:"details"`
 }
 
-func ParseError(err error) *ErrResponse {
-	resp := &ErrResponse{
+// ParseError parse error to Error struct.
+// Support lissteron/simplerr and ozzo-validation packages.
+func ParseError(err error) *Error {
+	resp := &Error{
 		rootErr:    err,
 		httpStatus: http.StatusInternalServerError,
 		grpcStatus: codes.Unknown,
+		Message:    simplerr.GetText(simplerr.GetWithCode(err)),
 	}
 
 	resp.parseErr(err)
@@ -34,10 +40,11 @@ func ParseError(err error) *ErrResponse {
 	return resp
 }
 
-func (r *ErrResponse) GRPCStatus() *status.Status {
-	st := status.New(r.grpcStatus, r.rootErr.Error())
+// GRPCStatus build status.Status from current error.
+func (e *Error) GRPCStatus() *status.Status {
+	st := status.New(e.grpcStatus, e.rootErr.Error())
 
-	for _, val := range r.Errors {
+	for _, val := range e.Details {
 		stNew, err := st.WithDetails(&errdetails.DebugInfo{
 			Detail: fmt.Sprintf("code: %s, detail: %s", val.Code, val.Detail),
 		})
@@ -51,24 +58,31 @@ func (r *ErrResponse) GRPCStatus() *status.Status {
 	return st
 }
 
-func (r *ErrResponse) HTTPStatus() int {
-	return r.httpStatus
+// HTTPStatus return http status for error.
+func (e *Error) HTTPStatus() int {
+	return e.httpStatus
 }
 
-func (r *ErrResponse) Error() string {
-	return r.GRPCStatus().Err().Error()
+// Error returns error string.
+func (e *Error) Error() string {
+	if err := e.GRPCStatus().Err(); err != nil {
+		return err.Error()
+	}
+
+	return ""
 }
 
-type Error struct {
+// ErrorDetails represents error details.
+type ErrorDetails struct {
 	Code   string `json:"code"`
 	Detail string `json:"detail"`
 }
 
-func (r *ErrResponse) parseErr(err error) {
+func (e *Error) parseErr(err error) {
 	var validationErrs validation.Errors
 
 	if errors.As(err, &validationErrs) {
-		if r.parseValidationErr(validationErrs) {
+		if e.parseValidationErr(validationErrs) {
 			return
 		}
 	}
@@ -78,24 +92,24 @@ func (r *ErrResponse) parseErr(err error) {
 	}
 
 	code := simplerr.GetCode(err)
-	r.grpcStatus = codes.Code(code.GRPC())
+	e.grpcStatus = codes.Code(code.GRPC())
 
 	if httpCode := code.HTTP(); httpCode > 0 {
-		r.httpStatus = httpCode
+		e.httpStatus = httpCode
 	}
 
-	r.Errors = append(r.Errors, Error{
+	e.Details = append(e.Details, ErrorDetails{
 		Code:   strconv.Itoa(code.Int()),
 		Detail: simplerr.GetText(err),
 	})
 }
 
-func (r *ErrResponse) parseValidationErr(list validation.Errors) bool {
+func (e *Error) parseValidationErr(list validation.Errors) bool {
 	for field, err := range list {
 		var validationErr validation.Error
 
 		if errors.As(err, &validationErr) {
-			r.Errors = append(r.Errors, Error{
+			e.Details = append(e.Details, ErrorDetails{
 				Code:   validationErr.Code(),
 				Detail: strings.Join([]string{field, validationErr.Error()}, ": "),
 			})
@@ -109,13 +123,13 @@ func (r *ErrResponse) parseValidationErr(list validation.Errors) bool {
 			return false
 		}
 
-		if !r.parseValidationErr(validationErrs) {
+		if !e.parseValidationErr(validationErrs) {
 			return false
 		}
 	}
 
-	r.httpStatus = http.StatusBadRequest
-	r.grpcStatus = codes.InvalidArgument
+	e.httpStatus = http.StatusBadRequest
+	e.grpcStatus = codes.InvalidArgument
 
 	return true
 }

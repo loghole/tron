@@ -1,3 +1,4 @@
+// Package app contains base application constants, flags and options.
 package app
 
 import (
@@ -17,6 +18,7 @@ var (
 	BuildAt      = "0001-01-01T00:00:00"
 )
 
+// Info contains service information.
 type Info struct {
 	InstanceUUID string
 	ServiceName  string

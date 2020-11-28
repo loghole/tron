@@ -1,3 +1,4 @@
+// Package tron contains base application object, some options and functions to create base app.
 package tron
 
 import (
@@ -21,6 +22,7 @@ import (
 	"github.com/loghole/tron/transport"
 )
 
+// App is base application object with grpc and http servers, logger and tracer.
 type App struct {
 	info    *Info
 	opts    *app.Options
@@ -71,22 +73,27 @@ func New(options ...app.Option) (*App, error) {
 	return a, nil
 }
 
+// Info returns application info.
 func (a *App) Info() *Info {
 	return a.info
 }
 
+// Tracer returns wrapped jaeger tracer.
 func (a *App) Tracer() *tracing.Tracer {
 	return a.tracer.tracer
 }
 
+// Logger returns default zap logger.
 func (a *App) Logger() *zap.Logger {
 	return a.logger.Logger
 }
 
+// TraceLogger returns wrapped zap logger with opentracing metadata injection to log records.
 func (a *App) TraceLogger() tracelog.Logger {
 	return a.logger.tracelog
 }
 
+// Router returns http router that runs on public port.
 func (a *App) Router() chi.Router {
 	return a.servers.publicHTTP.Router()
 }
@@ -97,7 +104,7 @@ func (a *App) Close() {
 	a.logger.Close()
 }
 
-// Append some run options.
+// WithRunOptions appends some run options.
 func (a *App) WithRunOptions(opts ...app.RunOption) *App {
 	a.opts.AddRunOptions(opts...)
 

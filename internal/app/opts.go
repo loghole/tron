@@ -12,10 +12,13 @@ import (
 	"google.golang.org/grpc"
 )
 
+// Option sets tron options such as ports, config, etc.
 type Option func(opts *Options) error
 
+// RunOption sets tron run options such as grpc unary interceptors, tls config.
 type RunOption func(opts *Options) error
 
+// Options is base tron options.
 type Options struct {
 	// New options.
 	Hostname      string
@@ -36,6 +39,7 @@ type Options struct {
 	options []RunOption
 }
 
+// NewOptions returns Options with applied Option list.
 func NewOptions(options ...Option) (*Options, error) {
 	parseFlags()
 
@@ -63,10 +67,12 @@ func NewOptions(options ...Option) (*Options, error) {
 	return opts, nil
 }
 
+// AddRunOptions append run options to others options.
 func (o *Options) AddRunOptions(options ...RunOption) {
 	o.options = append(o.options, options...)
 }
 
+// ApplyRunOptions sets run options.
 func (o *Options) ApplyRunOptions() error {
 	for _, apply := range o.options {
 		if apply == nil {

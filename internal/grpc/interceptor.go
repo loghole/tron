@@ -18,8 +18,9 @@ import (
 	internalErr "github.com/loghole/tron/internal/errors"
 )
 
-const ComponentName = "net/grpc"
+const componentName = "net/grpc"
 
+// OpenTracingServerInterceptor returns opentracing grpc interceptor.
 func OpenTracingServerInterceptor(tracer opentracing.Tracer) grpc.UnaryServerInterceptor {
 	return func(
 		ctx context.Context,
@@ -32,7 +33,7 @@ func OpenTracingServerInterceptor(tracer opentracing.Tracer) grpc.UnaryServerInt
 		span := tracer.StartSpan(defaultNameFunc(info), ext.RPCServerOption(spanContext))
 		defer span.Finish()
 
-		ext.Component.Set(span, ComponentName)
+		ext.Component.Set(span, componentName)
 
 		ctx = opentracing.ContextWithSpan(ctx, span)
 
@@ -46,6 +47,7 @@ func OpenTracingServerInterceptor(tracer opentracing.Tracer) grpc.UnaryServerInt
 	}
 }
 
+// SimpleErrorServerInterceptor returns error parser grpc interceptor.
 func SimpleErrorServerInterceptor() grpc.UnaryServerInterceptor {
 	return func(
 		ctx context.Context,
@@ -62,6 +64,7 @@ func SimpleErrorServerInterceptor() grpc.UnaryServerInterceptor {
 	}
 }
 
+// RecoverServerInterceptor returns recovery grpc interceptor.
 func RecoverServerInterceptor(logger tracelog.Logger) grpc.UnaryServerInterceptor {
 	return func(
 		ctx context.Context,
