@@ -124,7 +124,7 @@ func (a *App) Run(impl ...transport.Service) error { // nolint:funlen // start a
 	a.servers.publicGRPC.RegistryDesc(impl...)
 	a.servers.publicHTTP.RegistryDesc(impl...)
 
-	admin.NewHandlers(a.info, impl...).InitRoutes(a.servers.adminHTTP.Router())
+	admin.NewHandlers(a.info, a.opts, impl...).InitRoutes(a.servers.adminHTTP.Router())
 
 	a.logger.Info("starting app")
 
