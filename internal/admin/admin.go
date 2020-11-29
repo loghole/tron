@@ -15,23 +15,28 @@ import (
 	"github.com/loghole/tron/transport"
 )
 
-const adminToPublicPort = 2
-
 // Handlers contains http methods with debug service info and swagger docs.
 type Handlers struct {
 	desc jsoniter.RawMessage
 	info *app.Info
+	opts *app.Options
 }
 
 // NewHandlers create and init handlers object.
-func NewHandlers(info *app.Info, services ...transport.Service) *Handlers {
+func NewHandlers(info *app.Info, opts *app.Options, services ...transport.Service) *Handlers {
 	descs := make([]transport.ServiceDesc, 0, len(services))
 
 	for _, service := range services {
 		descs = append(descs, service.GetDescription())
 	}
 
-	return &Handlers{desc: transport.NewCompoundServiceDesc(descs...).SwaggerDef(), info: info}
+	handlers := &Handlers{
+		desc: transport.NewCompoundServiceDesc(descs...).SwaggerDef(),
+		info: info,
+		opts: opts,
+	}
+
+	return handlers
 }
 
 // InitRoutes init routes for current router with debug service info and swagger docs.
@@ -58,26 +63,34 @@ func (s *Handlers) InitRoutes(r chi.Router) {
 }
 
 func (s *Handlers) serviceInfoHandler(w http.ResponseWriter, r *http.Request) {
-	info := map[string]interface{}{
-		"InstanceUUID": s.info.InstanceUUID,
-		"ServiceName":  s.info.ServiceName,
-		"Namespace":    s.info.Namespace,
-		"AppName":      s.info.AppName,
-		"GitHash":      s.info.GitHash,
-		"Version":      s.info.Version,
-		"BuildAt":      s.info.BuildAt,
-		"StartTime":    s.info.StartTime,
-		"UpTime":       time.Since(s.info.StartTime),
+	info := struct {
+		InstanceUUID string `json:"instance_uuid"`
+		ServiceName  string `json:"service_name"`
+		Namespace    string `json:"namespace"`
+		AppName      string `json:"app_name"`
+		GitHash      string `json:"git_hash"`
+		Version      string `json:"version"`
+		BuildAt      string `json:"build_at"`
+		StartTime    string `json:"start_time"`
+		UpTime       string `json:"up_time"`
+	}{
+		InstanceUUID: s.info.InstanceUUID,
+		ServiceName:  s.info.ServiceName,
+		Namespace:    s.info.Namespace,
+		AppName:      s.info.AppName,
+		GitHash:      s.info.GitHash,
+		Version:      s.info.Version,
+		BuildAt:      s.info.BuildAt,
+		StartTime:    s.info.StartTime.String(),
+		UpTime:       time.Since(s.info.StartTime).String(),
 	}
 
 	_ = jsoniter.NewEncoder(w).Encode(info)
 }
 
 func (s *Handlers) swaggerDefHandler(w http.ResponseWriter, r *http.Request) {
-	if host, port, err := net.SplitHostPort(r.Host); err == nil {
-		if port, err := strconv.Atoi(port); err == nil {
-			r.Host = net.JoinHostPort(host, strconv.Itoa(port-adminToPublicPort))
-		}
+	if host, _, err := net.SplitHostPort(r.Host); err == nil {
+		r.Host = net.JoinHostPort(host, strconv.Itoa(int(s.opts.PortHTTP)))
 	}
 
 	var desc spec.Swagger
