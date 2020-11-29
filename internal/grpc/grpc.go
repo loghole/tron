@@ -1,3 +1,4 @@
+// Package grpc implements an gRPC server.
 package grpc
 
 import (
@@ -10,12 +11,14 @@ import (
 	"github.com/loghole/tron/transport"
 )
 
+// A Server defines configuration for running an gRPC server.
 type Server struct {
 	addr     string
 	listener net.Listener
 	server   *grpc.Server
 }
 
+// NewServer returns gRPC server with port.
 func NewServer(port uint16) *Server {
 	if port == 0 {
 		return nil
@@ -24,6 +27,7 @@ func NewServer(port uint16) *Server {
 	return &Server{addr: fmt.Sprintf("0.0.0.0:%d", port)}
 }
 
+// NewServerWithListener returns gRPC server with listener.
 func NewServerWithListener(listener net.Listener) *Server {
 	if listener == nil {
 		return nil
@@ -32,6 +36,7 @@ func NewServerWithListener(listener net.Listener) *Server {
 	return &Server{addr: listener.Addr().String(), listener: listener}
 }
 
+// BuildServer init gRPC server.
 func (s *Server) BuildServer(tlsConfig *tls.Config, opts []grpc.ServerOption) (err error) {
 	if s == nil {
 		return nil
@@ -59,6 +64,7 @@ func (s *Server) BuildServer(tlsConfig *tls.Config, opts []grpc.ServerOption) (e
 	return nil
 }
 
+// RegistryDesc in gRPC server.
 func (s *Server) RegistryDesc(services ...transport.Service) {
 	if s == nil {
 		return
@@ -71,6 +77,7 @@ func (s *Server) RegistryDesc(services ...transport.Service) {
 	}
 }
 
+// Serve starts serving incoming connections.
 func (s *Server) Serve() error {
 	if s == nil {
 		return nil
@@ -79,6 +86,7 @@ func (s *Server) Serve() error {
 	return s.server.Serve(s.listener)
 }
 
+// Close closes the server.
 func (s *Server) Close() error {
 	if s == nil {
 		return nil
@@ -91,6 +99,7 @@ func (s *Server) Close() error {
 	return nil
 }
 
+// Addr returns the server address.
 func (s *Server) Addr() string {
 	if s == nil {
 		return "-"

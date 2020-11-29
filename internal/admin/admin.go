@@ -17,11 +17,13 @@ import (
 
 const adminToPublicPort = 2
 
+// Handlers contains http methods with debug service info and swagger docs.
 type Handlers struct {
 	desc jsoniter.RawMessage
 	info *app.Info
 }
 
+// NewHandlers create and init handlers object.
 func NewHandlers(info *app.Info, services ...transport.Service) *Handlers {
 	descs := make([]transport.ServiceDesc, 0, len(services))
 
@@ -32,6 +34,7 @@ func NewHandlers(info *app.Info, services ...transport.Service) *Handlers {
 	return &Handlers{desc: transport.NewCompoundServiceDesc(descs...).SwaggerDef(), info: info}
 }
 
+// InitRoutes init routes for current router with debug service info and swagger docs.
 func (s *Handlers) InitRoutes(r chi.Router) {
 	if r == nil {
 		return

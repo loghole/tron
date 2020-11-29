@@ -1,3 +1,4 @@
+// Package http implements an HTTP server.
 package http
 
 import (
@@ -15,6 +16,7 @@ import (
 	"github.com/loghole/tron/transport"
 )
 
+// A Server defines configuration for running an HTTP server.
 type Server struct {
 	addr     string
 	listener net.Listener
@@ -22,6 +24,7 @@ type Server struct {
 	router   *chi.Mux
 }
 
+// NewServer returns http server with port.
 func NewServer(port uint16) *Server {
 	if port == 0 {
 		return nil
@@ -30,6 +33,7 @@ func NewServer(port uint16) *Server {
 	return &Server{router: chi.NewRouter(), addr: fmt.Sprintf("0.0.0.0:%d", port)}
 }
 
+// NewServerWithListener returns http server with listener.
 func NewServerWithListener(listener net.Listener) *Server {
 	if listener == nil {
 		return nil
@@ -38,6 +42,7 @@ func NewServerWithListener(listener net.Listener) *Server {
 	return &Server{router: chi.NewRouter(), addr: listener.Addr().String(), listener: listener}
 }
 
+// BuildServer init http server.
 func (s *Server) BuildServer(tlsConfig *tls.Config) (err error) {
 	if s == nil {
 		return nil
@@ -63,6 +68,7 @@ func (s *Server) BuildServer(tlsConfig *tls.Config) (err error) {
 	return nil
 }
 
+// RegistryDesc in http server.
 func (s *Server) RegistryDesc(services ...transport.Service) {
 	if s == nil {
 		return
@@ -82,6 +88,7 @@ func (s *Server) RegistryDesc(services ...transport.Service) {
 	s.router.Handle("/*", mux)
 }
 
+// UseMiddleware appends a middleware handler to the Mux middleware stack.
 func (s *Server) UseMiddleware(middlewares ...func(http.Handler) http.Handler) {
 	if s == nil {
 		return
@@ -90,6 +97,7 @@ func (s *Server) UseMiddleware(middlewares ...func(http.Handler) http.Handler) {
 	s.router.Use(middlewares...)
 }
 
+// Router returns http router.
 func (s *Server) Router() chi.Router {
 	if s == nil {
 		return nil
@@ -98,6 +106,7 @@ func (s *Server) Router() chi.Router {
 	return s.router
 }
 
+// Serve starts serving incoming connections.
 func (s *Server) Serve() error {
 	if s == nil {
 		return nil
@@ -116,6 +125,7 @@ func (s *Server) Serve() error {
 	return nil
 }
 
+// Close closes the server.
 func (s *Server) Close() error {
 	if s == nil {
 		return nil
@@ -129,6 +139,7 @@ func (s *Server) Close() error {
 	return s.server.Shutdown(ctx)
 }
 
+// Addr returns the server address.
 func (s *Server) Addr() string {
 	if s == nil {
 		return "-"

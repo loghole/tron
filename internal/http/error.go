@@ -14,6 +14,7 @@ import (
 
 const fallback = `{"code": 13, "message": "failed to marshal error message"}`
 
+// ErrorWriter returns runtime.ErrorHandlerFunc to configure error handling.
 func ErrorWriter() runtime.ErrorHandlerFunc {
 	return func(
 		ctx context.Context,

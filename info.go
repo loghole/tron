@@ -11,6 +11,7 @@ func SetName(name string) {
 	app.ServiceName = name
 }
 
+// Info contains service information.
 type Info = app.Info
 
 func initInfo() *Info {
