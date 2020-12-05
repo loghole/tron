@@ -9,7 +9,7 @@ import (
 )
 
 func main() {
-	app, err := tron.New(tron.AddLogCaller())
+	app, err := tron.New(tron.AddLogCaller(), tron.WithRealtimeConfig())
 	if err != nil {
 		log.Fatalf("can't create app: %s", err)
 	}

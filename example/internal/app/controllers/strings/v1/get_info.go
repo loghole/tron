@@ -4,7 +4,8 @@ package stringsV1
 
 import (
 	context "context"
-	errors "errors"
+
+	"example/config"
 	typesV1 "example/pkg/types/v1"
 )
 
@@ -12,5 +13,9 @@ func (i *Implementation) GetInfo(
 	ctx context.Context,
 	req *typesV1.String,
 ) (resp *typesV1.String, err error) {
-	return nil, errors.New("method GetInfo unimplemented")
+	resp = &typesV1.String{
+		Str: config.GetExampleValue(),
+	}
+
+	return resp, nil
 }
