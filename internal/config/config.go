@@ -3,10 +3,8 @@ package config
 
 import (
 	"fmt"
-	"os"
 	"path/filepath"
 
-	"github.com/lissteron/simplerr"
 	"github.com/spf13/viper"
 
 	"github.com/loghole/tron/internal/app"
@@ -20,27 +18,32 @@ func Init(opts *app.Options) error {
 		return fromConfigMap(opts.ConfigMap)
 	}
 
-	return base()
+	return base(opts.RealtimeConfig)
 }
 
-func base() error {
+func base(watch bool) error {
 	viper.SetConfigType(app.ValuesExt)
-	viper.SetConfigName(app.ValuesBaseName)
 	viper.AddConfigPath(filepath.Join(app.DeploymentsDir, app.ValuesDir))
+	viper.SetConfigName(app.ValuesBaseName)
 
-	if err := viper.ReadInConfig(); err != nil {
-		return simplerr.Wrap(err, "read ")
+	// Init default config values.
+	if err := viper.MergeInConfig(); err != nil {
+		return fmt.Errorf("can't merge base config: %w", err)
 	}
 
-	namespace := app.ParseNamespace(viper.GetString(app.NamespaceEnv))
-
-	replacer, err := os.Open(namespace.ValuesPath())
-	if err != nil {
-		return fmt.Errorf("open values file = '%s' failed: %w", namespace.ValuesPath(), err)
+	for key, val := range viper.AllSettings() {
+		viper.SetDefault(key, val)
 	}
 
-	if err := viper.MergeConfig(replacer); err != nil {
-		return fmt.Errorf("merge config failed: %w", err)
+	viper.SetConfigName(app.ParseNamespace(viper.GetString(app.NamespaceEnv)).ValuesName())
+
+	// Init config values for current namespace.
+	if err := viper.MergeInConfig(); err != nil {
+		return fmt.Errorf("can't merge namespace config: %w", err)
+	}
+
+	if watch {
+		viper.WatchConfig()
 	}
 
 	return nil

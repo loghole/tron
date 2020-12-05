@@ -191,3 +191,17 @@ func WithCORSAllowedHeaders(headers []string) Option {
 		return nil
 	}
 }
+
+// WithRealtimeConfig returns a Option that activate realtime config.
+// Realtime config watch only values file for current namespace.
+//
+//  Example:
+//
+//  tron.New(tron.WithRealtimeConfig())
+func WithRealtimeConfig() Option {
+	return func(opts *app.Options) error {
+		opts.RealtimeConfig = true
+
+		return nil
+	}
+}

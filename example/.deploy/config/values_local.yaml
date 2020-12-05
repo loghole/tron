@@ -1,2 +1,3 @@
 # Place config values for LOCAL development here
 LOGGER_LEVEL: debug
+EXAMPLE_VALUE: new_example_value

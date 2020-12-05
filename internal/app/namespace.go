@@ -1,7 +1,6 @@
 package app
 
 import (
-	"path"
 	"strings"
 )
 
@@ -30,22 +29,18 @@ func (n Namespace) String() string {
 	return string(n)
 }
 
-// ValuesPath returns config values path for current namespace.
-func (n Namespace) ValuesPath() string {
-	var name string
-
+// ValuesName returns config values name for current namespace.
+func (n Namespace) ValuesName() string {
 	switch n {
 	case NamespaceDev:
-		name = ValuesDevName
+		return ValuesDevName
 	case NamespaceStage:
-		name = ValuesStgName
+		return ValuesStgName
 	case NamespaceProd:
-		name = ValuesProdName
+		return ValuesProdName
 	case NamespaceLocal:
-		name = ValuesLocalName
+		return ValuesLocalName
 	default:
 		panic("unknown namespace")
 	}
-
-	return path.Join(DeploymentsDir, ValuesDir, strings.Join([]string{name, ValuesExt}, "."))
 }

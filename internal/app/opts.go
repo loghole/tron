@@ -21,16 +21,17 @@ type RunOption func(opts *Options) error
 // Options is base tron options.
 type Options struct {
 	// New options.
-	Hostname      string
-	PortAdmin     uint16
-	PortHTTP      uint16
-	PortGRPC      uint16
-	LoggerOptions []zap.Option
-	ExitSignals   []os.Signal
-	CorsOptions   cors.Options
-	ConfigMap     map[string]interface{}
-	GRPCListener  net.Listener
-	HTTPListener  net.Listener
+	Hostname       string
+	PortAdmin      uint16
+	PortHTTP       uint16
+	PortGRPC       uint16
+	RealtimeConfig bool
+	LoggerOptions  []zap.Option
+	ExitSignals    []os.Signal
+	CorsOptions    cors.Options
+	ConfigMap      map[string]interface{}
+	GRPCListener   net.Listener
+	HTTPListener   net.Listener
 
 	// Run options.
 	TLSConfig   *tls.Config
