@@ -18,5 +18,5 @@ linters-settings:
       - diagnostic
       - opinionated
 service:
-  golangci-lint-version: 1.32.x
+  golangci-lint-version: 1.33.x
 `
