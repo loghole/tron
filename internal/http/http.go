@@ -77,6 +77,8 @@ func (s *Server) RegistryDesc(services ...transport.Service) {
 	mux := runtime.NewServeMux(
 		runtime.WithErrorHandler(ErrorWriter()),
 		runtime.WithMarshalerOption(runtime.MIMEWildcard, newMarshaler()),
+		runtime.WithIncomingHeaderMatcher(headerMatcher),
+		runtime.WithOutgoingHeaderMatcher(headerMatcher),
 	)
 
 	for _, service := range services {

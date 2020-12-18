@@ -11,12 +11,10 @@ require (
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.0.1
 	github.com/grpc-ecosystem/grpc-opentracing v0.0.0-20180507213350-8e809c8a8645
 	github.com/json-iterator/go v1.1.10
-	github.com/lissteron/simplerr v0.6.1
+	github.com/lissteron/simplerr v0.7.0
 	github.com/loghole/lhw v0.4.3
 	github.com/loghole/tracing v0.12.0
 	github.com/opentracing/opentracing-go v1.2.0
-	github.com/peterbourgon/mergemap v0.0.0-20130613134717-e21c03b7a721
-	github.com/pkg/errors v0.9.1 // indirect
 	github.com/spf13/viper v1.7.1
 	golang.org/x/sync v0.0.0-20201020160332-67f06af15bc9
 	google.golang.org/genproto v0.0.0-20201204160425-06b3db808446

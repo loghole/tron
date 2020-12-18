@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
-	"strings"
 
 	validation "github.com/gadavy/ozzo-validation/v4"
 	"github.com/lissteron/simplerr"
@@ -15,14 +14,21 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-// Error represents base error struct.
+// Error represents base http error struct.
 type Error struct {
 	rootErr    error
 	httpStatus int
 	grpcStatus codes.Code
 
-	Message string         `json:"message"`
-	Details []ErrorDetails `json:"details"`
+	Message string     `json:"message,omitempty"`
+	Details []*Details `json:"details,omitempty"`
+}
+
+// Details represents error details.
+type Details struct {
+	Code        string `json:"code,omitempty"`
+	Field       string `json:"field,omitempty"`
+	Description string `json:"description,omitempty"`
 }
 
 // ParseError parse error to Error struct.
@@ -32,10 +38,16 @@ func ParseError(err error) *Error {
 		rootErr:    err,
 		httpStatus: http.StatusInternalServerError,
 		grpcStatus: codes.Unknown,
-		Message:    simplerr.GetText(simplerr.GetWithCode(err)),
 	}
 
-	resp.parseErr(err)
+	if resp.parseValidationErr(err) {
+		resp.httpStatus = http.StatusBadRequest
+		resp.grpcStatus = codes.InvalidArgument
+	} else {
+		resp.parseDefaultErr(err)
+	}
+
+	resp.Message = http.StatusText(resp.httpStatus)
 
 	return resp
 }
@@ -46,7 +58,7 @@ func (e *Error) GRPCStatus() *status.Status {
 
 	for _, val := range e.Details {
 		stNew, err := st.WithDetails(&errdetails.DebugInfo{
-			Detail: fmt.Sprintf("code: %s, detail: %s", val.Code, val.Detail),
+			Detail: fmt.Sprintf("code: %s, detail: %s", val.Code, val.Description),
 		})
 		if err != nil {
 			return st
@@ -72,64 +84,106 @@ func (e *Error) Error() string {
 	return ""
 }
 
-// ErrorDetails represents error details.
-type ErrorDetails struct {
-	Code   string `json:"code"`
-	Detail string `json:"detail"`
-}
+func (e *Error) parseValidationErr(err error) bool {
+	if detail, ok := parseValidationErr(err, ""); ok {
+		e.Details = append(e.Details, detail)
 
-func (e *Error) parseErr(err error) {
-	var validationErrs validation.Errors
-
-	if errors.As(err, &validationErrs) {
-		if e.parseValidationErr(validationErrs) {
-			return
-		}
+		return true
 	}
 
+	if details, ok := parseValidationErrList(err, ""); ok {
+		e.Details = append(e.Details, details...)
+
+		return true
+	}
+
+	return false
+}
+
+func (e *Error) parseDefaultErr(err error) {
 	if errC := simplerr.GetWithCode(err); errC != nil {
 		err = errC
 	}
 
 	code := simplerr.GetCode(err)
-	e.grpcStatus = codes.Code(code.GRPC())
 
-	if httpCode := code.HTTP(); httpCode > 0 {
-		e.httpStatus = httpCode
+	if gCode := code.GRPC(); gCode > 0 {
+		e.grpcStatus = codes.Code(gCode)
 	}
 
-	e.Details = append(e.Details, ErrorDetails{
-		Code:   strconv.Itoa(code.Int()),
-		Detail: simplerr.GetText(err),
-	})
+	if hCode := code.HTTP(); hCode > 0 {
+		e.httpStatus = hCode
+	}
+
+	details := &Details{
+		Code:        strconv.Itoa(code.Int()),
+		Description: simplerr.GetText(err), // can by empty.
+	}
+
+	if details.Description == "" {
+		details.Description = err.Error()
+	}
+
+	e.Details = append(e.Details, details)
 }
 
-func (e *Error) parseValidationErr(list validation.Errors) bool {
-	for field, err := range list {
-		var validationErr validation.Error
+func parseValidationErrList(err error, field string) ([]*Details, bool) {
+	var validationErrList validation.Errors
 
-		if errors.As(err, &validationErr) {
-			e.Details = append(e.Details, ErrorDetails{
-				Code:   validationErr.Code(),
-				Detail: strings.Join([]string{field, validationErr.Error()}, ": "),
-			})
+	if !errors.As(err, &validationErrList) {
+		return nil, false
+	}
+
+	result := make([]*Details, 0, len(validationErrList))
+
+	for secondField, err := range validationErrList {
+		field := buildField(field, secondField, ".")
+
+		if detail, ok := parseValidationErr(err, field); ok {
+			result = append(result, detail)
 
 			continue
 		}
 
-		var validationErrs validation.Errors
+		if details, ok := parseValidationErrList(err, field); ok {
+			result = append(result, details...)
 
-		if !errors.As(err, &validationErrs) {
-			return false
+			continue
 		}
 
-		if !e.parseValidationErr(validationErrs) {
-			return false
-		}
+		result = append(result, defaultErr(err, field))
 	}
 
-	e.httpStatus = http.StatusBadRequest
-	e.grpcStatus = codes.InvalidArgument
+	return result, true
+}
 
-	return true
+func parseValidationErr(err error, field string) (*Details, bool) {
+	var validationErr validation.Error
+
+	if !errors.As(err, &validationErr) {
+		return nil, false
+	}
+
+	result := &Details{
+		Field:       field,
+		Code:        validationErr.Code(),
+		Description: validationErr.Error(),
+	}
+
+	return result, true
+}
+
+func defaultErr(err error, field string) *Details {
+	return &Details{
+		Field:       field,
+		Description: err.Error(),
+	}
+}
+
+func buildField(first, second, separator string) string {
+	if first == "" {
+		return second
+	}
+
+	return first + separator + second
 }
