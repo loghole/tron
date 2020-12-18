@@ -80,12 +80,15 @@ generate-config:
 	GOBIN=$(LOCAL_BIN) go install google.golang.org/grpc/cmd/protoc-gen-go-grpc
 	GOBIN=$(LOCAL_BIN) go install github.com/loghole/protoc-gen-tron
 
+.PHONY: gotest
 gotest:
 	go test -race -v -cover -coverprofile coverage.out ./...
 
+.PHONY: lint
 lint:
 	golangci-lint run -v
 
+.PHONY: docker-image
 docker-image:
 	docker build \
 	-f $(DOCKERFILE) \
@@ -93,6 +96,7 @@ docker-image:
 	-t $(DOCKER_IMAGE):$(VERSION) \
 	.
 
+.PHONY: run-local
 run-local:
 	go run -ldflags "$(LDFLAGS)" {{ .Mainfile }} --local-config-enabled
 `
