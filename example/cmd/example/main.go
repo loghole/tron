@@ -1,15 +1,16 @@
 package main
 
 import (
-	config "example/config"
-	stringsV1 "example/internal/app/controllers/strings/v1"
-	log "log"
+	"log"
 
-	tron "github.com/loghole/tron"
+	"example/config"
+	stringsV1 "example/internal/app/controllers/strings/v1"
+
+	"github.com/loghole/tron"
 )
 
 func main() {
-	app, err := tron.New(tron.AddLogCaller(), tron.WithRealtimeConfig())
+	app, err := tron.New(tron.AddLogCaller())
 	if err != nil {
 		log.Fatalf("can't create app: %s", err)
 	}

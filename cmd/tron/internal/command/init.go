@@ -1,30 +1,23 @@
 package command
 
 import (
-	"errors"
+	"fmt"
 	"os"
 
 	"github.com/fatih/color"
-	"github.com/lissteron/simplerr"
 	"github.com/spf13/cobra"
 
+	"github.com/loghole/tron/cmd/tron/internal/check"
+	"github.com/loghole/tron/cmd/tron/internal/download"
 	"github.com/loghole/tron/cmd/tron/internal/generate"
 	"github.com/loghole/tron/cmd/tron/internal/helpers"
-	"github.com/loghole/tron/cmd/tron/internal/project"
+	"github.com/loghole/tron/cmd/tron/internal/models"
+	"github.com/loghole/tron/cmd/tron/internal/parsers"
 	"github.com/loghole/tron/cmd/tron/internal/stdout"
-)
-
-const (
-	FlagProtoDirs = "proto"
-	FlagConfig    = "config"
-	FlagVersion   = "version"
-	FlagList      = "list"
-	FlagUnstable  = "unstable"
 )
 
 type InitCMD struct {
 	printer stdout.Printer
-	project *project.Project
 }
 
 func NewInitCMD(printer stdout.Printer) *InitCMD {
@@ -50,7 +43,7 @@ func (i *InitCMD) Command() *cobra.Command {
 }
 
 func (i *InitCMD) run(cmd *cobra.Command, args []string) {
-	if ok := project.NewChecker(i.printer).CheckInitRequirements(); !ok {
+	if ok := check.NewChecker(i.printer).CheckInitRequirements(); !ok {
 		i.printer.Println(color.FgRed, "Requirements check failed")
 		os.Exit(1)
 	}
@@ -67,7 +60,7 @@ func (i *InitCMD) run(cmd *cobra.Command, args []string) {
 		os.Exit(1)
 	}
 
-	if err := i.runInit(module, protoDirs); err != nil {
+	if err := i.runInitService(parsers.WithModuleName(module), parsers.WithProtoDirs(protoDirs)); err != nil {
 		i.printer.Printf(color.FgRed, "Init failed: %v\n", err)
 		helpers.PrintCommandHelp(cmd)
 		os.Exit(1)
@@ -76,23 +69,28 @@ func (i *InitCMD) run(cmd *cobra.Command, args []string) {
 	i.printer.Println(color.FgGreen, "Success")
 }
 
-func (i *InitCMD) runInit(module string, dirs []string) (err error) {
+func (i *InitCMD) runInitService(opts ...parsers.Option) (err error) {
 	i.printer.VerbosePrintln(color.FgMagenta, "Init project")
 
-	i.project, err = project.NewProject(module, i.printer)
+	project, err := parsers.NewProjectParser(i.printer, opts...).Parse()
 	if err != nil {
-		return simplerr.Wrap(err, "parse project failed")
+		return fmt.Errorf("parse project: %w", err)
 	}
 
-	if err := i.project.FindProtoFiles(dirs...); err != nil {
-		return simplerr.Wrap(err, "find proto files failed")
+	if err := parsers.NewProtoFilesMover(project, i.printer).Move(); err != nil {
+		return fmt.Errorf("move proto files: %w", err)
 	}
 
-	if err := i.project.MoveProtoFiles(); err != nil {
-		return simplerr.Wrap(err, "move proto files failed")
+	if err := download.NewVendor(project, i.printer).Download(); err != nil {
+		return fmt.Errorf("vendor proto files: %w", err)
+	}
+
+	if err := parsers.NewProtoDescParser(project, i.printer).Parse(); err != nil {
+		return fmt.Errorf("parse proto files: %w", err)
 	}
 
 	if err := i.generate(
+		project,
 		generate.Git,
 		generate.GoMod,
 		generate.TronMK,
@@ -102,42 +100,39 @@ func (i *InitCMD) runInit(module string, dirs []string) (err error) {
 		generate.Dockerfile,
 		generate.Values,
 		generate.ReadmeMD); err != nil {
-		return simplerr.Wrap(err, "generate files failed")
+		return fmt.Errorf("generate files: %w", err)
 	}
 
 	i.printer.Println(color.FgMagenta, "Generate files from proto api if exists")
 
-	if err := helpers.ExecWithPrint(i.project.AbsPath, "make", "generate"); err != nil {
-		return simplerr.Wrap(err, "exec 'make generate' failed")
+	if err := helpers.ExecWithPrint(project.AbsPath, "make", "generate"); err != nil {
+		return fmt.Errorf("exec 'make generate': %w", err)
 	}
 
-	i.printer.Println(color.FgMagenta, "Generate config and main files")
+	if err := parsers.NewValuesParser(project, i.printer).Parser(); err != nil {
+		return fmt.Errorf("parse config values: %w", err)
+	}
 
 	if err := i.generate(
+		project,
 		generate.Config,
 		generate.ConfigHelper,
 		generate.Mainfile); err != nil {
-		return simplerr.Wrap(err, "generate config and main files failed")
+		return fmt.Errorf("generate config and main files: %w", err)
 	}
 
-	if err := helpers.Exec(i.project.AbsPath, "go", "mod", "tidy"); err != nil {
-		return simplerr.Wrap(err, "exec 'go mod tidy' failed")
+	if err := helpers.Exec(project.AbsPath, "go", "mod", "tidy"); err != nil {
+		return fmt.Errorf("exec 'go mod tidy': %w", err)
 	}
 
 	return nil
 }
 
-func (i *InitCMD) generate(list ...generate.Generator) error {
+func (i *InitCMD) generate(project *models.Project, list ...generate.Generator) error {
 	for _, gen := range list {
-		if err := gen(i.project, i.printer); err != nil {
-			if errors.Is(err, generate.ErrAlreadyExists) {
-				continue
-			}
-
+		if err := gen(project, i.printer); err != nil {
 			return err
 		}
-
-		i.printer.VerbosePrintln(color.FgCyan, "\tCreated")
 	}
 
 	return nil

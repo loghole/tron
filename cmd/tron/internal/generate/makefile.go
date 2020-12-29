@@ -1,45 +1,52 @@
 package generate
 
 import (
+	"fmt"
 	"path/filepath"
 
 	"github.com/fatih/color"
-	"github.com/lissteron/simplerr"
 
 	"github.com/loghole/tron/cmd/tron/internal/helpers"
 	"github.com/loghole/tron/cmd/tron/internal/models"
-	"github.com/loghole/tron/cmd/tron/internal/project"
 	"github.com/loghole/tron/cmd/tron/internal/stdout"
 	"github.com/loghole/tron/cmd/tron/internal/templates"
 )
 
-func TronMK(p *project.Project, printer stdout.Printer) error {
+func TronMK(project *models.Project, printer stdout.Printer) error {
 	printer.VerbosePrintln(color.FgMagenta, "Generate Tron MK")
 
-	data := templates.NewTronMKData(p)
-
-	tronMK, err := helpers.ExecTemplate(templates.TronMK, data)
+	tronMK, err := helpers.ExecTemplate(templates.TronMK, project)
 	if err != nil {
-		return simplerr.Wrap(err, "failed to exec template")
+		return fmt.Errorf("exec template: %w", err)
 	}
 
-	path := filepath.Join(p.AbsPath, models.TronMKFilepath)
+	path := filepath.Join(project.AbsPath, models.TronMKFilepath)
 
 	if err := helpers.WriteToFile(path, []byte(tronMK)); err != nil {
-		return err
+		return fmt.Errorf("write file '%s': %w", path, err)
 	}
+
+	printer.VerbosePrintln(color.FgBlue, "\tSuccess")
 
 	return nil
 }
 
-func Makefile(p *project.Project, printer stdout.Printer) error {
+func Makefile(project *models.Project, printer stdout.Printer) error {
 	printer.VerbosePrintln(color.FgMagenta, "Generate Makefile")
 
-	path := filepath.Join(p.AbsPath, models.MakefileFilepath)
+	path := filepath.Join(project.AbsPath, models.MakefileFilepath)
 
-	if err := helpers.WriteWithConfirm(path, []byte(templates.Makefile)); err != nil {
-		return err
+	if !helpers.ConfirmOverwrite(path) {
+		printer.VerbosePrintln(color.FgBlue, "\tSkipped")
+
+		return nil
 	}
+
+	if err := helpers.WriteToFile(path, []byte(templates.Makefile)); err != nil {
+		return fmt.Errorf("write file '%s': %w", path, err)
+	}
+
+	printer.VerbosePrintln(color.FgBlue, "\tSuccess")
 
 	return nil
 }

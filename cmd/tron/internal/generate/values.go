@@ -1,21 +1,20 @@
 package generate
 
 import (
+	"fmt"
 	"path/filepath"
 	"strings"
 
 	"github.com/fatih/color"
-	"github.com/lissteron/simplerr"
 
 	"github.com/loghole/tron/cmd/tron/internal/helpers"
 	"github.com/loghole/tron/cmd/tron/internal/models"
-	"github.com/loghole/tron/cmd/tron/internal/project"
 	"github.com/loghole/tron/cmd/tron/internal/stdout"
 	"github.com/loghole/tron/cmd/tron/internal/templates"
 	"github.com/loghole/tron/internal/app"
 )
 
-func Values(p *project.Project, printer stdout.Printer) error {
+func Values(project *models.Project, printer stdout.Printer) error {
 	printer.VerbosePrintln(color.FgMagenta, "Generate values")
 
 	data := templates.ValuesData{
@@ -32,7 +31,7 @@ func Values(p *project.Project, printer stdout.Printer) error {
 
 	values, err := helpers.ExecTemplate(templates.ValuesTemplate, data)
 	if err != nil {
-		return simplerr.Wrap(err, "failed to exec template")
+		return fmt.Errorf("exec template: %w", err)
 	}
 
 	writers := []struct {
@@ -47,10 +46,18 @@ func Values(p *project.Project, printer stdout.Printer) error {
 	}
 
 	for _, wr := range writers {
-		if err := helpers.WriteWithConfirm(filepath.Join(p.AbsPath, wr.path), []byte(wr.data)); err != nil {
-			return simplerr.Wrap(err, "failed to write file")
+		path := filepath.Join(project.AbsPath, wr.path)
+
+		if !helpers.ConfirmOverwrite(path) {
+			continue
+		}
+
+		if err := helpers.WriteToFile(path, []byte(wr.data)); err != nil {
+			return fmt.Errorf("write file '%s': %w", path, err)
 		}
 	}
+
+	printer.VerbosePrintln(color.FgBlue, "\tSuccess")
 
 	return nil
 }

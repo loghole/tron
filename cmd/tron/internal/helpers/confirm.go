@@ -45,14 +45,6 @@ func ConfirmOverwrite(path string) bool {
 	return result == write
 }
 
-func WriteWithConfirm(path string, data []byte) error {
-	if !ConfirmOverwrite(path) {
-		return nil
-	}
-
-	return WriteToFile(path, data)
-}
-
 func MkdirWithConfirm(path string) error {
 	stat, err := os.Stat(path)
 	if err != nil {

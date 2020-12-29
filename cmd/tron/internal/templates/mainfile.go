@@ -9,14 +9,13 @@ import (
 
 // MainData is a datastruct for main.go
 type MainData struct {
-	*models.Data
-
+	*models.Project
 	Imports map[string]Import
 }
 
-func NewMainData(data *models.Data) *MainData {
+func NewMainData(project *models.Project) *MainData {
 	return &MainData{
-		Data:    data,
+		Project: project,
 		Imports: make(map[string]Import),
 	}
 }
@@ -87,15 +86,20 @@ func (m *MainData) AddImport(pkg string, alias ...string) {
 const MainTemplate = `package main
 
 import (
+	"log"	
+
+	"{{ .Module }}/config"
 	{{ range $import := .Imports -}}
 		{{ $import.Alias }} "{{ $import.Pkg }}"
 	{{ end }}
+
+	"github.com/loghole/tron"
 )
 
 func main() {
-	app, err := {{ pkg "github.com/loghole/tron" }}New(tron.AddLogCaller())
+	app, err := tron.New(tron.AddLogCaller())
 	if err != nil {
-		{{ pkg "log" }}Fatalf("can't create app: %s", err)
+		log.Fatalf("can't create app: %s", err)
 	}
 
 	defer app.Close()
@@ -104,19 +108,21 @@ func main() {
 
 	// Init all ..
 
+	{{ if .WithProtos }}
 	var (
 		{{ range $proto := .Protos -}}
-			{{- if $proto.Service.WithImpl -}}
-			{{ $proto.Service.GoImportAlias }}Handler = {{ $proto.Service.GoImportAlias }}.NewImplementation()
+			{{- if $proto.WithImpl -}}
+			{{ $proto.GoPackage }}Handler = {{ $proto.GoPackage }}.NewImplementation()
 			{{ end -}}
 		{{ end }}
 	)
+	{{ end }}
 
 	if err := app.WithRunOptions().Run(
 			{{- range $proto := .Protos -}} 
-			{{- if $proto.Service.WithImpl -}}
-			{{ $proto.Service.GoImportAlias }}Handler,
-			{{- end -}}
+				{{- if $proto.WithImpl -}}
+				{{ $proto.GoPackage }}Handler,
+				{{- end -}}
 			{{- end -}}
 		); err != nil {
 		app.Logger().Fatalf("can't run app: %v", err)

@@ -1,7 +1,6 @@
-package upgrade
+package download
 
 import (
-	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -15,11 +14,10 @@ import (
 	"github.com/lissteron/simplerr"
 
 	"github.com/loghole/tron/cmd/tron/internal/helpers"
+	"github.com/loghole/tron/cmd/tron/internal/models"
 	"github.com/loghole/tron/cmd/tron/internal/stdout"
 	"github.com/loghole/tron/cmd/tron/internal/version"
 )
-
-var ErrVersionNotFound = errors.New("not found")
 
 const (
 	repositoryURL = "https://github.com/loghole/tron.git"
@@ -33,12 +31,12 @@ const (
 	cmdGo  = "go"
 )
 
-type Upgrade struct {
+type Tron struct {
 	printer  stdout.Printer
-	releases []*release
+	releases []*models.Release
 }
 
-func New(printer stdout.Printer, stable bool) (*Upgrade, error) {
+func NewTron(printer stdout.Printer, stable bool) (*Tron, error) {
 	list, err := releasesList()
 	if err != nil {
 		return nil, simplerr.Wrap(err, "get releases list failed")
@@ -49,17 +47,17 @@ func New(printer stdout.Printer, stable bool) (*Upgrade, error) {
 		return nil, simplerr.Wrap(err, "filter releases list failed")
 	}
 
-	return &Upgrade{printer: printer, releases: list}, nil
+	return &Tron{printer: printer, releases: list}, nil
 }
 
-func (u *Upgrade) ListVersions() error {
-	u.printer.Println(color.Reset, "Available versions:")
+func (t *Tron) ListVersions() error {
+	t.printer.Println(color.Reset, "Available versions:")
 
-	for idx, r := range u.releases {
+	for idx, r := range t.releases {
 		if version.CliVersion == r.TagName {
-			u.printer.Printf(color.FgGreen, "\t%s, published at: %s, already installed\n", r.TagName, r.PublishedAt)
+			t.printer.Printf(color.FgGreen, "\t%s, published at: %s, already installed\n", r.TagName, r.PublishedAt)
 		} else {
-			u.printer.Printf(color.Reset, "\t%s, published at: %s\n", color.CyanString(r.TagName), r.PublishedAt)
+			t.printer.Printf(color.Reset, "\t%s, published at: %s\n", color.CyanString(r.TagName), r.PublishedAt)
 		}
 
 		if idx > printReleases {
@@ -70,36 +68,36 @@ func (u *Upgrade) ListVersions() error {
 	return nil
 }
 
-func (u *Upgrade) Upgrade(tag string) error {
-	rel, err := u.findReleaseByTag(tag)
+func (t *Tron) Upgrade(tag string) error {
+	rel, err := t.findReleaseByTag(tag)
 	if err != nil {
 		return simplerr.Wrapf(err, "version '%s'", tag)
 	}
 
 	if version.CliVersion == rel.TagName {
-		u.printer.Printf(color.Reset, "You already use version %s\n", color.CyanString(rel.TagName))
+		t.printer.Printf(color.Reset, "You already use version %s\n", color.CyanString(rel.TagName))
 
 		return nil
 	}
 
-	if err := u.downloadAndInstall(rel); err != nil {
+	if err := t.downloadAndInstall(rel); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (u *Upgrade) findReleaseByTag(tag string) (*release, error) {
-	if len(u.releases) == 0 {
-		u.printer.Println(color.FgCyan, "No versions available ¯\\_(ツ)_/¯")
+func (t *Tron) findReleaseByTag(tag string) (*models.Release, error) {
+	if len(t.releases) == 0 {
+		t.printer.Println(color.FgCyan, "No versions available ¯\\_(ツ)_/¯")
 		os.Exit(1)
 	}
 
 	if tag == "latest" {
-		return u.releases[0], nil
+		return t.releases[0], nil
 	}
 
-	for _, rel := range u.releases {
+	for _, rel := range t.releases {
 		if tag == rel.TagName {
 			return rel, nil
 		}
@@ -108,7 +106,7 @@ func (u *Upgrade) findReleaseByTag(tag string) (*release, error) {
 	return nil, ErrVersionNotFound
 }
 
-func (u *Upgrade) downloadAndInstall(rel *release) error {
+func (t *Tron) downloadAndInstall(rel *models.Release) error {
 	dir, err := ioutil.TempDir("", "tron-build")
 	if err != nil {
 		return simplerr.Wrap(err, "failed to create temp dir")
@@ -116,22 +114,22 @@ func (u *Upgrade) downloadAndInstall(rel *release) error {
 
 	defer os.RemoveAll(dir)
 
-	u.printer.Printf(color.Reset, "Download tron %s\n", color.CyanString(rel.TagName))
+	t.printer.Printf(color.Reset, "Download tron %s\n", color.CyanString(rel.TagName))
 
-	if err := u.download(rel, dir); err != nil {
+	if err := t.download(rel, dir); err != nil {
 		return simplerr.Wrap(err, "failed to download")
 	}
 
-	u.printer.Println(color.Reset, "Install tron...")
+	t.printer.Println(color.Reset, "Install tron...")
 
-	if err := u.install(rel, dir); err != nil {
+	if err := t.install(rel, dir); err != nil {
 		return simplerr.Wrap(err, "failed to install")
 	}
 
 	return nil
 }
 
-func (u *Upgrade) download(rel *release, dir string) error {
+func (t *Tron) download(rel *models.Release, dir string) error {
 	cmd := exec.Command(cmdGit, "clone", repositoryURL)
 	cmd.Dir = dir
 
@@ -149,7 +147,7 @@ func (u *Upgrade) download(rel *release, dir string) error {
 	return nil
 }
 
-func (u *Upgrade) install(rel *release, dir string) error {
+func (t *Tron) install(rel *models.Release, dir string) error {
 	path, err := binaryPath()
 	if err != nil {
 		return simplerr.Wrapf(err, "failed to get binary path %v", err)
@@ -167,8 +165,8 @@ func (u *Upgrade) install(rel *release, dir string) error {
 	return nil
 }
 
-func filterReleases(list []*release, stable bool) ([]*release, error) {
-	result := make([]*release, 0, len(list))
+func filterReleases(list []*models.Release, stable bool) ([]*models.Release, error) {
+	result := make([]*models.Release, 0, len(list))
 
 	minVersion, err := semver.NewVersion(tronMinVersion)
 	if err != nil {
@@ -176,11 +174,11 @@ func filterReleases(list []*release, stable bool) ([]*release, error) {
 	}
 
 	for _, rel := range list {
-		if minVersion.Compare(rel.version()) >= 0 {
+		if minVersion.Compare(rel.Version()) >= 0 {
 			continue
 		}
 
-		if stable && rel.version().Prerelease() != "" {
+		if stable && rel.Version().Prerelease() != "" {
 			continue
 		}
 
@@ -190,7 +188,7 @@ func filterReleases(list []*release, stable bool) ([]*release, error) {
 	return result, nil
 }
 
-func releasesList() ([]*release, error) {
+func releasesList() ([]*models.Release, error) {
 	resp, err := http.Get(releasesURL) // nolint:gosec,bodyclose,noctx //body is closed
 	if err != nil {
 		return nil, simplerr.Wrap(err, "request failed")
@@ -198,7 +196,7 @@ func releasesList() ([]*release, error) {
 
 	defer helpers.Close(resp.Body)
 
-	result := make([]*release, 0)
+	result := make([]*models.Release, 0)
 
 	if err := jsoniter.NewDecoder(resp.Body).Decode(&result); err != nil {
 		return nil, simplerr.Wrap(err, "unmarshal failed")
