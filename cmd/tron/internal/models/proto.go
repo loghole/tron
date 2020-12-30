@@ -3,79 +3,52 @@ package models
 import (
 	"path/filepath"
 	"strings"
-
-	"github.com/lissteron/simplerr"
-
-	"github.com/loghole/tron/cmd/tron/internal/helpers"
 )
 
 const (
-	ProtoExt = ".proto"
-	PbGoExt  = ".pb.go"
+	ProtoExt     = ".proto"
+	PbGoExt      = ".pb.go"
+	PbSwaggerExt = ".swagger.json"
+	PbTronExt    = ".pb.tron.go"
 )
 
 type Proto struct {
-	Name        string
-	Path        string
-	RelativeDir string
-	Service     Service
-	Version     string
-	Imports     []string
+	Name      string
+	Path      string
+	RelPath   string
+	Package   string
+	GoPackage string
+	Imports   []string
+	Service   *Service
 }
 
-func (p *Proto) NameWithExt() string {
-	return p.Name + ProtoExt
+func (p *Proto) WithImpl() bool {
+	return p.Service != nil
 }
 
-func (p *Proto) PkgFilePath() string {
-	return filepath.Join(ProjectPathPkgClients, filepath.Join(p.Service.PackageParts...), p.NameWithExt())
+func (p *Proto) PkgDir() string {
+	return filepath.Join(ProjectPathPkgClients, strings.ReplaceAll(p.Package, ".", sep))
 }
 
-func (p *Proto) PkgGoTypesFilePath() string {
-	return filepath.Join(ProjectPathPkgClients, filepath.Join(p.Service.PackageParts...), p.Name+PbGoExt)
+func (p *Proto) PkgTypesFile() string {
+	return filepath.Join(p.PkgDir(), p.Name+PbGoExt)
 }
 
-func (p *Proto) PkgDirPath() string {
-	return filepath.Join(ProjectPathPkgClients, filepath.Join(p.Service.PackageParts...))
+func (p *Proto) PkgSwaggerFile() string {
+	return filepath.Join(p.PkgDir(), p.Name+PbSwaggerExt)
 }
 
-func (p *Proto) SetService(srv, pkg string) error {
-	if !ProtoPkgVersionRegexp.MatchString(pkg) {
-		return simplerr.Wrap(ErrInvalidProtoPkgName, "use '.v{{ integer }}' at the end of the name")
-	}
-
-	p.Version = ProtoPkgVersionRegexp.FindStringSubmatch(pkg)[1]
-	p.Service.PackageParts = strings.Split(pkg, ".")
-
-	switch {
-	case srv != "":
-		p.Service.WithImpl = true
-		p.Service.Name = strings.Title(srv)
-	default:
-		p.Service.Name = strings.Title(p.Service.PackageParts[len(p.Service.PackageParts)-2])
-	}
-
-	return nil
-}
-
-func AddProtoExt(name string) string {
-	return name + ProtoExt
+func (p *Proto) PkgTronFile() string {
+	return filepath.Join(p.PkgDir(), p.Name+PbTronExt)
 }
 
 type Service struct {
-	PackageParts []string
-	Name         string
-	WithImpl     bool
+	Name    string
+	Methods []*Method
 }
 
-func (s *Service) GoImplImport(module string) string {
-	return strings.Join([]string{module, ProjectImportImplementation, strings.Join(s.PackageParts, "/")}, "/")
-}
-
-func (s *Service) GoImportAlias() string {
-	return helpers.CamelCase(helpers.GoName(strings.Join(s.PackageParts, ".")))
-}
-
-func (s *Service) SnakeCasedName() string {
-	return helpers.SnakeCase(s.Name)
+type Method struct {
+	Name   string
+	Input  string
+	Output string
 }

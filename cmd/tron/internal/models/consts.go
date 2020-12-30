@@ -53,3 +53,15 @@ const (
 	TronOptionsTag = "tron_option:"
 	TronOptionJSON = "json"
 )
+
+const ProtoPkgMap = "Mgoogle/protobuf/any.proto=github.com/gogo/protobuf/types," +
+	"Mgoogle/protobuf/api.proto=github.com/gogo/protobuf/types," +
+	"Mgoogle/protobuf/descriptor.proto=github.com/gogo/protobuf/protoc-gen-gogo/descriptor," +
+	"Mgoogle/protobuf/duration.proto=github.com/gogo/protobuf/types," +
+	"Mgoogle/protobuf/empty.proto=github.com/gogo/protobuf/types," +
+	"Mgoogle/protobuf/field_mask.proto=github.com/gogo/protobuf/types," +
+	"Mgoogle/protobuf/source_context.proto=github.com/gogo/protobuf/types," +
+	"Mgoogle/protobuf/struct.proto=github.com/gogo/protobuf/types," +
+	"Mgoogle/protobuf/timestamp.proto=github.com/gogo/protobuf/types," +
+	"Mgoogle/protobuf/type.proto=github.com/gogo/protobuf/types," +
+	"Mgoogle/protobuf/wrappers.proto=github.com/gogo/protobuf/types"

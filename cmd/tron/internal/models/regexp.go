@@ -8,9 +8,8 @@ import (
 var (
 	ProtoPkgVersionRegexp = regexp.MustCompile(`\.(v\d+)$`)
 	VersionRegexp         = regexp.MustCompile(`(\d+\.\d+\.\d+)`)
-	ImportRegexp          = regexp.MustCompile(`^import "([^"]+)";$`)
-	ServiceRegexp         = regexp.MustCompile(`^service (\S+) {`)
 	PackageRegexp         = regexp.MustCompile(`^package ([^;]+);$`)
+	ImportRegexp          = regexp.MustCompile(`^import "([^"]+)";$`)
 	ModuleRegexp          = regexp.MustCompile(`^module (.+)$`)
 	TronOptions           = regexp.MustCompile(`tron_option:(\S+)`)
 )

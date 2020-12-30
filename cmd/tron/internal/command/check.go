@@ -6,7 +6,7 @@ import (
 	"github.com/fatih/color"
 	"github.com/spf13/cobra"
 
-	"github.com/loghole/tron/cmd/tron/internal/project"
+	"github.com/loghole/tron/cmd/tron/internal/check"
 	"github.com/loghole/tron/cmd/tron/internal/stdout"
 )
 
@@ -29,7 +29,7 @@ func (c *Check) Command() *cobra.Command {
 }
 
 func (c *Check) run(cmd *cobra.Command, args []string) {
-	if ok := project.NewChecker(c.printer).CheckAllRequirements(); !ok {
+	if ok := check.NewChecker(c.printer).CheckAllRequirements(); !ok {
 		c.printer.Println(color.FgHiRed, "Requirements check failed")
 		os.Exit(1)
 	}

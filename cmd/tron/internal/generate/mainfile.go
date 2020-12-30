@@ -1,24 +1,22 @@
 package generate
 
 import (
+	"fmt"
 	"go/format"
-	"log"
 	"path/filepath"
 	"strings"
 
 	"github.com/fatih/color"
-	"github.com/lissteron/simplerr"
 	"golang.org/x/tools/imports"
 
 	"github.com/loghole/tron/cmd/tron/internal/helpers"
 	"github.com/loghole/tron/cmd/tron/internal/models"
-	"github.com/loghole/tron/cmd/tron/internal/project"
 	"github.com/loghole/tron/cmd/tron/internal/stdout"
 	"github.com/loghole/tron/cmd/tron/internal/templates"
 )
 
-func Mainfile(p *project.Project, printer stdout.Printer) error {
-	path := filepath.Join(p.AbsPath, models.CmdDir, p.Name, models.MainFile)
+func Mainfile(project *models.Project, printer stdout.Printer) error {
+	path := filepath.Join(project.AbsPath, models.CmdDir, project.Name, models.MainFile)
 
 	printer.VerbosePrintln(color.FgMagenta, "Generate main.go")
 
@@ -26,40 +24,42 @@ func Mainfile(p *project.Project, printer stdout.Printer) error {
 		return nil
 	}
 
-	data := templates.NewMainData(&models.Data{Protos: p.Protos})
+	data := templates.NewMainData(project)
 
-	data.AddImport("log")
-	data.AddImport("github.com/loghole/tron")
-	data.AddImport(strings.Join([]string{p.Module, "config"}, "/"))
-
-	for _, proto := range p.Protos {
-		if !proto.Service.WithImpl {
+	for _, proto := range project.Protos {
+		if !proto.WithImpl() {
 			continue
 		}
 
-		data.AddImport(proto.Service.GoImplImport(p.Module), proto.Service.GoImportAlias())
+		dest := strings.Join([]string{
+			project.Module,
+			models.ProjectImportImplementation,
+			strings.ReplaceAll(proto.Package, ".", "/"),
+		}, "/")
+
+		data.AddImport(dest, proto.GoPackage)
 	}
 
 	mainScript, err := helpers.ExecTemplate(templates.MainTemplate, data)
 	if err != nil {
-		log.Println(mainScript)
-
-		return simplerr.Wrap(err, "failed to exec template")
+		return fmt.Errorf("exec template: %w", err)
 	}
 
 	formattedBytes, err := format.Source([]byte(mainScript))
 	if err != nil {
-		log.Println(mainScript)
-
-		return simplerr.Wrap(err, "failed to format process")
+		return fmt.Errorf("%s\n\nformat source: %w", mainScript, err)
 	}
 
 	formattedBytes, err = imports.Process("", formattedBytes, nil)
 	if err != nil {
-		log.Println(mainScript)
-
-		return simplerr.Wrap(err, "failed to imports process")
+		return fmt.Errorf("%s\n\nimports process: %w", mainScript, err)
 	}
 
-	return helpers.WriteToFile(path, formattedBytes)
+	if err := helpers.WriteToFile(path, formattedBytes); err != nil {
+		return fmt.Errorf("write file '%s': %w", path, err)
+	}
+
+	printer.VerbosePrintln(color.FgBlue, "\tSuccess")
+
+	return nil
 }

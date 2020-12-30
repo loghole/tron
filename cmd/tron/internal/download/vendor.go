@@ -1,44 +1,35 @@
-package generate
+package download
 
 import (
 	"bufio"
 	"bytes"
 	"fmt"
-	"io"
 	"io/ioutil"
 	"net/http"
 	"path"
 	"strings"
 
 	"github.com/fatih/color"
-	"github.com/lissteron/simplerr"
 
 	"github.com/loghole/tron/cmd/tron/internal/helpers"
 	"github.com/loghole/tron/cmd/tron/internal/models"
-	"github.com/loghole/tron/cmd/tron/internal/project"
 	"github.com/loghole/tron/cmd/tron/internal/stdout"
 )
 
-const (
-	github      = "github.com"
-	githubRaw   = "https://raw.githubusercontent.com"
-	importParts = 3
-)
+type VendorPB struct {
+	project *models.Project
+	printer stdout.Printer
 
-type vendorPB struct {
-	printer  stdout.Printer
-	project  *project.Project
 	replacer map[string]string
 	exists   map[string]struct{}
 	imports  []string
 }
 
-func VendorPB(p *project.Project, printer stdout.Printer) error {
-	printer.VerbosePrintln(color.FgMagenta, "Start vendor pb")
-
-	generator := &vendorPB{
+func NewVendor(project *models.Project, printer stdout.Printer) *VendorPB {
+	return &VendorPB{
+		project: project,
 		printer: printer,
-		project: p,
+
 		replacer: map[string]string{
 			"google/type":     "https://raw.githubusercontent.com/googleapis/googleapis/master/",
 			"google/api":      "https://raw.githubusercontent.com/googleapis/googleapis/master/",
@@ -48,15 +39,40 @@ func VendorPB(p *project.Project, printer stdout.Printer) error {
 		exists:  make(map[string]struct{}),
 		imports: make([]string, 0),
 	}
-
-	return generator.run()
 }
 
-func (v *vendorPB) run() (err error) {
-	if err := v.scanProtos(v.project.Protos); err != nil {
+func (v *VendorPB) Download() error {
+	v.printer.VerbosePrintln(color.FgMagenta, "Vendor proto imports")
+
+	if err := v.scanFiles(); err != nil {
 		return err
 	}
 
+	if err := v.downloadFiles(); err != nil {
+		return err
+	}
+
+	v.printer.VerbosePrintln(color.FgBlue, "\tSuccess")
+
+	return nil
+}
+
+func (v *VendorPB) scanFiles() error {
+	for _, file := range v.project.ProtoFiles {
+		data, err := ioutil.ReadFile(file)
+		if err != nil {
+			return fmt.Errorf("read file '%s': %w", file, err)
+		}
+
+		if err := v.findImports(data); err != nil {
+			return fmt.Errorf("find imports in file '%s': %w", file, err)
+		}
+	}
+
+	return nil
+}
+
+func (v *VendorPB) downloadFiles() (err error) {
 	for val := ""; len(v.imports) > 0; {
 		val, v.imports = v.imports[0], v.imports[1:]
 
@@ -81,21 +97,7 @@ func (v *vendorPB) run() (err error) {
 	return nil
 }
 
-func (v *vendorPB) scanProtos(protos []*models.Proto) error {
-	for _, proto := range protos {
-		for _, val := range proto.Imports {
-			if _, ok := v.exists[val]; ok {
-				continue
-			}
-
-			v.exists[val], v.imports = struct{}{}, append(v.imports, val)
-		}
-	}
-
-	return nil
-}
-
-func (v *vendorPB) copyProto(name string) error {
+func (v *VendorPB) copyProto(name string) error {
 	filename := strings.TrimPrefix(strings.TrimPrefix(name, v.project.Module), "/")
 
 	data, err := ioutil.ReadFile(filename)
@@ -106,7 +108,7 @@ func (v *vendorPB) copyProto(name string) error {
 	return helpers.WriteToFile(path.Join(v.project.AbsPath, models.ProjectPathVendorPB, name), data)
 }
 
-func (v *vendorPB) curlProto(name string) error {
+func (v *VendorPB) curlProto(name string) error {
 	link, ok := v.importLink(name)
 	if !ok {
 		return ErrBadImport
@@ -120,7 +122,7 @@ func (v *vendorPB) curlProto(name string) error {
 	defer helpers.Close(resp.Body)
 
 	if resp.StatusCode != http.StatusOK {
-		return simplerr.Wrapf(ErrReqFailed, "link: %s code: %d", link, resp.StatusCode)
+		return fmt.Errorf("link: %s code: %d: %w", link, resp.StatusCode, ErrReqFailed)
 	}
 
 	data, err := ioutil.ReadAll(resp.Body)
@@ -128,15 +130,45 @@ func (v *vendorPB) curlProto(name string) error {
 		return err
 	}
 
-	if err := v.findImports(bytes.NewReader(data)); err != nil {
+	if err := v.findImports(data); err != nil {
 		return err
 	}
 
 	return helpers.WriteToFile(path.Join(v.project.AbsPath, models.ProjectPathVendorPB, name), data)
 }
 
-func (v *vendorPB) importLink(s string) (string, bool) {
-	parts := strings.Split(s, "/")
+func (v *VendorPB) findImports(data []byte) error {
+	scanner := bufio.NewScanner(bytes.NewBuffer(data))
+	scanner.Split(bufio.ScanLines)
+
+	for scanner.Scan() {
+		m := models.ImportRegexp.FindStringSubmatch(scanner.Text())
+		if len(m) == 0 {
+			continue
+		}
+
+		if _, ok := v.exists[m[1]]; ok {
+			continue
+		}
+
+		v.exists[m[1]], v.imports = struct{}{}, append(v.imports, m[1])
+	}
+
+	if err := scanner.Err(); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (v *VendorPB) importLink(link string) (string, bool) {
+	const (
+		github      = "github.com"
+		githubRaw   = "https://raw.githubusercontent.com"
+		importParts = 3
+	)
+
+	parts := strings.Split(link, "/")
 
 	for repoPartsCount := len(parts); repoPartsCount >= 1; repoPartsCount-- {
 		repo := strings.Join(parts[:repoPartsCount], "/")
@@ -146,7 +178,7 @@ func (v *vendorPB) importLink(s string) (string, bool) {
 			continue
 		}
 
-		return strings.Join([]string{replacer, s}, ""), true
+		return replacer + link, true
 	}
 
 	if len(parts) > importParts && strings.EqualFold(parts[0], github) {
@@ -159,28 +191,4 @@ func (v *vendorPB) importLink(s string) (string, bool) {
 	}
 
 	return "", false
-}
-
-func (v *vendorPB) findImports(r io.Reader) error {
-	scanner := bufio.NewScanner(r)
-	scanner.Split(bufio.ScanLines)
-
-	for scanner.Scan() {
-		if err := scanner.Err(); err != nil {
-			return err
-		}
-
-		m := models.ImportRegexp.FindStringSubmatch(scanner.Text())
-		if len(m) == 0 {
-			continue
-		}
-
-		if _, ok := v.exists[m[0]]; ok {
-			continue
-		}
-
-		v.exists[m[1]], v.imports = struct{}{}, append(v.imports, m[1])
-	}
-
-	return nil
 }
