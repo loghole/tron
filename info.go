@@ -26,3 +26,8 @@ func initInfo() *Info {
 		StartTime:    app.StartTime,
 	}
 }
+
+// GetInfo returns base service information.
+func GetInfo() *Info {
+	return initInfo()
+}
