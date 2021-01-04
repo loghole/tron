@@ -10,6 +10,7 @@ import (
 	"github.com/go-chi/chi/middleware"
 	"github.com/go-openapi/spec"
 	jsoniter "github.com/json-iterator/go"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 
 	"github.com/loghole/tron/internal/app"
 	"github.com/loghole/tron/transport"
@@ -44,6 +45,8 @@ func (s *Handlers) InitRoutes(r chi.Router) {
 	if r == nil {
 		return
 	}
+
+	r.Handle("/metrics", promhttp.Handler())
 
 	r.Get("/info", s.serviceInfoHandler)
 
