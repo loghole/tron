@@ -24,7 +24,7 @@ func (l *logger) init(info *Info, opts *app.Options) (err error) {
 		Source:        info.ServiceName,
 		BuildCommit:   info.GitHash,
 		DisableStdout: viper.GetBool(app.LoggerDisableStdoutEnv),
-	})
+	}, opts.LoggerOptions...)
 	if err != nil {
 		return fmt.Errorf("init logger failed: %w", err)
 	}
