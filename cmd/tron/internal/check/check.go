@@ -4,13 +4,15 @@ import (
 	"errors"
 	"fmt"
 	"os/exec"
+	"time"
 
 	"github.com/Masterminds/semver"
 	"github.com/fatih/color"
-	"github.com/lissteron/simplerr"
 
+	"github.com/loghole/tron/cmd/tron/internal/download"
 	"github.com/loghole/tron/cmd/tron/internal/models"
 	"github.com/loghole/tron/cmd/tron/internal/stdout"
+	"github.com/loghole/tron/cmd/tron/internal/version"
 )
 
 const (
@@ -61,6 +63,12 @@ func (c *Checker) CheckProtoc() (failed bool) {
 	})
 }
 
+func (c *Checker) CheckTron() {
+	if err := c.checkTronIsLatest(); err != nil {
+		c.printer.VerbosePrintf(color.Reset, "check tron version failed: %v\n", err)
+	}
+}
+
 func (c *Checker) checkRequirements(checks map[string]func() error) (failed bool) {
 	c.printer.Print(color.FgMagenta, "Check system requirements:\n")
 
@@ -93,26 +101,26 @@ func (c *Checker) checkGitVersion() error {
 	return c.checkVersion(exec.Command("git", "version"), GitMinVersion)
 }
 
-func (c *Checker) checkVersion(cmd *exec.Cmd, minReqVersion string) error {
+func (c *Checker) checkVersion(cmd *exec.Cmd, min string) error {
 	output, err := cmd.Output()
 	if err != nil {
 		return err
 	}
 
-	version, err := c.extractVersion(string(output))
+	appVersion, err := c.extractVersion(string(output))
 	if err != nil {
 		return err
 	}
 
-	v, err := semver.NewVersion(version)
+	v, err := semver.NewVersion(appVersion)
 	if err != nil {
 		fmt.Print("semver err", err)
 	}
 
-	constr, _ := semver.NewConstraint(">= " + minReqVersion)
+	constr, _ := semver.NewConstraint(">= " + min)
 
 	if !constr.Check(v) {
-		return simplerr.Wrapf(ErrCheckVersionFailed, "should be >= %s current version is %s", minReqVersion, v.String())
+		return fmt.Errorf("should be >= %s current version is %s: %w", min, v.String(), ErrCheckVersionFailed)
 	}
 
 	return nil
@@ -125,4 +133,47 @@ func (c *Checker) extractVersion(s string) (string, error) {
 	}
 
 	return "", ErrNotSemanticVersion
+}
+
+func (c *Checker) checkTronIsLatest() error {
+	config := models.NewConfig()
+
+	if err := config.Read(); err != nil {
+		return fmt.Errorf("read config: %w", err)
+	}
+
+	if config.LastVersionCheck.After(time.Now().Truncate(time.Hour)) {
+		return nil
+	}
+
+	config.LastVersionCheck = time.Now()
+
+	if err := config.Write(); err != nil {
+		return fmt.Errorf("write config: %w", err)
+	}
+
+	latest, err := download.LatestTronVersion()
+	if err != nil {
+		return fmt.Errorf("get latest tron version: %w", err)
+	}
+
+	currentVersion, err := semver.NewVersion(version.CliVersion)
+	if err != nil {
+		return fmt.Errorf("parse current version: %w", err)
+	}
+
+	latestVersion, err := semver.NewVersion(latest)
+	if err != nil {
+		return fmt.Errorf("parse latest version: %w", err)
+	}
+
+	if currentVersion.Compare(latestVersion) >= 0 {
+		return nil
+	}
+
+	c.printer.Println(color.FgBlue, "New version of Tron is available!")
+	c.printer.Printf(color.Reset, "\tcurrent: %s\n", color.YellowString(version.CliVersion))
+	c.printer.Printf(color.Reset, "\tlatest: %s\n\n", color.GreenString(latest))
+
+	return nil
 }

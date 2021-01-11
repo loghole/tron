@@ -6,6 +6,7 @@ import (
 	"github.com/fatih/color"
 	"github.com/spf13/cobra"
 
+	"github.com/loghole/tron/cmd/tron/internal/check"
 	"github.com/loghole/tron/cmd/tron/internal/command"
 	"github.com/loghole/tron/cmd/tron/internal/stdout"
 )
@@ -28,6 +29,8 @@ func main() {
 		upgradeCMD  = command.NewUpgradeCMD(printer)
 		versionCMD  = command.NewVersionCMD(printer)
 	)
+
+	check.NewChecker(printer).CheckTron()
 
 	rootCmd := &cobra.Command{
 		Use:   "tron",
