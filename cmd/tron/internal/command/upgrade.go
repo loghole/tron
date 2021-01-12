@@ -22,10 +22,10 @@ func NewUpgradeCMD(printer stdout.Printer) *Upgrade {
 
 func (u *Upgrade) Command() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "upgrade",
+		Use:   "upgrade [v1.2.3]",
 		Short: "Self-upgrade tron tool",
 		Example: "# upgrade by version tag:\n" +
-			"tron upgrade --version v0.4.0\n" +
+			"tron upgrade v0.4.0\n" +
 			"# upgrade to latest version:\n" +
 			"tron upgrade\n" +
 			"# get versions list:\n" +
@@ -33,7 +33,6 @@ func (u *Upgrade) Command() *cobra.Command {
 		Run: u.run,
 	}
 
-	cmd.Flags().String(FlagVersion, "latest", "semver tag <v1.2.3>")
 	cmd.Flags().Bool(FlagList, false, "list available versions")
 	cmd.Flags().Bool(FlagUnstable, false, "unstable tron versions <v1.2.3-rc2.0>")
 
@@ -54,10 +53,10 @@ func (u *Upgrade) run(cmd *cobra.Command, args []string) {
 		os.Exit(1)
 	}
 
-	version, err := cmd.Flags().GetString(FlagVersion)
-	if err != nil {
-		helpers.PrintCommandHelp(cmd)
-		os.Exit(1)
+	version := "latest"
+
+	if len(args) > 0 {
+		version = args[0]
 	}
 
 	list, err := cmd.Flags().GetBool(FlagList)

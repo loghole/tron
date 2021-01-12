@@ -2,7 +2,6 @@ package download
 
 import (
 	"fmt"
-	"io/ioutil"
 	"net/http"
 	"os"
 	"os/exec"
@@ -25,7 +24,7 @@ const (
 	versionLdflag = `-X 'github.com/loghole/tron/cmd/tron/internal/version.CliVersion=%s'`
 
 	tronMinVersion = "v0.4.0"
-	printReleases  = 10
+	printReleases  = 8
 
 	cmdGit = "git"
 	cmdGo  = "go"
@@ -60,7 +59,7 @@ func (t *Tron) ListVersions() error {
 			t.printer.Printf(color.Reset, "\t%s, published at: %s\n", color.CyanString(r.TagName), r.PublishedAt)
 		}
 
-		if idx > printReleases {
+		if idx+1 >= printReleases {
 			return nil
 		}
 	}
@@ -107,17 +106,21 @@ func (t *Tron) findReleaseByTag(tag string) (*models.Release, error) {
 }
 
 func (t *Tron) downloadAndInstall(rel *models.Release) error {
-	dir, err := ioutil.TempDir("", "tron-build")
+	dir, err := os.UserCacheDir()
 	if err != nil {
-		return simplerr.Wrap(err, "failed to create temp dir")
+		return simplerr.Wrap(err, "failed to get cache dir")
 	}
 
-	defer os.RemoveAll(dir)
+	dir = filepath.Join(dir, "tron")
 
 	t.printer.Printf(color.Reset, "Download tron %s\n", color.CyanString(rel.TagName))
 
-	if err := t.download(rel, dir); err != nil {
+	if err := t.download(dir); err != nil {
 		return simplerr.Wrap(err, "failed to download")
+	}
+
+	if err := t.checkout(rel, dir); err != nil {
+		return simplerr.Wrap(err, "failed to checkout")
 	}
 
 	t.printer.Println(color.Reset, "Install tron...")
@@ -129,9 +132,9 @@ func (t *Tron) downloadAndInstall(rel *models.Release) error {
 	return nil
 }
 
-func (t *Tron) download(rel *models.Release, dir string) error {
-	cmd := exec.Command(cmdGit, "clone", repositoryURL)
-	cmd.Dir = dir
+func (t *Tron) checkout(rel *models.Release, dir string) error {
+	cmd := exec.Command(cmdGit, "fetch", "--all", "--tags")
+	cmd.Dir = filepath.Join(dir, "tron")
 
 	if err := cmd.Run(); err != nil {
 		return simplerr.Wrapf(err, "failed to run %s", cmd.String())
@@ -139,6 +142,25 @@ func (t *Tron) download(rel *models.Release, dir string) error {
 
 	cmd = exec.Command(cmdGit, "checkout", rel.TagName) // nolint:gosec //all good
 	cmd.Dir = filepath.Join(dir, "tron")
+
+	if err := cmd.Run(); err != nil {
+		return simplerr.Wrapf(err, "failed to run %s", cmd.String())
+	}
+
+	return nil
+}
+
+func (t *Tron) download(dir string) error {
+	if _, err := os.Stat(filepath.Join(dir, "tron", ".git")); err != nil && !os.IsNotExist(err) {
+		return err
+	}
+
+	if err := os.MkdirAll(dir, os.ModePerm); err != nil {
+		return simplerr.Wrapf(err, "can't create dir '%s'", dir)
+	}
+
+	cmd := exec.Command(cmdGit, "clone", repositoryURL)
+	cmd.Dir = dir
 
 	if err := cmd.Run(); err != nil {
 		return simplerr.Wrapf(err, "failed to run %s", cmd.String())

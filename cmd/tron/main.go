@@ -6,6 +6,7 @@ import (
 	"github.com/fatih/color"
 	"github.com/spf13/cobra"
 
+	"github.com/loghole/tron/cmd/tron/internal/check"
 	"github.com/loghole/tron/cmd/tron/internal/command"
 	"github.com/loghole/tron/cmd/tron/internal/stdout"
 )
@@ -20,15 +21,8 @@ func main() {
 		os.Exit(1)
 	}
 
-	rootCmd := &cobra.Command{
-		Use:   "tron",
-		Short: "A generator for Tron based Applications",
-		Long:  "Tron is a CLI library for generating GO services.",
-	}
-
-	printer := stdout.NewPrinter()
-
 	var (
+		printer     = stdout.NewPrinter()
 		checkCMD    = command.NewCheckCMD(printer)
 		initCMD     = command.NewInitCMD(printer)
 		generateCMD = command.NewGenerateCMD(printer)
@@ -36,11 +30,21 @@ func main() {
 		versionCMD  = command.NewVersionCMD(printer)
 	)
 
-	rootCmd.AddCommand(checkCMD.Command())
-	rootCmd.AddCommand(initCMD.Command())
-	rootCmd.AddCommand(generateCMD.Command())
-	rootCmd.AddCommand(upgradeCMD.Command())
-	rootCmd.AddCommand(versionCMD.Command())
+	check.NewChecker(printer).CheckTron()
+
+	rootCmd := &cobra.Command{
+		Use:   "tron",
+		Short: "A generator for Tron based Applications",
+		Long:  "Tron is a CLI library for generating GO services.",
+	}
+
+	rootCmd.AddCommand(
+		checkCMD.Command(),
+		initCMD.Command(),
+		generateCMD.Command(),
+		upgradeCMD.Command(),
+		versionCMD.Command(),
+	)
 
 	rootCmd.PersistentFlags().BoolP(FlagVerbose, "v", false, "make tron more verbose")
 

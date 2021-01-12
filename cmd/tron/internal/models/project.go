@@ -31,7 +31,7 @@ func (p *Project) Dockerfile() string {
 
 func (p *Project) DockerImage() string {
 	if parts := strings.Split(p.Module, "/"); len(parts) > 1 {
-		return strings.Join(parts[len(parts)-2:], "/")
+		return strings.Join(parts[1:], "/")
 	}
 
 	return p.Module

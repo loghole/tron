@@ -21,7 +21,7 @@ linters-settings:
       - opinionated
 
 service:
-  golangci-lint-version: 1.33.x
+  golangci-lint-version: 1.34.x
 
 issues:
   exclude:
