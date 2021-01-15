@@ -9,11 +9,10 @@ require (
 	github.com/go-openapi/spec v0.19.15
 	github.com/google/uuid v1.1.2
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.0.1
-	github.com/grpc-ecosystem/grpc-opentracing v0.0.0-20180507213350-8e809c8a8645
 	github.com/json-iterator/go v1.1.10
 	github.com/lissteron/simplerr v0.7.1
 	github.com/loghole/lhw v0.4.3
-	github.com/loghole/tracing v0.12.0
+	github.com/loghole/tracing v0.13.0
 	github.com/opentracing/opentracing-go v1.2.0
 	github.com/prometheus/client_golang v1.9.0
 	github.com/spf13/viper v1.7.1

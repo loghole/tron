@@ -11,6 +11,7 @@ import (
 	"github.com/go-chi/cors"
 	"github.com/loghole/lhw/zap"
 	"github.com/loghole/tracing"
+	"github.com/loghole/tracing/tracegrpc"
 	"github.com/loghole/tracing/tracehttp"
 	"github.com/loghole/tracing/tracelog"
 	"golang.org/x/sync/errgroup"
@@ -59,13 +60,14 @@ func New(options ...app.Option) (*App, error) {
 	// Append recover, tracing and errors middlewares.
 	a.opts.AddRunOptions(
 		WithUnaryInterceptor(grpc.RecoverServerInterceptor(a.logger.tracelog)),
-		WithUnaryInterceptor(grpc.OpenTracingServerInterceptor(a.Tracer())),
+		WithUnaryInterceptor(tracegrpc.UnaryServerInterceptor(a.Tracer())),
+		WithStreamInterceptor(tracegrpc.StreamServerInterceptor(a.Tracer())),
 		WithUnaryInterceptor(grpc.SimpleErrorServerInterceptor()),
 	)
 
 	a.servers.publicHTTP.UseMiddleware(
-		tracehttp.NewMiddleware(a.Tracer()).Middleware,
-		cors.New(a.opts.CorsOptions).Handler,
+		tracehttp.Handler(a.Tracer()),
+		cors.Handler(a.opts.CorsOptions),
 	)
 
 	a.logger.With("app info", a.info).Infof("init app")

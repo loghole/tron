@@ -2,6 +2,7 @@
 package errors
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/http"
@@ -9,6 +10,7 @@ import (
 
 	validation "github.com/gadavy/ozzo-validation/v4"
 	"github.com/lissteron/simplerr"
+	"github.com/loghole/tracing/tracelog"
 	"google.golang.org/genproto/googleapis/rpc/errdetails"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -22,6 +24,7 @@ type Error struct {
 
 	Message string     `json:"message,omitempty"`
 	Details []*Details `json:"details,omitempty"`
+	TraceID string     `json:"trace_id"`
 }
 
 // Details represents error details.
@@ -33,11 +36,12 @@ type Details struct {
 
 // ParseError parse error to Error struct.
 // Support lissteron/simplerr and ozzo-validation packages.
-func ParseError(err error) *Error {
+func ParseError(ctx context.Context, err error) *Error {
 	resp := &Error{
 		rootErr:    err,
 		httpStatus: http.StatusInternalServerError,
 		grpcStatus: codes.Unknown,
+		TraceID:    tracelog.TraceID(ctx),
 	}
 
 	if resp.parseValidationErr(err) {
