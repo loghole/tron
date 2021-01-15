@@ -106,12 +106,10 @@ func (t *Tron) findReleaseByTag(tag string) (*models.Release, error) {
 }
 
 func (t *Tron) downloadAndInstall(rel *models.Release) error {
-	dir, err := os.UserCacheDir()
+	dir, err := tronCacheDir()
 	if err != nil {
-		return simplerr.Wrap(err, "failed to get cache dir")
+		return simplerr.Wrap(err, "get tron cache dir")
 	}
-
-	dir = filepath.Join(dir, "tron")
 
 	t.printer.Printf(color.Reset, "Download tron %s\n", color.CyanString(rel.TagName))
 
@@ -151,8 +149,14 @@ func (t *Tron) checkout(rel *models.Release, dir string) error {
 }
 
 func (t *Tron) download(dir string) error {
-	if _, err := os.Stat(filepath.Join(dir, "tron", ".git")); err != nil && !os.IsNotExist(err) {
+	stat, err := os.Stat(filepath.Join(dir, "tron", ".git"))
+	if err != nil && !os.IsNotExist(err) {
 		return err
+	}
+
+	// Skip download if git dir exists.
+	if !os.IsNotExist(err) && stat.IsDir() {
+		return nil
 	}
 
 	if err := os.MkdirAll(dir, os.ModePerm); err != nil {
@@ -234,4 +238,13 @@ func binaryPath() (string, error) {
 	}
 
 	return filepath.EvalSymlinks(binaryPath)
+}
+
+func tronCacheDir() (string, error) {
+	dir, err := os.UserCacheDir()
+	if err != nil {
+		return "", simplerr.Wrap(err, "failed to get cache dir")
+	}
+
+	return filepath.Join(dir, "tron"), nil
 }
