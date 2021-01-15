@@ -228,8 +228,6 @@ github.com/grpc-ecosystem/grpc-gateway v1.9.5 h1:UImYN5qQ8tuGpGE16ZmjvcTtTw24zw1
 github.com/grpc-ecosystem/grpc-gateway v1.9.5/go.mod h1:vNeuVxBJEsws4ogUvrchl83t/GYV9WGTSLVdBhOQFDY=
 github.com/grpc-ecosystem/grpc-gateway/v2 v2.0.1 h1:X2vfSnm1WC8HEo0MBHZg2TcuDUHJj6kd1TmEAQncnSA=
 github.com/grpc-ecosystem/grpc-gateway/v2 v2.0.1/go.mod h1:oVMjMN64nzEcepv1kdZKgx1qNYt4Ro0Gqefiq2JWdis=
-github.com/grpc-ecosystem/grpc-opentracing v0.0.0-20180507213350-8e809c8a8645 h1:MJG/KsmcqMwFAkh8mTnAwhyKoB+sTAnY4CACC110tbU=
-github.com/grpc-ecosystem/grpc-opentracing v0.0.0-20180507213350-8e809c8a8645/go.mod h1:6iZfnjpejD4L/4DwD7NryNaJyCQdzwWwH2MWhCA90Kw=
 github.com/hashicorp/consul/api v1.1.0/go.mod h1:VmuI/Lkw1nC05EYQWNKwWGbkg+FbDBtguAZLlVdkD9Q=
 github.com/hashicorp/consul/api v1.3.0/go.mod h1:MmDNSzIMUjNpY/mQ398R4bk2FnqQLoPndWW5VkKPlCE=
 github.com/hashicorp/consul/sdk v0.1.1/go.mod h1:VKf9jXwCTEY1QZP2MOLRhb5i/I/ssyNV1vwHyQBF0x8=
@@ -293,8 +291,8 @@ github.com/lissteron/simplerr v0.7.1 h1:vp6p8ETfUYWuRytscZVsDRFSgu85eC2G30oKEKYt
 github.com/lissteron/simplerr v0.7.1/go.mod h1:LbXZHkxZf76N0rWsUr9Nk9jkxjP2IpdnUI3/r/gqp3E=
 github.com/loghole/lhw v0.4.3 h1:ppwyeWk4Y7j6XMphqe8IBI45B9yLXyBmWZ6JE4jHhq0=
 github.com/loghole/lhw v0.4.3/go.mod h1:4fkE4CA1cDylZbtbG4jQhIqS/Zm59CYGqeyUbPQkJ8k=
-github.com/loghole/tracing v0.12.0 h1:2nFEG5fu5pyZ7MYcJdoch0H5CS4+PcTzkZlMRg7cmTE=
-github.com/loghole/tracing v0.12.0/go.mod h1:2uWCadB4yOzPnbwvA9+I4gVdMU+kCZG2g6XFSb8mlYQ=
+github.com/loghole/tracing v0.13.0 h1:DCWR2H2i5ur7sSMGooW6SACybNVqmQ2wY0Tl2RiRhTY=
+github.com/loghole/tracing v0.13.0/go.mod h1:gdtwAeTmVJhY/2HCu/F9cJQmFB7XzSjDDK3YSIQJfXM=
 github.com/lyft/protoc-gen-validate v0.0.13/go.mod h1:XbGvPuh87YZc5TdIa2/I4pLk0QoUACkjt2znoq26NVQ=
 github.com/magiconair/properties v1.8.1 h1:ZC2Vc7/ZFkGmsVC9KvOjumD+G5lXy2RtTKyzRKO2BQ4=
 github.com/magiconair/properties v1.8.1/go.mod h1:PppfXfuXeibc/6YijjN8zIbojt8czPbwD3XqdrwzmxQ=

@@ -22,7 +22,7 @@ func ErrorWriter() runtime.ErrorHandlerFunc {
 		w http.ResponseWriter,
 		r *http.Request,
 		err error) {
-		s := internalErr.ParseError(err)
+		s := internalErr.ParseError(ctx, err)
 
 		buf, merr := jsoniter.Marshal(s)
 		if merr != nil {

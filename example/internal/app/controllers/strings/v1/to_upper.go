@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"net/http"
+	"strings"
 
 	validation "github.com/gadavy/ozzo-validation/v4"
 	"github.com/lissteron/simplerr"
@@ -24,7 +25,7 @@ func (i *Implementation) ToUpper(
 		return nil, err
 	}
 
-	return nil, errors.New("method ToUpper unimplemented")
+	return &typesV1.String{Str: strings.ToUpper(req.Str)}, nil
 }
 
 func validateString(req *typesV1.String) error {

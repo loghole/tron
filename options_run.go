@@ -24,6 +24,18 @@ func WithUnaryInterceptor(interceptor grpc.UnaryServerInterceptor) RunOption {
 	}
 }
 
+// WithStreamInterceptor returns a RunOption that specifies the chained interceptor
+// for streaming RPCs. The first interceptor will be the outer most,
+// while the last interceptor will be the inner most wrapper around the real call.
+// All stream interceptors added by this method will be chained.
+func WithStreamInterceptor(interceptor grpc.StreamServerInterceptor) RunOption {
+	return func(opts *app.Options) error {
+		opts.GRPCOptions = append(opts.GRPCOptions, grpc.ChainStreamInterceptor(interceptor))
+
+		return nil
+	}
+}
+
 // WithTLSConfig returns a RunOption that set tls configuration for grpc and http servers.
 func WithTLSConfig(config *tls.Config) RunOption {
 	return func(opts *app.Options) error {

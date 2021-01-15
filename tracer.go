@@ -33,6 +33,10 @@ func (t *tracer) init(info *Info) (err error) {
 		return fmt.Errorf("init tracer failed: %w", err)
 	}
 
+	if err := tracing.EnablePrometheusMetrics(); err != nil {
+		return fmt.Errorf("init prometheus metrics failed: %w", err)
+	}
+
 	return nil
 }
 
