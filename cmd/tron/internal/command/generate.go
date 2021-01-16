@@ -43,7 +43,7 @@ func (g *GenerateCMD) Command() *cobra.Command {
 	return cmd
 }
 
-func (g *GenerateCMD) run(cmd *cobra.Command, args []string) { // nolint:funlen // run can be big.
+func (g *GenerateCMD) run(cmd *cobra.Command, args []string) {
 	// Parse flags.
 	protoDirs, err := cmd.Flags().GetStringArray(FlagProtoDirs)
 	if err != nil {
@@ -67,13 +67,6 @@ func (g *GenerateCMD) run(cmd *cobra.Command, args []string) { // nolint:funlen 
 	project, err := parsers.NewProjectParser(g.printer, parsers.WithProtoDirs(protoDirs)).Parse()
 	if err != nil {
 		g.printer.Printf(color.FgRed, "Parse project failed: %v\n", err)
-		helpers.PrintCommandHelp(cmd)
-		os.Exit(1)
-	}
-
-	// Download proto plugins.
-	if err := download.NewDeps(project, g.printer).InstallProtoPlugins(); err != nil {
-		g.printer.Printf(color.FgRed, "Install protobuf plugins: %v\n", err)
 		helpers.PrintCommandHelp(cmd)
 		os.Exit(1)
 	}
@@ -112,8 +105,12 @@ func (g *GenerateCMD) run(cmd *cobra.Command, args []string) { // nolint:funlen 
 }
 
 func (g *GenerateCMD) runProto(project *models.Project, impl bool) (err error) {
+	if err := download.NewDeps(project, g.printer).InstallProtoPlugins(); err != nil {
+		return fmt.Errorf("install protobuf plugins: %w", err)
+	}
+
 	if err := download.NewVendor(project, g.printer).Download(); err != nil {
-		return fmt.Errorf("vandor proto files: %w", err)
+		return fmt.Errorf("vendor proto files: %w", err)
 	}
 
 	if err := parsers.NewProtoDescParser(project, g.printer).Parse(); err != nil {
