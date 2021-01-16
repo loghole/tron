@@ -43,7 +43,7 @@ func (g *GenerateCMD) Command() *cobra.Command {
 	return cmd
 }
 
-func (g *GenerateCMD) run(cmd *cobra.Command, args []string) {
+func (g *GenerateCMD) run(cmd *cobra.Command, args []string) { // nolint:funlen // run can be big.
 	// Parse flags.
 	protoDirs, err := cmd.Flags().GetStringArray(FlagProtoDirs)
 	if err != nil {
@@ -67,6 +67,13 @@ func (g *GenerateCMD) run(cmd *cobra.Command, args []string) {
 	project, err := parsers.NewProjectParser(g.printer, parsers.WithProtoDirs(protoDirs)).Parse()
 	if err != nil {
 		g.printer.Printf(color.FgRed, "Parse project failed: %v\n", err)
+		helpers.PrintCommandHelp(cmd)
+		os.Exit(1)
+	}
+
+	// Download proto plugins.
+	if err := download.NewDeps(project, g.printer).InstallProtoPlugins(); err != nil {
+		g.printer.Printf(color.FgRed, "Install protobuf plugins: %v\n", err)
 		helpers.PrintCommandHelp(cmd)
 		os.Exit(1)
 	}

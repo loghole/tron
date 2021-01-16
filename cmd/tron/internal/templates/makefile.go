@@ -18,30 +18,14 @@ LDFLAGS:=-X 'github.com/loghole/tron/internal/app.ServiceName={{ .ServiceName }}
 		 -X 'github.com/loghole/tron/internal/app.Version=$(VERSION)' \
 		 -X 'github.com/loghole/tron/internal/app.BuildAt=$(BUILD_TS)'
 
-.PHONY: .generate
-.generate:
-	{{ .GenerateCmd }}
-
-# generate code from proto and config
+# generate code from proto
 .PHONY: generate
-generate: .pb-deps .generate
-
-# generate code from proto but without downloading proto deps
-.PHONY: fast-generate
-fast-generate: .generate
+generate:
+	{{ .GenerateCmd }}
 
 .PHONY: generate-config
 generate-config:
 	tron generate --config -v
-
-# install proto dependencies
-.PHONY: .pb-deps
-.pb-deps:
-	$(info #Installing proto dependencies...)
-	GOBIN=$(LOCAL_BIN) go install github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-grpc-gateway
-	GOBIN=$(LOCAL_BIN) go install github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-openapiv2
-	GOBIN=$(LOCAL_BIN) go install google.golang.org/protobuf/cmd/protoc-gen-go
-	GOBIN=$(LOCAL_BIN) go install google.golang.org/grpc/cmd/protoc-gen-go-grpc
 
 .PHONY: gotest
 gotest:

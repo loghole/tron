@@ -76,7 +76,7 @@ func (v *VendorPB) downloadFiles() (err error) {
 	for val := ""; len(v.imports) > 0; {
 		val, v.imports = v.imports[0], v.imports[1:]
 
-		v.printer.VerbosePrintf(color.Reset, "\tvendor %s: ", val)
+		v.printer.VerbosePrintf(color.Reset, "\tvendor '%s': ", color.YellowString(val))
 
 		switch {
 		case strings.HasPrefix(val, v.project.Module):
