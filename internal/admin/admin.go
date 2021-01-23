@@ -16,15 +16,22 @@ import (
 	"github.com/loghole/tron/transport"
 )
 
+// Health contains handlers to check app is healthy.
+type Health interface {
+	LivenessHandler(w http.ResponseWriter, r *http.Request)
+	ReadinessHandler(w http.ResponseWriter, r *http.Request)
+}
+
 // Handlers contains http methods with debug service info and swagger docs.
 type Handlers struct {
-	desc jsoniter.RawMessage
-	info *app.Info
-	opts *app.Options
+	desc   jsoniter.RawMessage
+	info   *app.Info
+	opts   *app.Options
+	health Health
 }
 
 // NewHandlers create and init handlers object.
-func NewHandlers(info *app.Info, opts *app.Options, services ...transport.Service) *Handlers {
+func NewHandlers(info *app.Info, opts *app.Options, health Health, services ...transport.Service) *Handlers {
 	descs := make([]transport.ServiceDesc, 0, len(services))
 
 	for _, service := range services {
@@ -32,9 +39,10 @@ func NewHandlers(info *app.Info, opts *app.Options, services ...transport.Servic
 	}
 
 	handlers := &Handlers{
-		desc: transport.NewCompoundServiceDesc(descs...).SwaggerDef(),
-		info: info,
-		opts: opts,
+		desc:   transport.NewCompoundServiceDesc(descs...).SwaggerDef(),
+		info:   info,
+		opts:   opts,
+		health: health,
 	}
 
 	return handlers
@@ -63,20 +71,13 @@ func (s *Handlers) InitRoutes(r chi.Router) {
 	})
 
 	r.HandleFunc("/swagger.json", s.swaggerDefHandler)
+
+	r.Get("/heath/live", s.health.LivenessHandler)
+	r.Get("/heath/ready", s.health.ReadinessHandler)
 }
 
 func (s *Handlers) serviceInfoHandler(w http.ResponseWriter, r *http.Request) {
-	info := struct {
-		InstanceUUID string `json:"instance_uuid"`
-		ServiceName  string `json:"service_name"`
-		Namespace    string `json:"namespace"`
-		AppName      string `json:"app_name"`
-		GitHash      string `json:"git_hash"`
-		Version      string `json:"version"`
-		BuildAt      string `json:"build_at"`
-		StartTime    string `json:"start_time"`
-		UpTime       string `json:"up_time"`
-	}{
+	_ = jsoniter.NewEncoder(w).Encode(info{
 		InstanceUUID: s.info.InstanceUUID,
 		ServiceName:  s.info.ServiceName,
 		Namespace:    s.info.Namespace,
@@ -86,9 +87,7 @@ func (s *Handlers) serviceInfoHandler(w http.ResponseWriter, r *http.Request) {
 		BuildAt:      s.info.BuildAt,
 		StartTime:    s.info.StartTime.String(),
 		UpTime:       time.Since(s.info.StartTime).String(),
-	}
-
-	_ = jsoniter.NewEncoder(w).Encode(info)
+	})
 }
 
 func (s *Handlers) swaggerDefHandler(w http.ResponseWriter, r *http.Request) {

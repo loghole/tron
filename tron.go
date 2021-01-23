@@ -16,6 +16,7 @@ import (
 	"github.com/loghole/tracing/tracelog"
 	"golang.org/x/sync/errgroup"
 
+	"github.com/loghole/tron/healthcheck"
 	"github.com/loghole/tron/internal/admin"
 	"github.com/loghole/tron/internal/app"
 	"github.com/loghole/tron/internal/config"
@@ -30,6 +31,7 @@ type App struct {
 	servers servers
 	logger  logger
 	tracer  tracer
+	health  health
 }
 
 // New init viper config, logger and tracer.
@@ -44,6 +46,7 @@ func New(options ...app.Option) (*App, error) {
 	}
 
 	a := &App{opts: opts, info: initInfo()}
+	a.health.init()
 
 	if err := a.logger.init(a.info, a.opts); err != nil {
 		return nil, err
@@ -100,8 +103,19 @@ func (a *App) Router() chi.Router {
 	return a.servers.publicHTTP.Router()
 }
 
+// Health returns application health checker.
+func (a *App) Health() healthcheck.Checker {
+	return a.health
+}
+
 // Close closes tracer and logger.
 func (a *App) Close() {
+	if err := a.servers.adminHTTP.Close(); err != nil {
+		a.logger.Errorf("error while stopping admin http server: %v", err)
+	}
+
+	_ = a.logger.Sync()
+
 	a.tracer.Close()
 	a.logger.Close()
 }
@@ -114,7 +128,7 @@ func (a *App) WithRunOptions(opts ...app.RunOption) *App {
 }
 
 // Run apply run options if exists and starts servers.
-func (a *App) Run(impl ...transport.Service) error { // nolint:funlen // start app
+func (a *App) Run(impl ...transport.Service) error {
 	if err := a.opts.ApplyRunOptions(); err != nil {
 		return fmt.Errorf("apply run options failed: %w", err)
 	}
@@ -126,7 +140,7 @@ func (a *App) Run(impl ...transport.Service) error { // nolint:funlen // start a
 	a.servers.publicGRPC.RegistryDesc(impl...)
 	a.servers.publicHTTP.RegistryDesc(impl...)
 
-	admin.NewHandlers(a.info, a.opts, impl...).InitRoutes(a.servers.adminHTTP.Router())
+	admin.NewHandlers(a.info, a.opts, a.health, impl...).InitRoutes(a.servers.adminHTTP.Router())
 
 	a.logger.Info("starting app")
 
@@ -153,12 +167,16 @@ func (a *App) Run(impl ...transport.Service) error { // nolint:funlen // start a
 	exit := make(chan os.Signal, 1)
 	signal.Notify(exit, a.opts.ExitSignals...)
 
+	a.health.setReady()
+
 	select {
 	case <-exit:
 		a.logger.Info("stopping application")
 	case <-ctx.Done():
 		a.logger.Errorf("stopping application with error: %v", ctx.Err())
 	}
+
+	a.health.setUnready()
 
 	signal.Stop(exit)
 
@@ -169,12 +187,6 @@ func (a *App) Run(impl ...transport.Service) error { // nolint:funlen // start a
 	if err := a.servers.publicGRPC.Close(); err != nil {
 		a.logger.Errorf("error while stopping public grpc server: %v", err)
 	}
-
-	if err := a.servers.publicHTTP.Close(); err != nil {
-		a.logger.Errorf("error while stopping admin http server: %v", err)
-	}
-
-	_ = a.logger.Sync()
 
 	return nil
 }

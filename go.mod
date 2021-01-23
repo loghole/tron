@@ -10,7 +10,7 @@ require (
 	github.com/google/uuid v1.1.2
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.0.1
 	github.com/json-iterator/go v1.1.10
-	github.com/lissteron/simplerr v0.7.1
+	github.com/lissteron/simplerr v0.8.0
 	github.com/loghole/lhw v0.4.3
 	github.com/loghole/tracing v0.13.0
 	github.com/opentracing/opentracing-go v1.2.0
