@@ -297,8 +297,8 @@ github.com/lissteron/simplerr v0.8.0 h1:ODsBQYrH1JaBrQJ8rctwo4YfdlmLYyE2Q20MX3Nt
 github.com/lissteron/simplerr v0.8.0/go.mod h1:LbXZHkxZf76N0rWsUr9Nk9jkxjP2IpdnUI3/r/gqp3E=
 github.com/loghole/lhw v0.4.3 h1:ppwyeWk4Y7j6XMphqe8IBI45B9yLXyBmWZ6JE4jHhq0=
 github.com/loghole/lhw v0.4.3/go.mod h1:4fkE4CA1cDylZbtbG4jQhIqS/Zm59CYGqeyUbPQkJ8k=
-github.com/loghole/tracing v0.13.0 h1:DCWR2H2i5ur7sSMGooW6SACybNVqmQ2wY0Tl2RiRhTY=
-github.com/loghole/tracing v0.13.0/go.mod h1:gdtwAeTmVJhY/2HCu/F9cJQmFB7XzSjDDK3YSIQJfXM=
+github.com/loghole/tracing v0.13.1 h1:NrpMRmAorTNTECioXUGt17Dsy7pLMbnQUx3nMtcEIW8=
+github.com/loghole/tracing v0.13.1/go.mod h1:gdtwAeTmVJhY/2HCu/F9cJQmFB7XzSjDDK3YSIQJfXM=
 github.com/lyft/protoc-gen-validate v0.0.13/go.mod h1:XbGvPuh87YZc5TdIa2/I4pLk0QoUACkjt2znoq26NVQ=
 github.com/magiconair/properties v1.8.1 h1:ZC2Vc7/ZFkGmsVC9KvOjumD+G5lXy2RtTKyzRKO2BQ4=
 github.com/magiconair/properties v1.8.1/go.mod h1:PppfXfuXeibc/6YijjN8zIbojt8czPbwD3XqdrwzmxQ=
