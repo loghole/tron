@@ -1,14 +1,16 @@
 package parsers
 
 import (
-	"bufio"
+	"errors"
 	"fmt"
+	"io"
 	"os"
 	"path/filepath"
 	"sort"
 	"strings"
 
 	"github.com/fatih/color"
+	"gopkg.in/yaml.v3"
 
 	"github.com/loghole/tron/cmd/tron/internal/helpers"
 	"github.com/loghole/tron/cmd/tron/internal/models"
@@ -95,25 +97,22 @@ func (p *ValuesParser) parseFile(path string) error {
 
 	defer helpers.Close(file)
 
-	scanner := bufio.NewScanner(file)
-	scanner.Split(bufio.ScanLines)
+	var dest map[string]interface{}
 
-	for scanner.Scan() {
-		parts := strings.Split(strings.TrimSpace(scanner.Text()), ":")
-
-		if len(parts) <= 1 || strings.HasPrefix(parts[0], "#") {
-			continue
+	if err := yaml.NewDecoder(file).Decode(&dest); err != nil {
+		if errors.Is(err, io.EOF) {
+			return nil
 		}
 
-		if _, ok := p.internal[strings.ToLower(parts[0])]; ok {
-			continue
-		}
-
-		p.values[parts[0]] = struct{}{}
+		return fmt.Errorf("decode yaml config: %w", err)
 	}
 
-	if err := scanner.Err(); err != nil {
-		return err
+	for key := range dest {
+		if _, ok := p.internal[strings.ToLower(key)]; ok {
+			continue
+		}
+
+		p.values[key] = struct{}{}
 	}
 
 	return nil
