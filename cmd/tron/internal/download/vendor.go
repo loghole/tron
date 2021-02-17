@@ -4,8 +4,9 @@ import (
 	"bufio"
 	"bytes"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
+	"os"
 	"path"
 	"strings"
 
@@ -59,7 +60,7 @@ func (v *VendorPB) Download() error {
 
 func (v *VendorPB) scanFiles() error {
 	for _, file := range v.project.ProtoFiles {
-		data, err := ioutil.ReadFile(file)
+		data, err := os.ReadFile(file)
 		if err != nil {
 			return fmt.Errorf("read file '%s': %w", file, err)
 		}
@@ -100,7 +101,7 @@ func (v *VendorPB) downloadFiles() (err error) {
 func (v *VendorPB) copyProto(name string) error {
 	filename := strings.TrimPrefix(strings.TrimPrefix(name, v.project.Module), "/")
 
-	data, err := ioutil.ReadFile(filename)
+	data, err := os.ReadFile(filename)
 	if err != nil {
 		return err
 	}
@@ -125,7 +126,7 @@ func (v *VendorPB) curlProto(name string) error {
 		return fmt.Errorf("link: %s code: %d: %w", link, resp.StatusCode, ErrReqFailed)
 	}
 
-	data, err := ioutil.ReadAll(resp.Body)
+	data, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return err
 	}

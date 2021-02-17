@@ -2,7 +2,6 @@ package models
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"time"
@@ -26,7 +25,7 @@ func (c *Config) Read() error {
 		return fmt.Errorf("get user config dir: %w", err)
 	}
 
-	data, err := ioutil.ReadFile(filepath.Join(dir, TronConfigFilepath))
+	data, err := os.ReadFile(filepath.Join(dir, TronConfigFilepath))
 	if err != nil {
 		if os.IsNotExist(err) {
 			return nil
@@ -59,7 +58,7 @@ func (c *Config) Write() error {
 		return fmt.Errorf("unmarshal config: %w", err)
 	}
 
-	if err := ioutil.WriteFile(path, data, os.ModePerm); err != nil {
+	if err := os.WriteFile(path, data, os.ModePerm); err != nil {
 		return fmt.Errorf("write config file: %w", err)
 	}
 

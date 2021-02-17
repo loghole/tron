@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"bytes"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
@@ -49,7 +48,7 @@ func (m *ProtoFilesMover) Move() error {
 
 		m.printer.VerbosePrintf(color.Reset, "\tmove '%s' > '%s'", path, newPath)
 
-		data, err := ioutil.ReadFile(path)
+		data, err := os.ReadFile(path)
 		if err != nil {
 			return err
 		}
@@ -73,7 +72,7 @@ func (m *ProtoFilesMover) Move() error {
 }
 
 func (m *ProtoFilesMover) findPackageVersion(path string) (string, error) {
-	data, err := ioutil.ReadFile(path)
+	data, err := os.ReadFile(path)
 	if err != nil {
 		return "", fmt.Errorf("read file '%s': %w", path, err)
 	}

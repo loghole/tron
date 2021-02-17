@@ -5,7 +5,6 @@ import (
 	"bytes"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -126,7 +125,7 @@ func generateTransport(project *models.Project, proto *models.Proto) error {
 		Swagger: `"{}"`,
 	}
 
-	if swaggerData, err := ioutil.ReadFile(proto.PkgSwaggerFile()); err == nil {
+	if swaggerData, err := os.ReadFile(proto.PkgSwaggerFile()); err == nil {
 		data.Swagger = "`" + string(swaggerData) + "`"
 	}
 
