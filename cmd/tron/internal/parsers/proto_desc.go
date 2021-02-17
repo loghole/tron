@@ -2,7 +2,6 @@ package parsers
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -52,7 +51,7 @@ func (p *ProtoDescParser) Parse() error {
 }
 
 func (p *ProtoDescParser) scanDescriptors() error {
-	dir, err := ioutil.TempDir("", "*_auth_gen")
+	dir, err := os.MkdirTemp("", "*_auth_gen")
 	if err != nil {
 		return fmt.Errorf("create tmp dir: %w", err)
 	}
@@ -75,7 +74,7 @@ func (p *ProtoDescParser) scanDescriptors() error {
 			return fmt.Errorf("'%s': %w", cmd.String(), err)
 		}
 
-		data, err := ioutil.ReadFile(output)
+		data, err := os.ReadFile(output)
 		if err != nil {
 			return fmt.Errorf("read parsed data: %w", err)
 		}

@@ -1,6 +1,6 @@
 module github.com/loghole/tron
 
-go 1.15
+go 1.16
 
 require (
 	github.com/gadavy/ozzo-validation/v4 v4.3.2

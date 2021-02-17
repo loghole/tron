@@ -21,5 +21,5 @@ update-swagger:
 		cp ./dist/*.css ./html; \
 		cp ./dist/*.png ./html
 
-	go-bindata -fs -o internal/admin/bindata.go -pkg "admin" -prefix "/tmp/swagger-ui/html" /tmp/swagger-ui/html/...
+	cp -R /tmp/swagger-ui/html ./internal/admin/
 	rm -rf /tmp/swagger-ui

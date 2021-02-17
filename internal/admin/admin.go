@@ -12,6 +12,7 @@ import (
 	jsoniter "github.com/json-iterator/go"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 
+	"github.com/loghole/tron/internal/admin/swagger"
 	"github.com/loghole/tron/internal/app"
 	"github.com/loghole/tron/transport"
 )
@@ -60,7 +61,7 @@ func (s *Handlers) InitRoutes(r chi.Router) {
 
 	r.Mount("/debug", middleware.Profiler())
 
-	r.Mount("/docs", http.StripPrefix("/docs", http.FileServer(AssetFile())))
+	r.Mount("/docs", http.StripPrefix("/docs", http.FileServer(http.FS(swagger.Content))))
 
 	r.Get("/docs", func(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/docs/", http.StatusMovedPermanently)
