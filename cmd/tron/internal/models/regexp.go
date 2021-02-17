@@ -7,7 +7,8 @@ import (
 // nolint:gochecknoglobals //regexp
 var (
 	ProtoPkgVersionRegexp = regexp.MustCompile(`\.(v\d+)$`)
-	VersionRegexp         = regexp.MustCompile(`(\d+\.\d+\.\d+)`)
+	Version3Regexp        = regexp.MustCompile(`(\d+\.\d+\.\d+)`)
+	Version2Regexp        = regexp.MustCompile(`(\d+\.\d+)`)
 	PackageRegexp         = regexp.MustCompile(`^package ([^;]+);$`)
 	ImportRegexp          = regexp.MustCompile(`^import "([^"]+)";$`)
 	ModuleRegexp          = regexp.MustCompile(`^module (.+)$`)
