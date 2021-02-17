@@ -16,7 +16,7 @@ import (
 )
 
 const (
-	GoMinVersion     = "1.13.15"
+	GoMinVersion     = "1.16.0"
 	GitMinVersion    = "2.3.4"
 	ProtocMinVersion = "3.3.0"
 )
@@ -127,9 +127,14 @@ func (c *Checker) checkVersion(cmd *exec.Cmd, min string) error {
 }
 
 func (c *Checker) extractVersion(s string) (string, error) {
-	matches := models.VersionRegexp.FindStringSubmatch(s)
+	matches := models.Version3Regexp.FindStringSubmatch(s)
 	if len(matches) > 1 {
 		return matches[1], nil
+	}
+
+	matches = models.Version2Regexp.FindStringSubmatch(s)
+	if len(matches) > 1 {
+		return matches[1] + ".0", nil
 	}
 
 	return "", ErrNotSemanticVersion
