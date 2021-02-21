@@ -7,7 +7,6 @@ import (
 	"os"
 	"syscall"
 
-	"github.com/go-chi/cors"
 	"github.com/loghole/lhw/zap"
 	"google.golang.org/grpc"
 )
@@ -28,7 +27,6 @@ type Options struct {
 	RealtimeConfig bool
 	LoggerOptions  []zap.Option
 	ExitSignals    []os.Signal
-	CorsOptions    cors.Options
 	ConfigMap      map[string]interface{}
 	GRPCListener   net.Listener
 	HTTPListener   net.Listener
@@ -52,7 +50,6 @@ func NewOptions(options ...Option) (*Options, error) {
 	opts := &Options{
 		Hostname:    hostname,
 		ExitSignals: []os.Signal{syscall.SIGTERM, syscall.SIGINT},
-		CorsOptions: cors.Options{},
 	}
 
 	for _, apply := range options {

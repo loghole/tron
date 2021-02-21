@@ -156,42 +156,6 @@ func WithLogField(key string, value interface{}) Option {
 	}
 }
 
-// WithCORSAllowedOrigins sets allowed origin domains for cross-domain requests.
-// If the special "*" value is present in the list, all origins will be allowed.
-// An origin may contain a wildcard (*) to replace 0 or more characters
-// (i.e.: http://*.domain.com). Usage of wildcards implies a small performance penality.
-// Only one wildcard can be used per origin.
-// Default option enable CORS for requests on admin port.
-func WithCORSAllowedOrigins(origins []string) Option {
-	return func(opts *app.Options) error {
-		opts.CorsOptions.AllowedOrigins = origins
-
-		return nil
-	}
-}
-
-// WithCORSAllowedAuthentication sets if HTTP client allows authentication like
-// cookies, SSL certs and HTTP basic auth.
-func WithCORSAllowedAuthentication(allow bool) Option {
-	return func(opts *app.Options) error {
-		opts.CorsOptions.AllowCredentials = allow
-
-		return nil
-	}
-}
-
-// WithCORSAllowedHeaders sets a list of non simple headers the HTTP
-// client is allowed to use with cross-domain requests.
-// If the special "*" value is present in the list, all headers will be allowed.
-// Default value is [] but "Origin" is always appended to the list.
-func WithCORSAllowedHeaders(headers []string) Option {
-	return func(opts *app.Options) error {
-		opts.CorsOptions.AllowedHeaders = headers
-
-		return nil
-	}
-}
-
 // WithRealtimeConfig returns a Option that activate realtime config.
 // Realtime config watch only values file for current namespace.
 //
