@@ -1,11 +1,11 @@
 syntax = "proto3";
 
 import "google/api/annotations.proto";
-import "example/api/v1/types.proto";
+import "example/api/types/v1/types.proto";
 
-package strings.v1;
+package example.api.strings.v1;
 
-option go_package = ".;stringsV1";
+option go_package = "example/pkg/api/strings/v1;stringsV1";
 
 service Strings {
   // Method to upper

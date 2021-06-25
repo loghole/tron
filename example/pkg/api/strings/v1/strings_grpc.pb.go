@@ -4,7 +4,7 @@ package stringsV1
 
 import (
 	context "context"
-	v1 "example/pkg/types/v1"
+	v1 "example/pkg/api/types/v1"
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
@@ -34,7 +34,7 @@ func NewStringsClient(cc grpc.ClientConnInterface) StringsClient {
 
 func (c *stringsClient) ToUpper(ctx context.Context, in *v1.String, opts ...grpc.CallOption) (*v1.String, error) {
 	out := new(v1.String)
-	err := c.cc.Invoke(ctx, "/strings.v1.Strings/ToUpper", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/example.api.strings.v1.Strings/ToUpper", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -43,7 +43,7 @@ func (c *stringsClient) ToUpper(ctx context.Context, in *v1.String, opts ...grpc
 
 func (c *stringsClient) GetInfo(ctx context.Context, in *v1.String, opts ...grpc.CallOption) (*v1.String, error) {
 	out := new(v1.String)
-	err := c.cc.Invoke(ctx, "/strings.v1.Strings/GetInfo", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/example.api.strings.v1.Strings/GetInfo", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -93,7 +93,7 @@ func _Strings_ToUpper_Handler(srv interface{}, ctx context.Context, dec func(int
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/strings.v1.Strings/ToUpper",
+		FullMethod: "/example.api.strings.v1.Strings/ToUpper",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(StringsServer).ToUpper(ctx, req.(*v1.String))
@@ -111,7 +111,7 @@ func _Strings_GetInfo_Handler(srv interface{}, ctx context.Context, dec func(int
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/strings.v1.Strings/GetInfo",
+		FullMethod: "/example.api.strings.v1.Strings/GetInfo",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(StringsServer).GetInfo(ctx, req.(*v1.String))
@@ -123,7 +123,7 @@ func _Strings_GetInfo_Handler(srv interface{}, ctx context.Context, dec func(int
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var Strings_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "strings.v1.Strings",
+	ServiceName: "example.api.strings.v1.Strings",
 	HandlerType: (*StringsServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
@@ -136,5 +136,5 @@ var Strings_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "strings.proto",
+	Metadata: "example/api/strings/v1/strings.proto",
 }

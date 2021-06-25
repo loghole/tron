@@ -38,7 +38,6 @@ func (g *GenerateCMD) Command() *cobra.Command {
 
 	cmd.Flags().StringArray(FlagProtoDirs, []string{}, "directory with protos for generating your services")
 	cmd.Flags().Bool(FlagConfig, false, "Generate config helpers from values")
-	cmd.Flags().Bool(FlagImpl, true, "Generate grpc api implementation")
 
 	return cmd
 }
@@ -52,12 +51,6 @@ func (g *GenerateCMD) run(cmd *cobra.Command, args []string) {
 	}
 
 	config, err := cmd.Flags().GetBool(FlagConfig)
-	if err != nil {
-		helpers.PrintCommandHelp(cmd)
-		os.Exit(1)
-	}
-
-	impl, err := cmd.Flags().GetBool(FlagImpl)
 	if err != nil {
 		helpers.PrintCommandHelp(cmd)
 		os.Exit(1)
@@ -86,7 +79,7 @@ func (g *GenerateCMD) run(cmd *cobra.Command, args []string) {
 			os.Exit(1)
 		}
 
-		if err := g.runProto(project, impl); err != nil {
+		if err := g.runProto(project); err != nil {
 			g.printer.Printf(color.FgRed, "Generate protos failed: %v\n", err)
 			helpers.PrintCommandHelp(cmd)
 			os.Exit(1)
@@ -104,7 +97,7 @@ func (g *GenerateCMD) run(cmd *cobra.Command, args []string) {
 	g.printer.Println(color.FgGreen, "Success")
 }
 
-func (g *GenerateCMD) runProto(project *models.Project, impl bool) (err error) {
+func (g *GenerateCMD) runProto(project *models.Project) (err error) {
 	if err := download.NewDeps(project, g.printer).InstallProtoPlugins(); err != nil {
 		return fmt.Errorf("install protobuf plugins: %w", err)
 	}
@@ -113,20 +106,8 @@ func (g *GenerateCMD) runProto(project *models.Project, impl bool) (err error) {
 		return fmt.Errorf("vendor proto files: %w", err)
 	}
 
-	if err := parsers.NewProtoDescParser(project, g.printer).Parse(); err != nil {
-		return fmt.Errorf("parse proto files: %w", err)
-	}
-
 	if err := generate.ProtoAPI(project, g.printer); err != nil {
 		return fmt.Errorf("generate proto api: %w", err)
-	}
-
-	if !impl {
-		return nil
-	}
-
-	if err := generate.Implement(project, g.printer); err != nil {
-		return fmt.Errorf("generate implement: %w", err)
 	}
 
 	return nil

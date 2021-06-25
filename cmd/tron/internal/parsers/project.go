@@ -1,8 +1,6 @@
 package parsers
 
 import (
-	"strings"
-
 	"github.com/fatih/color"
 
 	"github.com/loghole/tron/cmd/tron/internal/models"
@@ -34,7 +32,6 @@ func NewProjectParser(printer stdout.Printer, opts ...Option) *ProjectParser {
 		printer: printer,
 		project: &models.Project{
 			Version:     version.CliVersion,
-			ProtoPkgMap: strings.Split(models.ProtoPkgMap, ","),
 		},
 	}
 

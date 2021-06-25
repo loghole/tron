@@ -2,9 +2,9 @@ syntax = "proto3";
 
 import "google/protobuf/struct.proto";
 
-package types.v1;
+package example.api.types.v1;
 
-option go_package = ".;typesV1";
+option go_package = "example/pkg/api/types/v1;typesV1";
 
 message String {
   string str = 1;

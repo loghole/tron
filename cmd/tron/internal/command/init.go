@@ -85,13 +85,10 @@ func (i *InitCMD) runInitService(opts ...parsers.Option) (err error) {
 		return fmt.Errorf("vendor proto files: %w", err)
 	}
 
-	if err := parsers.NewProtoDescParser(project, i.printer).Parse(); err != nil {
-		return fmt.Errorf("parse proto files: %w", err)
-	}
-
 	if err := i.generate(
 		project,
 		generate.Git,
+		generate.Buf,
 		generate.GoMod,
 		generate.TronMK,
 		generate.Makefile,
@@ -116,8 +113,7 @@ func (i *InitCMD) runInitService(opts ...parsers.Option) (err error) {
 	if err := i.generate(
 		project,
 		generate.Config,
-		generate.ConfigHelper,
-		generate.Mainfile); err != nil {
+		generate.ConfigHelper); err != nil {
 		return fmt.Errorf("generate config and main files: %w", err)
 	}
 

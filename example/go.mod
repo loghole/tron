@@ -3,16 +3,10 @@ module example
 go 1.16
 
 require (
-	github.com/gadavy/ozzo-validation/v4 v4.3.2
-	github.com/gogo/protobuf v1.3.1
-	github.com/golang/protobuf v1.4.3
-	github.com/grpc-ecosystem/grpc-gateway/v2 v2.1.0
-	github.com/lissteron/simplerr v0.8.0
-	github.com/loghole/tron v0.15.2
-	github.com/spf13/viper v1.7.1
-	google.golang.org/genproto v0.0.0-20210122163508-8081c04a3579
-	google.golang.org/grpc v1.35.0
-	google.golang.org/protobuf v1.25.0
+	github.com/grpc-ecosystem/grpc-gateway/v2 v2.5.0
+	github.com/loghole/tron v0.16.1
+	github.com/spf13/viper v1.8.1
+	google.golang.org/genproto v0.0.0-20210701191553-46259e63a0a9
+	google.golang.org/grpc v1.39.0
+	google.golang.org/protobuf v1.27.1
 )
-
-replace github.com/loghole/tron => ../

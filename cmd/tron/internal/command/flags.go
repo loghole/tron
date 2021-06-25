@@ -5,5 +5,4 @@ const (
 	FlagConfig    = "config"
 	FlagList      = "list"
 	FlagUnstable  = "unstable"
-	FlagImpl      = "impl"
 )

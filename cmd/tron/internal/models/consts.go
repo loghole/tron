@@ -21,6 +21,7 @@ const (
 	InternalDir    = "internal"
 	AppDir         = "app"
 	ControllersDir = "controllers"
+	ProtoExt       = ".proto"
 
 	ValuesBaseFilepath   = valuesDirPath + app.ValuesBaseName + "." + app.ValuesExt
 	ValuesDevFilepath    = valuesDirPath + app.ValuesDevName + "." + app.ValuesExt
@@ -35,6 +36,8 @@ const (
 	ReadmeMDFilepath     = "README.md"
 	ConfigConstFilepath  = "config" + sep + "constants.go"
 	ConfigFilepath       = "config" + sep + "config.go"
+	BufFilepath          = "buf.yaml"
+	BufGenFilepath       = "buf.gen.yaml"
 )
 
 const (
@@ -53,15 +56,3 @@ const (
 	TronOptionsTag = "tron_option:"
 	TronOptionJSON = "json"
 )
-
-const ProtoPkgMap = "Mgoogle/protobuf/any.proto=github.com/gogo/protobuf/types," +
-	"Mgoogle/protobuf/api.proto=github.com/gogo/protobuf/types," +
-	"Mgoogle/protobuf/descriptor.proto=github.com/gogo/protobuf/protoc-gen-gogo/descriptor," +
-	"Mgoogle/protobuf/duration.proto=github.com/gogo/protobuf/types," +
-	"Mgoogle/protobuf/empty.proto=github.com/gogo/protobuf/types," +
-	"Mgoogle/protobuf/field_mask.proto=github.com/gogo/protobuf/types," +
-	"Mgoogle/protobuf/source_context.proto=github.com/gogo/protobuf/types," +
-	"Mgoogle/protobuf/struct.proto=github.com/gogo/protobuf/types," +
-	"Mgoogle/protobuf/timestamp.proto=github.com/gogo/protobuf/types," +
-	"Mgoogle/protobuf/type.proto=github.com/gogo/protobuf/types," +
-	"Mgoogle/protobuf/wrappers.proto=github.com/gogo/protobuf/types"
