@@ -6,7 +6,7 @@ import (
 	"context"
 	"errors"
 
-	typesV1 "example/pkg/api/types/v1"
+	typesV1 "github.com/loghole/tron/example/pkg/api/types/v1"
 )
 
 func (i *Implementation) GetInfo(

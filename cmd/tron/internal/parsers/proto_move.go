@@ -30,6 +30,8 @@ func NewProtoFilesMover(project *models.Project, printer stdout.Printer) *ProtoF
 func (m *ProtoFilesMover) Move() error {
 	m.printer.VerbosePrintln(color.FgMagenta, "Move proto files")
 
+	projectProtoName := helpers.ProtoPkgName(m.project.Name)
+
 	for idx, path := range m.project.ProtoFiles {
 		if strings.Contains(path, models.ProjectPathVendorPB) {
 			continue
@@ -40,7 +42,7 @@ func (m *ProtoFilesMover) Move() error {
 			return err
 		}
 
-		if !strings.HasPrefix(packageName, m.project.Name) {
+		if !strings.HasPrefix(packageName, projectProtoName) {
 			m.printer.Printf(
 				color.FgRed,
 				"protofile: %s has invalid package '%s', need '%s.package.version'",
@@ -52,11 +54,9 @@ func (m *ProtoFilesMover) Move() error {
 			return ErrInvalidProtoPkgName
 		}
 
-		parts := strings.Split(packageName, helpers.GoName(m.project.Name))
-
 		newPath := filepath.Join(
 			m.project.AbsPath,
-			strings.ReplaceAll(parts[1], ".", string(filepath.Separator)),
+			strings.ReplaceAll(strings.Split(packageName, projectProtoName)[1], ".", string(filepath.Separator)),
 			filepath.Base(path),
 		)
 

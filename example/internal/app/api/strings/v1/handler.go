@@ -5,7 +5,7 @@ package stringsV1
 import (
 	"github.com/loghole/tron/transport"
 
-	stringsV1 "example/pkg/api/strings/v1"
+	stringsV1 "github.com/loghole/tron/example/pkg/api/strings/v1"
 )
 
 type Implementation struct {

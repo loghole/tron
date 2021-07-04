@@ -31,7 +31,7 @@ func NewProjectParser(printer stdout.Printer, opts ...Option) *ProjectParser {
 	parser := &ProjectParser{
 		printer: printer,
 		project: &models.Project{
-			Version:     version.CliVersion,
+			Version: version.CliVersion,
 		},
 	}
 

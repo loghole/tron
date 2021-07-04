@@ -4,13 +4,8 @@ import "google/protobuf/struct.proto";
 
 package example.api.types.v1;
 
-option go_package = "example/pkg/api/types/v1;typesV1";
+option go_package = "github.com/loghole/tron/example/pkg/api/types/v1;typesV1";
 
 message String {
   string str = 1;
-  bytes data = 2; // tron_option:json
-}
-
-message StringJSON {
-  google.protobuf.Value data = 1;
 }

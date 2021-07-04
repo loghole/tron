@@ -47,6 +47,13 @@ func GoName(s string) string {
 	return name
 }
 
+func ProtoPkgName(s string) string {
+	name := goNameRexp.ReplaceAllString(s, "")
+	name = strings.ReplaceAll(name, "-", "_")
+
+	return name
+}
+
 func camelCase(s string, upper bool) string {
 	s = strings.TrimSpace(s)
 

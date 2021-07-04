@@ -21,14 +21,9 @@ func Buf(p *models.Project, printer stdout.Printer) error {
 		return fmt.Errorf("write file '%s': %w", path, err)
 	}
 
-	bufGen, err := helpers.ExecTemplate(templates.BufGen, p)
-	if err != nil {
-		return fmt.Errorf("exec template: %w", err)
-	}
-
 	path = filepath.Join(p.AbsPath, models.BufGenFilepath)
 
-	if err := helpers.WriteToFile(path, []byte(bufGen)); err != nil {
+	if err := helpers.WriteToFile(path, []byte(templates.BufGen)); err != nil {
 		return fmt.Errorf("write file '%s': %w", path, err)
 	}
 

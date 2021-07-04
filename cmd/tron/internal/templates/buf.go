@@ -58,6 +58,5 @@ plugins:
     out: .
     opt:
       - paths=source_relative
-      - project_name={{ .Name }} # tron project name
     strategy: directory
 `

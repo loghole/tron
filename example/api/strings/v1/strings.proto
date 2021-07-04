@@ -5,7 +5,7 @@ import "example/api/types/v1/types.proto";
 
 package example.api.strings.v1;
 
-option go_package = "example/pkg/api/strings/v1;stringsV1";
+option go_package = "github.com/loghole/tron/example/pkg/api/strings/v1;stringsV1";
 
 service Strings {
   // Method to upper

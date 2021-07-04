@@ -46,15 +46,15 @@ func (v *VendorPB) Download() error {
 	v.printer.VerbosePrintln(color.FgMagenta, "Vendor proto imports")
 
 	if err := v.copyProjectFiles(); err != nil {
-		return err
+		return fmt.Errorf("copy project files: %w", err)
 	}
 
 	if err := v.scanFiles(); err != nil {
-		return err
+		return fmt.Errorf("scan files: %w", err)
 	}
 
 	if err := v.downloadFiles(); err != nil {
-		return err
+		return fmt.Errorf("download files: %w", err)
 	}
 
 	v.printer.VerbosePrintln(color.FgBlue, "\tSuccess")
@@ -103,7 +103,7 @@ func (v *VendorPB) downloadFiles() (err error) {
 	for val := ""; len(v.imports) > 0; {
 		val, v.imports = v.imports[0], v.imports[1:]
 
-		if strings.HasPrefix(val, v.project.Module) {
+		if strings.HasPrefix(val, v.project.Name) {
 			continue
 		}
 
@@ -124,7 +124,7 @@ func (v *VendorPB) downloadFiles() (err error) {
 func (v *VendorPB) curlProto(name string) error {
 	link, ok := v.importLink(name)
 	if !ok {
-		return ErrBadImport
+		return fmt.Errorf("'%s': %w", name, ErrBadImport)
 	}
 
 	resp, err := http.Get(link) // nolint:gosec,bodyclose,noctx //body is closed

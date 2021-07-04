@@ -43,5 +43,11 @@ func ProtobufDeps() []*Dep {
 			Git:     "https://github.com/bufbuild/buf.git",
 			Version: "v0.43.2",
 		},
+		{
+			Main:    filepath.Join("tron", "cmd", "protoc-gen-tron"),
+			Out:     filepath.Join("bin", "protoc-gen-tron"),
+			Git:     "https://github.com/loghole/tron.git",
+			Version: "v0.17.0-rc1.1",
+		},
 	}
 }

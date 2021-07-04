@@ -1,4 +1,4 @@
-module example
+module github.com/loghole/tron/example
 
 go 1.16
 

@@ -39,13 +39,6 @@
             "in": "query",
             "required": false,
             "type": "string"
-          },
-          {
-            "name": "data",
-            "in": "query",
-            "required": false,
-            "type": "string",
-            "format": "byte"
           }
         ],
         "tags": [
@@ -77,13 +70,6 @@
             "in": "path",
             "required": true,
             "type": "string"
-          },
-          {
-            "name": "data",
-            "in": "query",
-            "required": false,
-            "type": "string",
-            "format": "byte"
           }
         ],
         "tags": [
@@ -98,10 +84,6 @@
       "properties": {
         "str": {
           "type": "string"
-        },
-        "data": {
-          "type": "string",
-          "format": "byte"
         }
       }
     },

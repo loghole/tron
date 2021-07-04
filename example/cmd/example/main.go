@@ -3,7 +3,7 @@ package main
 import (
 	"log"
 
-	"example/config"
+	"github.com/loghole/tron/example/config"
 
 	"github.com/loghole/tron"
 )
@@ -15,6 +15,7 @@ func main() {
 	}
 
 	defer app.Close()
+
 	app.Logger().Info(config.GetExampleValue())
 
 	// Init handlers
