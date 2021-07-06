@@ -100,7 +100,9 @@ func (v *VendorPB) scanFiles() error {
 }
 
 func (v *VendorPB) downloadFiles() (err error) {
-	for val := ""; len(v.imports) > 0; {
+	var val string
+
+	for len(v.imports) > 0 {
 		val, v.imports = v.imports[0], v.imports[1:]
 
 		if strings.HasPrefix(val, v.project.Name) {

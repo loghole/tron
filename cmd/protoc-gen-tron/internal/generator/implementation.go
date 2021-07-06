@@ -7,6 +7,7 @@ import (
 	"google.golang.org/protobuf/compiler/protogen"
 )
 
+// nolint:funlen // generation can be big
 func (gen *Generator) generateImpl(p *protogen.Plugin, f *protogen.File) {
 	var (
 		service         = f.Services[0]
@@ -52,7 +53,7 @@ func (gen *Generator) generateImpl(p *protogen.Plugin, f *protogen.File) {
 	g.P()
 
 	for _, m := range service.Methods {
-		implPath := filepath.Join(implementDir, SnakeCase(m.GoName)+".go")
+		implPath := filepath.Join(implementDir, snakeCase(m.GoName)+".go")
 
 		if st, err := os.Stat(implPath); err == nil && !st.IsDir() {
 			return

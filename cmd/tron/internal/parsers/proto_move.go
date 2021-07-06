@@ -42,10 +42,10 @@ func (m *ProtoFilesMover) Move() error {
 			return err
 		}
 
-		if !strings.HasPrefix(packageName, projectProtoName) {
+		if !strings.HasPrefix(packageName, projectProtoName+".api") {
 			m.printer.Printf(
 				color.FgRed,
-				"protofile: %s has invalid package '%s', need '%s.package.version'",
+				"protofile: %s has invalid package '%s', need '%s.api.package.version'",
 				path,
 				packageName,
 				helpers.GoName(m.project.Name),

@@ -42,7 +42,7 @@ func (gen *Generator) Generate(p *protogen.Plugin) error {
 				gen.protoPkgPrefix,
 			))
 
-			continue
+			return nil
 		}
 
 		if !strings.HasPrefix(f.Proto.GetOptions().GetGoPackage(), gen.module) {
@@ -52,6 +52,8 @@ func (gen *Generator) Generate(p *protogen.Plugin) error {
 				ErrInvalidGoPackage,
 				gen.module,
 			))
+
+			return nil
 		}
 
 		if len(f.Services) == 0 {
@@ -61,7 +63,7 @@ func (gen *Generator) Generate(p *protogen.Plugin) error {
 		if len(f.Services) > 1 {
 			p.Error(fmt.Errorf("ERROR: file %s has %w", f.Proto.GetName(), ErrMultiplyService))
 
-			continue
+			return nil
 		}
 
 		gen.generateTransport(p, f)

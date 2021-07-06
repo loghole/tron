@@ -60,7 +60,7 @@ func generateProtos(project *models.Project) error {
 
 	stderr := bytes.NewBuffer(nil)
 
-	cmd := exec.Command(args[0], args[1:]...)
+	cmd := exec.Command("./bin/buf", args...)
 	cmd.Dir = project.AbsPath
 	cmd.Stderr = stderr
 

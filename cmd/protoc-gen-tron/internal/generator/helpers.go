@@ -9,6 +9,8 @@ import (
 	"google.golang.org/protobuf/compiler/protogen"
 )
 
+const appPath = "internal/app"
+
 func (gen *Generator) implDir(pkg string) string {
 	p := strings.ReplaceAll(
 		strings.TrimPrefix(pkg, gen.protoPkgPrefix),
@@ -17,7 +19,7 @@ func (gen *Generator) implDir(pkg string) string {
 	)
 
 	p = filepath.Join(
-		"internal/app",
+		appPath,
 		p,
 	)
 
@@ -33,7 +35,7 @@ func (gen *Generator) implImport(pkg string) protogen.GoImportPath {
 
 	p = path.Join(
 		gen.module,
-		"internal/app",
+		appPath,
 		p,
 	)
 
@@ -45,10 +47,11 @@ func (gen *Generator) implImport(pkg string) protogen.GoImportPath {
 func fileName(s string) string {
 	f := filepath.Base(s)
 	ext := filepath.Ext(f)
+
 	return f[:len(f)-len(ext)]
 }
 
-func SnakeCase(s string) string {
+func snakeCase(s string) string {
 	in := []rune(s)
 
 	isLower := func(idx int) bool {

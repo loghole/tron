@@ -7,6 +7,7 @@ import (
 	"google.golang.org/protobuf/compiler/protogen"
 )
 
+// nolint:funlen // generation can be big
 func (gen *Generator) generateMain(p *protogen.Plugin) {
 	mainPath := filepath.Join("cmd", gen.moduleName, "main.go")
 
@@ -23,16 +24,6 @@ func (gen *Generator) generateMain(p *protogen.Plugin) {
 	g.P(`"log"`)
 	g.P()
 	g.P(`"` + gen.module + `/config"`)
-
-	for _, f := range p.Files {
-		if !f.Generate || len(f.Services) == 0 {
-			continue
-		}
-
-		g.P("// Implementation", f.GoPackageName)
-		g.P(f.GoPackageName, " ", gen.implImport(f.Proto.GetPackage()))
-	}
-
 	g.P()
 	g.P(`"github.com/loghole/tron"`)
 	g.P(")")
@@ -52,29 +43,12 @@ func (gen *Generator) generateMain(p *protogen.Plugin) {
 	g.P()
 
 	g.P("// Init handlers")
+
 	g.P("var (")
-
-	for _, f := range p.Files {
-		if !f.Generate || len(f.Services) == 0 {
-			continue
-		}
-
-		g.P(f.GoPackageName, "Impl = ", f.GoPackageName, ".NewImplementation()")
-	}
-
 	g.P(")")
 	g.P()
 
 	g.P("if err := app.WithRunOptions().Run(")
-
-	for _, f := range p.Files {
-		if !f.Generate || len(f.Services) == 0 {
-			continue
-		}
-
-		g.P(f.GoPackageName, "Impl,")
-	}
-
 	g.P("); err != nil {")
 	g.P(`app.Logger().Fatalf("can't run app: %v", err)`)
 	g.P("}")

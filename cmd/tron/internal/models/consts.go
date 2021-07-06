@@ -14,14 +14,11 @@ const (
 )
 
 const (
-	GitDir         = ".git"
-	MainFile       = "main.go"
-	GoModFile      = "go.mod"
-	CmdDir         = "cmd"
-	InternalDir    = "internal"
-	AppDir         = "app"
-	ControllersDir = "controllers"
-	ProtoExt       = ".proto"
+	GitDir    = ".git"
+	MainFile  = "main.go"
+	GoModFile = "go.mod"
+	CmdDir    = "cmd"
+	ProtoExt  = ".proto"
 
 	ValuesBaseFilepath   = valuesDirPath + app.ValuesBaseName + "." + app.ValuesExt
 	ValuesDevFilepath    = valuesDirPath + app.ValuesDevName + "." + app.ValuesExt
@@ -41,14 +38,9 @@ const (
 )
 
 const (
-	ProjectPathAPI            = "api"
-	ProjectPathImplementation = InternalDir + sep + AppDir + sep + ControllersDir
-	ProjectPathPkgClients     = "pkg"
-	ProjectPathVendorPB       = "vendor.pb"
-)
-
-const (
-	ProjectImportImplementation = InternalDir + "/" + AppDir + "/" + ControllersDir
+	ProjectPathAPI        = "api"
+	ProjectPathPkgClients = "pkg"
+	ProjectPathVendorPB   = "vendor.pb"
 )
 
 const (

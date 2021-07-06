@@ -4,6 +4,7 @@ import (
 	"log"
 
 	"github.com/loghole/tron/example/config"
+	stringsV1 "github.com/loghole/tron/example/internal/app/api/strings/v1"
 
 	"github.com/loghole/tron"
 )
@@ -19,9 +20,11 @@ func main() {
 	app.Logger().Info(config.GetExampleValue())
 
 	// Init handlers
-	var ()
+	var (
+		stringsV1Impl = stringsV1.NewImplementation()
+	)
 
-	if err := app.WithRunOptions().Run(); err != nil {
+	if err := app.WithRunOptions().Run(stringsV1Impl); err != nil {
 		app.Logger().Fatalf("can't run app: %v", err)
 	}
 }
