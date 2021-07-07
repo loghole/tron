@@ -44,7 +44,6 @@ func ProtoAPI(project *models.Project, printer stdout.Printer) error {
 
 func generateProtos(project *models.Project) error {
 	args := []string{
-		"./bin/buf",
 		"generate",
 	}
 

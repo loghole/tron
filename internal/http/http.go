@@ -137,7 +137,11 @@ func (s *Server) Close() error {
 
 	s.server.SetKeepAlivesEnabled(false)
 
-	return s.server.Shutdown(ctx)
+	if err := s.server.Shutdown(ctx); err != nil {
+		return fmt.Errorf("shutdown server: %w", err)
+	}
+
+	return nil
 }
 
 // Addr returns the server address.

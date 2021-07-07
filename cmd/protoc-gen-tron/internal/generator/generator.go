@@ -58,9 +58,7 @@ func (gen *Generator) Generate(p *protogen.Plugin) error {
 
 		if len(f.Services) == 0 {
 			continue
-		}
-
-		if len(f.Services) > 1 {
+		} else if len(f.Services) > 1 {
 			p.Error(fmt.Errorf("ERROR: file %s has %w", f.Proto.GetName(), ErrMultiplyService))
 
 			return nil
