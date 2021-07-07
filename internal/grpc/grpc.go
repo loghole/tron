@@ -83,7 +83,11 @@ func (s *Server) Serve() error {
 		return nil
 	}
 
-	return s.server.Serve(s.listener)
+	if err := s.server.Serve(s.listener); err != nil {
+		return fmt.Errorf("serve: %w", err)
+	}
+
+	return nil
 }
 
 // Close closes the server.

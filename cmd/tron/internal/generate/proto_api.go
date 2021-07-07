@@ -1,10 +1,9 @@
 package generate
 
 import (
-	"bufio"
 	"bytes"
 	"fmt"
-	"io"
+	"io/fs"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -12,39 +11,30 @@ import (
 
 	"github.com/fatih/color"
 	"github.com/lissteron/simplerr"
-	"golang.org/x/tools/imports"
 
 	"github.com/loghole/tron/cmd/tron/internal/helpers"
 	"github.com/loghole/tron/cmd/tron/internal/models"
 	"github.com/loghole/tron/cmd/tron/internal/stdout"
-	"github.com/loghole/tron/cmd/tron/internal/templates"
 )
 
 func ProtoAPI(project *models.Project, printer stdout.Printer) error {
 	printer.VerbosePrintln(color.FgMagenta, "Generate proto api")
 
-	for _, proto := range project.Protos {
-		printer.VerbosePrintf(color.Reset, "\tgenerate from file '%s': ", color.YellowString(proto.RelPath))
+	// Buf generate.
+	printer.VerbosePrintf(color.Reset, "\trun buf generate: ")
 
-		if err := generateProtoc(project, proto); err != nil {
-			printer.VerbosePrintln(color.FgRed, "FAIL: %v", err)
+	if err := generateProtos(project); err != nil {
+		printer.VerbosePrintln(color.FgRed, "FAIL: %v", err)
 
-			return err
-		}
+		return err
+	}
 
-		if err := generateTronOptions(project, proto); err != nil {
-			printer.VerbosePrintln(color.FgRed, "FAIL: %v", err)
+	printer.VerbosePrintln(color.FgGreen, "OK")
 
-			return err
-		}
+	if err := moveGeneratedFiles(project, printer); err != nil {
+		printer.VerbosePrintln(color.FgRed, "FAIL: %v", err)
 
-		if err := generateTransport(project, proto); err != nil {
-			printer.VerbosePrintln(color.FgRed, "FAIL: %v", err)
-
-			return err
-		}
-
-		printer.VerbosePrintln(color.FgGreen, "OK")
+		return err
 	}
 
 	printer.VerbosePrintln(color.FgBlue, "\tSuccess")
@@ -52,135 +42,25 @@ func ProtoAPI(project *models.Project, printer stdout.Printer) error {
 	return nil
 }
 
-func generateProtoc(project *models.Project, proto *models.Proto) error {
-	if err := helpers.Mkdir(proto.PkgTypesFile()); err != nil {
-		return err
-	}
-
-	var (
-		output = filepath.Join(proto.PkgDir())
-		pkgMap = strings.Join(project.ProtoPkgMap, ",")
-	)
-
+func generateProtos(project *models.Project) error {
 	args := []string{
-		"--plugin=protoc-gen-go=" + filepath.Join(project.AbsPath, "bin", "protoc-gen-go"),
-		"--plugin=protoc-gen-go-grpc=" + filepath.Join(project.AbsPath, "bin", "protoc-gen-go-grpc"),
-		"--plugin=protoc-gen-grpc-gateway=" + filepath.Join(project.AbsPath, "bin", "protoc-gen-grpc-gateway"),
-		"--plugin=protoc-gen-openapiv2=" + filepath.Join(project.AbsPath, "bin", "protoc-gen-openapiv2"),
-		fmt.Sprintf("-I%s:%s", filepath.Dir(proto.RelPath), models.ProjectPathVendorPB),
-		fmt.Sprintf("--go_out=%s:%s", pkgMap, output),
-		fmt.Sprintf("--go-grpc_out=%s:%s", pkgMap, output),
-		fmt.Sprintf("--grpc-gateway_out=%s:%s", pkgMap, output),
-		fmt.Sprintf("--openapiv2_out=%s:%s", pkgMap, output),
-		"--grpc-gateway_opt", "logtostderr=true",
-		"--openapiv2_opt", "fqn_for_openapi_name=true",
-		proto.RelPath,
+		"generate",
 	}
 
-	if err := execProtoc(project.AbsPath, args); err != nil {
-		return simplerr.Wrap(err, "generate protoc-gen-go")
+	for _, file := range project.ProtoFiles {
+		path := filepath.Join(
+			models.ProjectPathVendorPB,
+			project.Name,
+			strings.TrimPrefix(file, project.AbsPath),
+		)
+
+		args = append(args, "--path", path)
 	}
 
-	return nil
-}
-
-func generateTronOptions(project *models.Project, proto *models.Proto) error {
-	file, err := os.OpenFile(filepath.Join(project.AbsPath, proto.PkgTypesFile()), os.O_RDWR, 0666)
-	if err != nil {
-		return fmt.Errorf("can't open file '%s': %w", proto.PkgTypesFile(), err)
-	}
-
-	defer helpers.Close(file)
-
-	result, err := scanAndWriteTronOptions(file)
-	if err != nil {
-		return fmt.Errorf("apply tron options: %w", err)
-	}
-
-	if err := file.Truncate(0); err != nil {
-		return fmt.Errorf("truncate file '%s': %w", proto.PkgTypesFile(), err)
-	}
-
-	if _, err := file.Seek(0, 0); err != nil {
-		return fmt.Errorf("seek file '%s': %w", proto.PkgTypesFile(), err)
-	}
-
-	if _, err := file.Write(result); err != nil {
-		return fmt.Errorf("write data to file '%s': %w", proto.PkgTypesFile(), err)
-	}
-
-	return nil
-}
-
-func generateTransport(project *models.Project, proto *models.Proto) error {
-	defer os.Remove(proto.PkgSwaggerFile())
-
-	if !proto.WithImpl() {
-		return nil
-	}
-
-	data := templates.TransportData{
-		Proto:   proto,
-		Version: project.Version,
-		Swagger: `"{}"`,
-	}
-
-	if swaggerData, err := os.ReadFile(proto.PkgSwaggerFile()); err == nil {
-		data.Swagger = "`" + string(swaggerData) + "`"
-	}
-
-	transport, err := helpers.ExecTemplate(templates.Transport, data)
-	if err != nil {
-		return fmt.Errorf("exec template: %w", err)
-	}
-
-	if err := helpers.WriteToFile(proto.PkgTronFile(), []byte(transport)); err != nil {
-		return fmt.Errorf("write file '%s': %w", proto.PkgTronFile(), err)
-	}
-
-	return nil
-}
-
-func scanAndWriteTronOptions(r io.Reader) ([]byte, error) {
-	buf := make([]string, 0)
-
-	scanner := bufio.NewScanner(r)
-	scanner.Split(bufio.ScanLines)
-
-	for scanner.Scan() {
-		if !strings.Contains(scanner.Text(), models.TronOptionsTag) {
-			buf = append(buf, scanner.Text())
-
-			continue
-		}
-
-		opts, ok := models.ParseTronOptions(scanner.Text())
-		if !ok {
-			continue
-		}
-
-		buf = append(buf, opts.Apply(scanner.Text()))
-	}
-
-	if err := scanner.Err(); err != nil {
-		return nil, fmt.Errorf("scanner err: %w", err)
-	}
-
-	result := strings.Join(buf, "\n")
-
-	formattedBytes, err := imports.Process("", []byte(result), nil)
-	if err != nil {
-		return nil, fmt.Errorf("imports process '%s': %w", result, err)
-	}
-
-	return formattedBytes, nil
-}
-
-func execProtoc(wd string, args []string) error {
 	stderr := bytes.NewBuffer(nil)
 
-	cmd := exec.Command("protoc", args...)
-	cmd.Dir = wd
+	cmd := exec.Command("./bin/buf", args...)
+	cmd.Dir = project.AbsPath
 	cmd.Stderr = stderr
 
 	o, err := cmd.Output()
@@ -189,7 +69,42 @@ func execProtoc(wd string, args []string) error {
 	}
 
 	if len(o) > 0 {
-		return simplerr.Wrapf(ErrProtocUnexpectedOutput, string(o))
+		return simplerr.Wrapf(ErrBufUnexpectedOutput, string(o))
+	}
+
+	return nil
+}
+
+func moveGeneratedFiles(project *models.Project, printer stdout.Printer) error {
+	path := filepath.Join(project.AbsPath, project.Name)
+
+	defer os.RemoveAll(path)
+
+	mover := func(path string, info fs.FileInfo, err error) error {
+		if err != nil || info.IsDir() {
+			return err
+		}
+
+		newPath := strings.TrimPrefix(path, project.AbsPath)
+		newPath = strings.Replace(newPath, project.Name, models.ProjectPathPkgClients, 1)
+		newPath = filepath.Join(project.AbsPath, newPath)
+
+		data, err := os.ReadFile(path)
+		if err != nil {
+			return fmt.Errorf("read file '%s': %w", path, err)
+		}
+
+		if err := helpers.WriteToFile(newPath, data); err != nil {
+			return fmt.Errorf("write file to '%s': %w", newPath, err)
+		}
+
+		printer.VerbosePrintf(color.Reset, "\tmove '%s' > '%s'\n", path, newPath)
+
+		return nil
+	}
+
+	if err := filepath.Walk(path, mover); err != nil {
+		return err
 	}
 
 	return nil

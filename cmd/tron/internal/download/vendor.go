@@ -7,7 +7,7 @@ import (
 	"io"
 	"net/http"
 	"os"
-	"path"
+	"path/filepath"
 	"strings"
 
 	"github.com/fatih/color"
@@ -45,15 +45,41 @@ func NewVendor(project *models.Project, printer stdout.Printer) *VendorPB {
 func (v *VendorPB) Download() error {
 	v.printer.VerbosePrintln(color.FgMagenta, "Vendor proto imports")
 
+	if err := v.copyProjectFiles(); err != nil {
+		return fmt.Errorf("copy project files: %w", err)
+	}
+
 	if err := v.scanFiles(); err != nil {
-		return err
+		return fmt.Errorf("scan files: %w", err)
 	}
 
 	if err := v.downloadFiles(); err != nil {
-		return err
+		return fmt.Errorf("download files: %w", err)
 	}
 
 	v.printer.VerbosePrintln(color.FgBlue, "\tSuccess")
+
+	return nil
+}
+
+func (v *VendorPB) copyProjectFiles() error {
+	for _, file := range v.project.ProtoFiles {
+		data, err := os.ReadFile(file)
+		if err != nil {
+			return fmt.Errorf("read file '%s': %w", file, err)
+		}
+
+		path := filepath.Join(
+			v.project.AbsPath,
+			models.ProjectPathVendorPB,
+			v.project.Name,
+			strings.TrimPrefix(file, v.project.AbsPath),
+		)
+
+		if err := helpers.WriteToFile(path, data); err != nil {
+			return fmt.Errorf("write file '%s': %w", file, err)
+		}
+	}
 
 	return nil
 }
@@ -74,19 +100,18 @@ func (v *VendorPB) scanFiles() error {
 }
 
 func (v *VendorPB) downloadFiles() (err error) {
-	for val := ""; len(v.imports) > 0; {
+	var val string
+
+	for len(v.imports) > 0 {
 		val, v.imports = v.imports[0], v.imports[1:]
+
+		if strings.HasPrefix(val, v.project.Name) {
+			continue
+		}
 
 		v.printer.VerbosePrintf(color.Reset, "\tvendor '%s': ", color.YellowString(val))
 
-		switch {
-		case strings.HasPrefix(val, v.project.Module):
-			err = v.copyProto(val)
-		default:
-			err = v.curlProto(val)
-		}
-
-		if err != nil {
+		if err := v.curlProto(val); err != nil {
 			v.printer.VerbosePrintln(color.FgRed, "FAIL: %v", err)
 
 			return err
@@ -98,21 +123,10 @@ func (v *VendorPB) downloadFiles() (err error) {
 	return nil
 }
 
-func (v *VendorPB) copyProto(name string) error {
-	filename := strings.TrimPrefix(strings.TrimPrefix(name, v.project.Module), "/")
-
-	data, err := os.ReadFile(filename)
-	if err != nil {
-		return err
-	}
-
-	return helpers.WriteToFile(path.Join(v.project.AbsPath, models.ProjectPathVendorPB, name), data)
-}
-
 func (v *VendorPB) curlProto(name string) error {
 	link, ok := v.importLink(name)
 	if !ok {
-		return ErrBadImport
+		return fmt.Errorf("'%s': %w", name, ErrBadImport)
 	}
 
 	resp, err := http.Get(link) // nolint:gosec,bodyclose,noctx //body is closed
@@ -135,7 +149,7 @@ func (v *VendorPB) curlProto(name string) error {
 		return err
 	}
 
-	return helpers.WriteToFile(path.Join(v.project.AbsPath, models.ProjectPathVendorPB, name), data)
+	return helpers.WriteToFile(filepath.Join(v.project.AbsPath, models.ProjectPathVendorPB, name), data)
 }
 
 func (v *VendorPB) findImports(data []byte) error {

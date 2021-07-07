@@ -55,6 +55,8 @@ func (s *Handlers) InitRoutes(r chi.Router) {
 		return
 	}
 
+	r.HandleFunc("/", s.index)
+
 	r.Handle("/metrics", promhttp.Handler())
 
 	r.Get("/info", s.serviceInfoHandler)
@@ -78,7 +80,10 @@ func (s *Handlers) InitRoutes(r chi.Router) {
 }
 
 func (s *Handlers) serviceInfoHandler(w http.ResponseWriter, r *http.Request) {
-	_ = jsoniter.NewEncoder(w).Encode(info{
+	encoder := jsoniter.NewEncoder(w)
+	encoder.SetIndent("", "  ")
+
+	_ = encoder.Encode(info{
 		InstanceUUID: s.info.InstanceUUID,
 		ServiceName:  s.info.ServiceName,
 		Namespace:    s.info.Namespace,
@@ -105,4 +110,22 @@ func (s *Handlers) swaggerDefHandler(w http.ResponseWriter, r *http.Request) {
 	desc.Info.Title = s.info.AppName
 
 	_ = jsoniter.NewEncoder(w).Encode(desc)
+}
+
+func (s *Handlers) index(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("X-Content-Type-Options", "nosniff")
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+
+	_, _ = w.Write([]byte(`<html>
+		<head>
+			<title>Admin console</title>
+		</head>
+		<body>
+		  	<p><a href="/docs">Swagger docs</a></p>
+		  	<p><a href="/metrics">Metrics</a></p>
+		  	<p><a href="/info">Info</a></p>
+		  	<p><a href="/debug">Debug</a></p>
+		  	<p><a href="/swagger.json">Swagger json</a></p>
+		</body>
+	</html>`))
 }

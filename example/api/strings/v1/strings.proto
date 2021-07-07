@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+import "google/api/annotations.proto";
+import "example/api/types/v1/types.proto";
+
+package example.api.strings.v1;
+
+option go_package = "github.com/loghole/tron/example/pkg/api/strings/v1;stringsV1";
+
+service Strings {
+  // Method to upper
+  rpc ToUpper (types.v1.String) returns (types.v1.String) {
+    option (google.api.http) = {get: "/api/v1/strings/upper/{str}"};
+  }
+
+  rpc GetInfo (types.v1.String) returns (types.v1.String) {
+    option (google.api.http) = {get: "/api/v1/strings/info"};
+  }
+}

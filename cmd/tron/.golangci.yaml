@@ -12,7 +12,13 @@ linters:
     - forbidigo
     - revive
     - cyclop
+    - gomoddirectives # need root lib constants.
 linters-settings:
+  tagliatelle:
+    case:
+      use-field-name: true
+      rules:
+        json: snake
   gocritic:
     enabled-tags:
       - style
@@ -21,4 +27,4 @@ linters-settings:
       - diagnostic
       - opinionated
 service:
-  golangci-lint-version: 1.37.x
+  golangci-lint-version: 1.41.x

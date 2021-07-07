@@ -1,5 +1,5 @@
 # BUILD BACKEND
-FROM golang:1.15-alpine as builder
+FROM golang:1.16-alpine as builder
 
 RUN apk add --no-cache ca-certificates tzdata git
 
@@ -25,7 +25,7 @@ RUN go mod download && go mod verify
 COPY . .
 
 ARG SERVICE_NAME=example
-ARG APP_NAME=example
+ARG APP_NAME=github.com/loghole/tron/example
 
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build \
     -ldflags="-w -s \

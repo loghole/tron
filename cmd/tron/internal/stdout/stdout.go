@@ -1,6 +1,9 @@
 package stdout
 
 import (
+	"bufio"
+	"io"
+
 	"github.com/fatih/color"
 )
 
@@ -9,6 +12,7 @@ type Printer interface {
 	Print(atr color.Attribute, args ...interface{})
 	Println(atr color.Attribute, args ...interface{})
 	Printf(atr color.Attribute, template string, args ...interface{})
+	PrintReader(atr color.Attribute, prefix string, r io.Reader)
 	VerbosePrint(atr color.Attribute, args ...interface{})
 	VerbosePrintln(atr color.Attribute, args ...interface{})
 	VerbosePrintf(atr color.Attribute, template string, args ...interface{})
@@ -36,6 +40,15 @@ func (p *printer) Println(atr color.Attribute, args ...interface{}) {
 
 func (p *printer) Printf(atr color.Attribute, template string, args ...interface{}) {
 	_, _ = color.New(atr).Printf(template, args...)
+}
+
+func (p *printer) PrintReader(atr color.Attribute, prefix string, r io.Reader) {
+	scan := bufio.NewScanner(r)
+	scan.Split(bufio.ScanLines)
+
+	for scan.Scan() {
+		_, _ = color.New(atr).Printf(prefix + scan.Text() + "\n")
+	}
 }
 
 func (p *printer) VerbosePrint(atr color.Attribute, args ...interface{}) {

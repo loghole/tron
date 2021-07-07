@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+import "google/protobuf/struct.proto";
+
+package example.api.types.v1;
+
+option go_package = "github.com/loghole/tron/example/pkg/api/types/v1;typesV1";
+
+message String {
+  string str = 1;
+}

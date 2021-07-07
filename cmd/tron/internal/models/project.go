@@ -9,13 +9,11 @@ type Project struct {
 	Version string
 
 	// parsed data.
-	AbsPath     string
-	Module      string
-	Name        string
-	ProtoFiles  []string
-	ValuesEnv   []*ConfigValue
-	Protos      []*Proto
-	ProtoPkgMap []string
+	AbsPath    string
+	Module     string
+	Name       string
+	ProtoFiles []string
+	ValuesEnv  []*ConfigValue
 
 	// from flags.
 	ProtoDirs []string

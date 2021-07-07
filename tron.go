@@ -145,19 +145,19 @@ func (a *App) Run(impl ...transport.Service) error {
 	eg.Go(func() error {
 		a.logger.Infof("start public grpc server on: %s", a.servers.publicGRPC.Addr())
 
-		return a.servers.publicGRPC.Serve()
+		return a.servers.publicGRPC.Serve() // nolint:wrapcheck // need clean err
 	})
 
 	eg.Go(func() error {
 		a.logger.Infof("start public http server on: %s", a.servers.publicHTTP.Addr())
 
-		return a.servers.publicHTTP.Serve()
+		return a.servers.publicHTTP.Serve() // nolint:wrapcheck // need clean err
 	})
 
 	eg.Go(func() error {
 		a.logger.Infof("start admin http server on: %s", a.servers.adminHTTP.Addr())
 
-		return a.servers.adminHTTP.Serve()
+		return a.servers.adminHTTP.Serve() // nolint:wrapcheck // need clean err
 	})
 
 	exit := make(chan os.Signal, 1)

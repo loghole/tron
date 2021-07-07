@@ -3,8 +3,8 @@ package main
 import (
 	"log"
 
-	"example/config"
-	stringsV1 "example/internal/app/controllers/strings/v1"
+	"github.com/loghole/tron/example/config"
+	stringsV1 "github.com/loghole/tron/example/internal/app/api/strings/v1"
 
 	"github.com/loghole/tron"
 )
@@ -19,15 +19,12 @@ func main() {
 
 	app.Logger().Info(config.GetExampleValue())
 
-	// Init all ..
-
+	// Init handlers
 	var (
-		stringsV1Handler = stringsV1.NewImplementation()
+		stringsV1Impl = stringsV1.NewImplementation()
 	)
 
-	if err := app.WithRunOptions().Run(stringsV1Handler); err != nil {
+	if err := app.WithRunOptions().Run(stringsV1Impl); err != nil {
 		app.Logger().Fatalf("can't run app: %v", err)
 	}
-
-	// Stop all...
 }

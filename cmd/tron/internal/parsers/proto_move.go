@@ -30,17 +30,35 @@ func NewProtoFilesMover(project *models.Project, printer stdout.Printer) *ProtoF
 func (m *ProtoFilesMover) Move() error {
 	m.printer.VerbosePrintln(color.FgMagenta, "Move proto files")
 
+	projectProtoName := helpers.ProtoPkgName(m.project.Name)
+
 	for idx, path := range m.project.ProtoFiles {
 		if strings.Contains(path, models.ProjectPathVendorPB) {
 			continue
 		}
 
-		version, err := m.findPackageVersion(path)
+		packageName, err := m.findPackage(path)
 		if err != nil {
 			return err
 		}
 
-		newPath := filepath.Join(m.project.AbsPath, models.ProjectPathAPI, version, filepath.Base(path))
+		if !strings.HasPrefix(packageName, projectProtoName+".api") {
+			m.printer.Printf(
+				color.FgRed,
+				"protofile: %s has invalid package '%s', need '%s.api.package.version'",
+				path,
+				packageName,
+				helpers.GoName(m.project.Name),
+			)
+
+			return ErrInvalidProtoPkgName
+		}
+
+		newPath := filepath.Join(
+			m.project.AbsPath,
+			strings.ReplaceAll(strings.Split(packageName, projectProtoName)[1], ".", string(filepath.Separator)),
+			filepath.Base(path),
+		)
 
 		if path == newPath {
 			continue
@@ -71,7 +89,7 @@ func (m *ProtoFilesMover) Move() error {
 	return nil
 }
 
-func (m *ProtoFilesMover) findPackageVersion(path string) (string, error) {
+func (m *ProtoFilesMover) findPackage(path string) (string, error) {
 	data, err := os.ReadFile(path)
 	if err != nil {
 		return "", fmt.Errorf("read file '%s': %w", path, err)
@@ -84,11 +102,6 @@ func (m *ProtoFilesMover) findPackageVersion(path string) (string, error) {
 		m := models.PackageRegexp.FindStringSubmatch(strings.TrimSpace(scanner.Text()))
 		if len(m) <= 1 {
 			continue
-		}
-
-		m = models.ProtoPkgVersionRegexp.FindStringSubmatch(m[1])
-		if len(m) <= 1 {
-			return "", ErrInvalidProtoPkgName
 		}
 
 		return m[1], nil
