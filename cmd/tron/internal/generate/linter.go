@@ -13,12 +13,12 @@ import (
 )
 
 func Linter(p *models.Project, printer stdout.Printer) error {
-	printer.VerbosePrintln(color.FgMagenta, "Generate .golangci.yaml")
+	printer.Println(color.FgMagenta, "Generate .golangci.yaml")
 
 	path := filepath.Join(p.AbsPath, models.GolangciLintFilepath)
 
 	if !helpers.ConfirmOverwrite(path) {
-		printer.VerbosePrintln(color.FgBlue, "\tSkipped")
+		printer.Println(color.FgBlue, "\tSkipped")
 
 		return nil
 	}
@@ -27,7 +27,7 @@ func Linter(p *models.Project, printer stdout.Printer) error {
 		return fmt.Errorf("write file '%s': %w", path, err)
 	}
 
-	printer.VerbosePrintln(color.FgBlue, "\tSuccess")
+	printer.Println(color.FgBlue, "\tSuccess")
 
 	return nil
 }

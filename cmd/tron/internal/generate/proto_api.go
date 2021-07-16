@@ -10,7 +10,6 @@ import (
 	"strings"
 
 	"github.com/fatih/color"
-	"github.com/lissteron/simplerr"
 
 	"github.com/loghole/tron/cmd/tron/internal/helpers"
 	"github.com/loghole/tron/cmd/tron/internal/models"
@@ -18,35 +17,59 @@ import (
 )
 
 func ProtoAPI(project *models.Project, printer stdout.Printer) error {
-	printer.VerbosePrintln(color.FgMagenta, "Generate proto api")
+	printer.Println(color.FgMagenta, "Generate proto api")
+
+	// Buf lint.
+	if err := lintProtos(project, printer); err != nil {
+		return err
+	}
 
 	// Buf generate.
-	printer.VerbosePrintf(color.Reset, "\trun buf generate: ")
-
-	if err := generateProtos(project); err != nil {
-		printer.VerbosePrintln(color.FgRed, "FAIL: %v", err)
-
+	if err := generateProtos(project, printer); err != nil {
 		return err
 	}
 
-	printer.VerbosePrintln(color.FgGreen, "OK")
-
+	// Move generated files.
 	if err := moveGeneratedFiles(project, printer); err != nil {
-		printer.VerbosePrintln(color.FgRed, "FAIL: %v", err)
-
 		return err
 	}
 
-	printer.VerbosePrintln(color.FgBlue, "\tSuccess")
+	printer.Println(color.FgBlue, "\tSuccess")
 
 	return nil
 }
 
-func generateProtos(project *models.Project) error {
-	args := []string{
-		"generate",
+func lintProtos(project *models.Project, printer stdout.Printer) error {
+	printer.VerbosePrintf(color.Reset, "\trun buf lint: ")
+
+	if err := runBufCommand(project, "lint"); err != nil {
+		printer.VerbosePrintln(color.FgRed, "FAIL")
+		printer.Println(color.FgRed, err)
+
+		return ErrBufError
 	}
 
+	printer.VerbosePrintln(color.FgGreen, "OK")
+
+	return nil
+}
+
+func generateProtos(project *models.Project, printer stdout.Printer) error {
+	printer.VerbosePrintf(color.Reset, "\trun buf generate: ")
+
+	if err := runBufCommand(project, "generate"); err != nil {
+		printer.VerbosePrintln(color.FgRed, "FAIL")
+		printer.Println(color.FgRed, err)
+
+		return ErrBufError
+	}
+
+	printer.VerbosePrintln(color.FgGreen, "OK")
+
+	return nil
+}
+
+func runBufCommand(project *models.Project, args ...string) error {
 	for _, file := range project.ProtoFiles {
 		path := filepath.Join(
 			models.ProjectPathVendorPB,
@@ -57,19 +80,18 @@ func generateProtos(project *models.Project) error {
 		args = append(args, "--path", path)
 	}
 
-	stderr := bytes.NewBuffer(nil)
+	output := bytes.NewBuffer(nil)
 
 	cmd := exec.Command("./bin/buf", args...)
 	cmd.Dir = project.AbsPath
-	cmd.Stderr = stderr
+	cmd.Stderr = output
+	cmd.Stdout = output
 
-	o, err := cmd.Output()
-	if err != nil {
-		return simplerr.Wrapf(err, "stderr: %s", stderr.String())
-	}
+	if err := cmd.Run(); err != nil {
+		out := strings.ReplaceAll(output.String(), models.ProjectPathVendorPB, "")
+		out = strings.ReplaceAll("\t"+out, "\n", "\n\t")
 
-	if len(o) > 0 {
-		return simplerr.Wrapf(ErrBufUnexpectedOutput, string(o))
+		return fmt.Errorf(out) // nolint:goerr113 // need dynamic error for beautiful output
 	}
 
 	return nil

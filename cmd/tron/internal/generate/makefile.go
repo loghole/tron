@@ -13,7 +13,7 @@ import (
 )
 
 func TronMK(project *models.Project, printer stdout.Printer) error {
-	printer.VerbosePrintln(color.FgMagenta, "Generate Tron MK")
+	printer.Println(color.FgMagenta, "Generate Tron MK")
 
 	tronMK, err := helpers.ExecTemplate(templates.TronMK, project)
 	if err != nil {
@@ -26,18 +26,18 @@ func TronMK(project *models.Project, printer stdout.Printer) error {
 		return fmt.Errorf("write file '%s': %w", path, err)
 	}
 
-	printer.VerbosePrintln(color.FgBlue, "\tSuccess")
+	printer.Println(color.FgBlue, "\tSuccess")
 
 	return nil
 }
 
 func Makefile(project *models.Project, printer stdout.Printer) error {
-	printer.VerbosePrintln(color.FgMagenta, "Generate Makefile")
+	printer.Println(color.FgMagenta, "Generate Makefile")
 
 	path := filepath.Join(project.AbsPath, models.MakefileFilepath)
 
 	if !helpers.ConfirmOverwrite(path) {
-		printer.VerbosePrintln(color.FgBlue, "\tSkipped")
+		printer.Println(color.FgBlue, "\tSkipped")
 
 		return nil
 	}
@@ -46,7 +46,7 @@ func Makefile(project *models.Project, printer stdout.Printer) error {
 		return fmt.Errorf("write file '%s': %w", path, err)
 	}
 
-	printer.VerbosePrintln(color.FgBlue, "\tSuccess")
+	printer.Println(color.FgBlue, "\tSuccess")
 
 	return nil
 }

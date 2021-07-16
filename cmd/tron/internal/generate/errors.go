@@ -4,4 +4,4 @@ import (
 	"errors"
 )
 
-var ErrBufUnexpectedOutput = errors.New("buf unexpected output")
+var ErrBufError = errors.New("buf error")

@@ -48,7 +48,7 @@ func (m *ProtoFilesMover) Move() error {
 				"protofile: %s has invalid package '%s', need '%s.api.package.version'",
 				path,
 				packageName,
-				helpers.GoName(m.project.Name),
+				projectProtoName,
 			)
 
 			return ErrInvalidProtoPkgName

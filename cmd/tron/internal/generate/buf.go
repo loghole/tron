@@ -13,7 +13,7 @@ import (
 )
 
 func Buf(p *models.Project, printer stdout.Printer) error {
-	printer.VerbosePrintln(color.FgMagenta, "Generate buf.yaml and buf.gen.yaml")
+	printer.Println(color.FgMagenta, "Generate buf.yaml and buf.gen.yaml")
 
 	path := filepath.Join(p.AbsPath, models.BufFilepath)
 
@@ -27,7 +27,7 @@ func Buf(p *models.Project, printer stdout.Printer) error {
 		return fmt.Errorf("write file '%s': %w", path, err)
 	}
 
-	printer.VerbosePrintln(color.FgBlue, "\tSuccess")
+	printer.Println(color.FgBlue, "\tSuccess")
 
 	return nil
 }

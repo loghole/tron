@@ -81,7 +81,6 @@ func (g *GenerateCMD) run(cmd *cobra.Command, args []string) {
 
 		if err := g.runProto(project); err != nil {
 			g.printer.Printf(color.FgRed, "Generate protos failed: %v\n", err)
-			helpers.PrintCommandHelp(cmd)
 			os.Exit(1)
 		}
 	}

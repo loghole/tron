@@ -15,7 +15,7 @@ import (
 )
 
 func Values(project *models.Project, printer stdout.Printer) error {
-	printer.VerbosePrintln(color.FgMagenta, "Generate values")
+	printer.Println(color.FgMagenta, "Generate values")
 
 	data := templates.ValuesData{
 		List: []templates.Env{
@@ -57,7 +57,7 @@ func Values(project *models.Project, printer stdout.Printer) error {
 		}
 	}
 
-	printer.VerbosePrintln(color.FgBlue, "\tSuccess")
+	printer.Println(color.FgBlue, "\tSuccess")
 
 	return nil
 }
