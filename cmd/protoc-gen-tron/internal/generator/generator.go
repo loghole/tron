@@ -12,15 +12,17 @@ type Generator struct {
 	module         string
 	moduleName     string
 	protoPkgPrefix string
+	unboundMethods *bool
 }
 
-func NewGenerator(module string) *Generator {
+func NewGenerator(module string, unboundMethods *bool) *Generator {
 	parts := strings.Split(module, "/")
 
 	gen := &Generator{
 		module:         module,
 		moduleName:     parts[len(parts)-1],
 		protoPkgPrefix: strings.ReplaceAll(parts[len(parts)-1], "-", "_"),
+		unboundMethods: unboundMethods,
 	}
 
 	return gen

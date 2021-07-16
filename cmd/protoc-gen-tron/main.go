@@ -16,6 +16,10 @@ import (
 var ErrModuleNotFound = errors.New("project module does not exists")
 
 func main() {
+	unboundMethods := flag.Bool("generate_unbound_methods", false, "Generate unbound methods")
+
+	flag.Parse()
+
 	opt := protogen.Options{
 		ParamFunc: flag.CommandLine.Set,
 	}
@@ -25,7 +29,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	gen := generator.NewGenerator(module)
+	gen := generator.NewGenerator(module, unboundMethods)
 
 	opt.Run(gen.Generate)
 }
