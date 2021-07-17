@@ -51,7 +51,7 @@ func (p *Deps) InstallProtoPlugins() error {
 		p.printer.VerbosePrintln(color.FgGreen, "OK")
 	}
 
-	p.printer.VerbosePrintln(color.FgBlue, "\tSuccess")
+	p.printer.Println(color.FgBlue, "\tSuccess")
 
 	return nil
 }

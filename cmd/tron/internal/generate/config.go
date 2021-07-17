@@ -14,7 +14,7 @@ import (
 )
 
 func Config(project *models.Project, printer stdout.Printer) error {
-	printer.VerbosePrintln(color.FgMagenta, "Generate config")
+	printer.Println(color.FgMagenta, "Generate config")
 
 	config, err := helpers.ExecTemplate(templates.ConfigConstTemplate, project)
 	if err != nil {
@@ -32,18 +32,18 @@ func Config(project *models.Project, printer stdout.Printer) error {
 		return fmt.Errorf("write file '%s': %w", path, err)
 	}
 
-	printer.VerbosePrintln(color.FgBlue, "\tSuccess")
+	printer.Println(color.FgBlue, "\tSuccess")
 
 	return nil
 }
 
 func ConfigHelper(p *models.Project, printer stdout.Printer) error {
-	printer.VerbosePrintln(color.FgMagenta, "Generate config helper")
+	printer.Println(color.FgMagenta, "Generate config helper")
 
 	path := filepath.Join(p.AbsPath, models.ConfigFilepath)
 
 	if !helpers.ConfirmOverwrite(path) {
-		printer.VerbosePrintln(color.FgBlue, "\tSkipped")
+		printer.Println(color.FgBlue, "\tSkipped")
 
 		return nil
 	}
@@ -52,7 +52,7 @@ func ConfigHelper(p *models.Project, printer stdout.Printer) error {
 		return fmt.Errorf("write file '%s': %w", path, err)
 	}
 
-	printer.VerbosePrintln(color.FgBlue, "\tSuccess")
+	printer.Println(color.FgBlue, "\tSuccess")
 
 	return nil
 }

@@ -1,7 +1,9 @@
 package generator
 
 import (
+	"google.golang.org/genproto/googleapis/api/annotations"
 	"google.golang.org/protobuf/compiler/protogen"
+	"google.golang.org/protobuf/proto"
 )
 
 // nolint:funlen // generation can be big
@@ -11,6 +13,7 @@ func (gen *Generator) generateTransport(p *protogen.Plugin, f *protogen.File) {
 		descName    = service.GoName + "ServiceDesc"
 		protoSource = f.Proto.GetName()
 		fileName    = fileName(protoSource)
+		withHTTP    = *gen.unboundMethods || serviceHasHTTPExtension(service)
 	)
 
 	g := p.NewGeneratedFile(f.GeneratedFilenamePrefix+".pb.tron.go", f.GoImportPath)
@@ -25,7 +28,11 @@ func (gen *Generator) generateTransport(p *protogen.Plugin, f *protogen.File) {
 	g.P()
 
 	g.P("import (")
-	g.P(`"context"`)
+
+	if withHTTP {
+		g.P(`"context"`)
+	}
+
 	g.P(`"embed"`)
 	g.P()
 	g.P(`"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"`)
@@ -57,10 +64,15 @@ func (gen *Generator) generateTransport(p *protogen.Plugin, f *protogen.File) {
 	g.P("}")
 	g.P()
 
-	g.P("func(d *", descName, ") RegisterHTTP(mux *runtime.ServeMux) {")
-	g.P("Register", service.GoName, "HandlerServer(context.Background(), mux, d.svc)")
-	g.P("}")
-	g.P()
+	if withHTTP {
+		g.P("func(d *", descName, ") RegisterHTTP(mux *runtime.ServeMux) {")
+		g.P("Register", service.GoName, "HandlerServer(context.Background(), mux, d.svc)")
+		g.P("}")
+		g.P()
+	} else {
+		g.P("func(d *", descName, ") RegisterHTTP(mux *runtime.ServeMux) {}")
+		g.P()
+	}
 
 	g.P("func(d *", descName, ") SwaggerDef() []byte {")
 	g.P(`b, _ := swagger.ReadFile("`, fileName, `.swagger.json")`)
@@ -68,4 +80,18 @@ func (gen *Generator) generateTransport(p *protogen.Plugin, f *protogen.File) {
 	g.P("return b")
 	g.P("}")
 	g.P()
+}
+
+func serviceHasHTTPExtension(s *protogen.Service) bool {
+	for _, m := range s.Methods {
+		if m.Desc.Options() == nil {
+			continue
+		}
+
+		if proto.HasExtension(m.Desc.Options(), annotations.E_Http) {
+			return true
+		}
+	}
+
+	return false
 }

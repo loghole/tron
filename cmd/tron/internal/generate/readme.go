@@ -17,7 +17,7 @@ func ReadmeMD(p *models.Project, printer stdout.Printer) error {
 	path := filepath.Join(p.AbsPath, models.ReadmeMDFilepath)
 
 	if _, err := os.Stat(path); os.IsNotExist(err) {
-		printer.VerbosePrintln(color.FgMagenta, "Generate README.md")
+		printer.Println(color.FgMagenta, "Generate README.md")
 
 		template, err := helpers.ExecTemplate(templates.ReadmeMD, p)
 		if err != nil {
@@ -28,7 +28,7 @@ func ReadmeMD(p *models.Project, printer stdout.Printer) error {
 			return fmt.Errorf("write file '%s': %w", path, err)
 		}
 
-		printer.VerbosePrintln(color.FgBlue, "\tSuccess")
+		printer.Println(color.FgBlue, "\tSuccess")
 
 		return nil
 	}

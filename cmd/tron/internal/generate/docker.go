@@ -13,7 +13,7 @@ import (
 )
 
 func Dockerfile(p *models.Project, printer stdout.Printer) error {
-	printer.VerbosePrintln(color.FgMagenta, "Generate Dockerfile")
+	printer.Println(color.FgMagenta, "Generate Dockerfile")
 
 	path := filepath.Join(p.AbsPath, models.DockerfileFilepath)
 
@@ -23,7 +23,7 @@ func Dockerfile(p *models.Project, printer stdout.Printer) error {
 	}
 
 	if !helpers.ConfirmOverwrite(path) {
-		printer.VerbosePrintln(color.FgBlue, "\tSkipped")
+		printer.Println(color.FgBlue, "\tSkipped")
 
 		return nil
 	}
@@ -32,7 +32,7 @@ func Dockerfile(p *models.Project, printer stdout.Printer) error {
 		return fmt.Errorf("write file '%s': %w", path, err)
 	}
 
-	printer.VerbosePrintln(color.FgBlue, "\tSuccess")
+	printer.Println(color.FgBlue, "\tSuccess")
 
 	return nil
 }

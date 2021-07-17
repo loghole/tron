@@ -1,14 +1,10 @@
 package helpers
 
 import (
-	"fmt"
-	"go/format"
 	"io"
 	"log"
 	"os"
 	"path/filepath"
-
-	"golang.org/x/tools/imports"
 )
 
 func WriteToFile(path string, data []byte) error {
@@ -47,18 +43,4 @@ func Close(closer io.Closer) {
 	if err := closer.Close(); err != nil {
 		log.Printf("close failed: %v", err)
 	}
-}
-
-func WriteGoFile(path, data string) error {
-	formattedBytes, err := format.Source([]byte(data))
-	if err != nil {
-		return fmt.Errorf("%s\n\n format source: %w", data, err)
-	}
-
-	formattedBytes, err = imports.Process("", formattedBytes, nil)
-	if err != nil {
-		return fmt.Errorf("%s\n\n format imports: %w", data, err)
-	}
-
-	return WriteToFile(path, formattedBytes)
 }
