@@ -7,6 +7,8 @@ const (
 	LoggerCollectorAddrEnv = "logger_collector_addr"
 	LoggerDisableStdoutEnv = "logger_disable_stdout"
 	JaegerAddrEnv          = "jaeger_addr"
+	JaegerSamplerType      = "jaeger_sampler_type"
+	JaegerSamplerParam     = "jaeger_sampler_param"
 	HTTPPortEnv            = "service_port_http"
 	GRPCPortEnv            = "service_port_grpc"
 	AdminPortEnv           = "service_port_admin"

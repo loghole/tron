@@ -3,13 +3,13 @@ package templates
 const GolangCILintTemplate = `# More info on config here: https://golangci-lint.run/usage/configuration/#config-file
 run:
   tests: false
+  timeout: 5m
 
 linters:
   enable-all: true
   disable:
-   - godot
-   - gci
-   - exhaustivestruct
+    - exhaustivestruct
+  fast: false
 
 linters-settings:
   gocritic:
@@ -20,8 +20,14 @@ linters-settings:
       - diagnostic
       - opinionated
 
-service:
-  golangci-lint-version: 1.41.x
+  govet:
+    enable-all: true
+    disable:
+      - shadow
+      - fieldalignment
+
+  gci:
+    local-prefixes: {{ .Module }}
 
 issues:
   exclude:
