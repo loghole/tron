@@ -2,6 +2,8 @@ package models
 
 import (
 	"path/filepath"
+
+	"github.com/loghole/tron/cmd/tron/internal/version"
 )
 
 type Dep struct {
@@ -47,7 +49,7 @@ func ProtobufDeps() []*Dep {
 			Main:    filepath.Join("tron", "cmd", "protoc-gen-tron"),
 			Out:     filepath.Join("bin", "protoc-gen-tron"),
 			Git:     "https://github.com/loghole/tron.git",
-			Version: "v0.17.1-rc1.0",
+			Version: version.CliVersion,
 		},
 	}
 }
