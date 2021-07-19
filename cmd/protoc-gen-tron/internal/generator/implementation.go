@@ -19,7 +19,7 @@ func (gen *Generator) generateImpl(p *protogen.Plugin, f *protogen.File) {
 		implPath := filepath.Join(implementDir, snakeCase(m.GoName)+".go")
 
 		if st, err := os.Stat(implPath); err == nil && !st.IsDir() {
-			return
+			continue
 		}
 
 		g := p.NewGeneratedFile(implPath, implementImport)
