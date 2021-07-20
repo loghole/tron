@@ -23,6 +23,8 @@ func Values(project *models.Project, printer stdout.Printer) error {
 			{Key: strings.ToUpper(app.LoggerCollectorAddrEnv), Val: `""`},
 			{Key: strings.ToUpper(app.LoggerDisableStdoutEnv), Val: `false`},
 			{Key: strings.ToUpper(app.JaegerAddrEnv), Val: `""`},
+			{Key: strings.ToUpper(app.JaegerSamplerType), Val: `const`},
+			{Key: strings.ToUpper(app.JaegerSamplerParam), Val: `0.5`},
 			{Key: strings.ToUpper(app.HTTPPortEnv), Val: `8080`},
 			{Key: strings.ToUpper(app.GRPCPortEnv), Val: `8081`},
 			{Key: strings.ToUpper(app.AdminPortEnv), Val: `8082`},

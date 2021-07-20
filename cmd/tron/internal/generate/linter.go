@@ -23,7 +23,12 @@ func Linter(p *models.Project, printer stdout.Printer) error {
 		return nil
 	}
 
-	if err := helpers.WriteToFile(path, []byte(templates.GolangCILintTemplate)); err != nil {
+	lint, err := helpers.ExecTemplate(templates.GolangCILintTemplate, p)
+	if err != nil {
+		return fmt.Errorf("exec template: %w", err)
+	}
+
+	if err := helpers.WriteToFile(path, []byte(lint)); err != nil {
 		return fmt.Errorf("write file '%s': %w", path, err)
 	}
 

@@ -14,6 +14,7 @@ plugins:
     path: bin/protoc-gen-grpc-gateway
     out: .
     opt:
+      - generate_unbound_methods=true
       - logtostderr=true
       - paths=source_relative
     strategy: directory
@@ -21,11 +22,13 @@ plugins:
     path: bin/protoc-gen-openapiv2
     out: .
     opt:
+      - generate_unbound_methods=true
       - fqn_for_openapi_name=true
     strategy: directory
   - name: tron
     path: bin/protoc-gen-tron
     out: .
     opt:
+      - generate_unbound_methods=true
       - paths=source_relative
     strategy: directory
