@@ -3,7 +3,7 @@ package tron
 import (
 	"fmt"
 
-	"github.com/loghole/lhw/zap"
+	"github.com/loghole/lhw/zaplog"
 	trace "github.com/loghole/tracing/tracelog"
 	"github.com/spf13/viper"
 
@@ -11,12 +11,12 @@ import (
 )
 
 type logger struct {
-	*zap.Logger
+	*zaplog.Logger
 	tracelog trace.Logger
 }
 
 func (l *logger) init(info *Info, opts *app.Options) (err error) {
-	l.Logger, err = zap.NewLogger(&zap.Config{
+	l.Logger, err = zaplog.NewLogger(&zaplog.Config{
 		Level:         viper.GetString(app.LoggerLevelEnv),
 		CollectorURL:  viper.GetString(app.LoggerCollectorAddrEnv),
 		Hostname:      opts.Hostname,
