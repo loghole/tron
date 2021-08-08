@@ -120,15 +120,11 @@ func (a *App) Go(f func() error) {
 // Wait blocks until all function calls from the Go method have returned, then
 // returns the first non-nil error (if any) from them.
 func (a *App) Wait() error {
-	return a.errGroup.Wait()
+	return a.errGroup.Wait() // nolint:wrapcheck // need clean err.
 }
 
 // Close closes tracer and logger.
 func (a *App) Close() {
-	if err := a.servers.adminHTTP.Close(); err != nil {
-		a.logger.Errorf("error while stopping admin http server: %v", err)
-	}
-
 	_ = a.logger.Sync()
 
 	a.tracer.Close()
@@ -143,7 +139,7 @@ func (a *App) WithRunOptions(opts ...app.RunOption) *App {
 }
 
 // Run apply run options if exists and starts servers.
-func (a *App) Run(impl ...transport.Service) error {
+func (a *App) Run(impl ...transport.Service) error { // nolint:funlen // can be big.
 	if err := a.opts.ApplyRunOptions(); err != nil {
 		return fmt.Errorf("apply run options failed: %w", err)
 	}
@@ -199,6 +195,10 @@ func (a *App) Run(impl ...transport.Service) error {
 
 	if err := a.servers.publicGRPC.Close(); err != nil {
 		a.logger.Errorf("error while stopping public grpc server: %v", err)
+	}
+
+	if err := a.servers.adminHTTP.Close(); err != nil {
+		a.logger.Errorf("error while stopping admin http server: %v", err)
 	}
 
 	return nil
