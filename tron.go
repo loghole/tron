@@ -31,6 +31,9 @@ type App struct {
 	logger  logger
 	tracer  tracer
 	health  health
+
+	errGroupCtx context.Context
+	errGroup    *errgroup.Group
 }
 
 // New init viper config, logger and tracer.
@@ -71,6 +74,8 @@ func New(options ...app.Option) (*App, error) {
 
 	a.logger.With("app info", a.info).Infof("init app")
 
+	a.errGroup, a.errGroupCtx = errgroup.WithContext(context.Background())
+
 	return a, nil
 }
 
@@ -102,6 +107,20 @@ func (a *App) Router() chi.Router {
 // Health returns application health checker.
 func (a *App) Health() healthcheck.Checker {
 	return a.health
+}
+
+// Go calls the given function in a new goroutine.
+//
+// The first call to return a non-nil error cancels the group; its error will be
+// returned by Wait.
+func (a *App) Go(f func() error) {
+	a.errGroup.Go(f)
+}
+
+// Wait blocks until all function calls from the Go method have returned, then
+// returns the first non-nil error (if any) from them.
+func (a *App) Wait() error {
+	return a.errGroup.Wait()
 }
 
 // Close closes tracer and logger.
@@ -140,21 +159,19 @@ func (a *App) Run(impl ...transport.Service) error {
 
 	a.logger.Info("starting app")
 
-	eg, ctx := errgroup.WithContext(context.Background())
-
-	eg.Go(func() error {
+	a.Go(func() error {
 		a.logger.Infof("start public grpc server on: %s", a.servers.publicGRPC.Addr())
 
 		return a.servers.publicGRPC.Serve() // nolint:wrapcheck // need clean err
 	})
 
-	eg.Go(func() error {
+	a.Go(func() error {
 		a.logger.Infof("start public http server on: %s", a.servers.publicHTTP.Addr())
 
 		return a.servers.publicHTTP.Serve() // nolint:wrapcheck // need clean err
 	})
 
-	eg.Go(func() error {
+	a.Go(func() error {
 		a.logger.Infof("start admin http server on: %s", a.servers.adminHTTP.Addr())
 
 		return a.servers.adminHTTP.Serve() // nolint:wrapcheck // need clean err
@@ -168,8 +185,8 @@ func (a *App) Run(impl ...transport.Service) error {
 	select {
 	case <-exit:
 		a.logger.Info("stopping application")
-	case <-ctx.Done():
-		a.logger.Errorf("stopping application with error: %v", ctx.Err())
+	case <-a.errGroupCtx.Done():
+		a.logger.Errorf("stopping application with error: %v", a.errGroupCtx.Err())
 	}
 
 	a.health.setUnready()
