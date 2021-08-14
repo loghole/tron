@@ -10,8 +10,8 @@ require (
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.5.0
 	github.com/json-iterator/go v1.1.11
 	github.com/lissteron/simplerr v0.9.0
-	github.com/loghole/lhw v0.5.0
-	github.com/loghole/tracing v0.14.3
+	github.com/loghole/lhw v0.5.1
+	github.com/loghole/tracing v0.14.4
 	github.com/opentracing/opentracing-go v1.2.0
 	github.com/prometheus/client_golang v1.11.0
 	github.com/spf13/viper v1.8.1
