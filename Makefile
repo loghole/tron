@@ -28,3 +28,9 @@ update-swagger:
 
 	cp -R /tmp/swagger-ui/html ./internal/admin/
 	rm -rf /tmp/swagger-ui
+
+.PHONY: tidy
+tidy:
+	go mod tidy
+	cd cmd/tron && go mod tidy
+	cd cmd/protoc-gen-tron && go mod tidy
