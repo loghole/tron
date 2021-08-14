@@ -18,5 +18,5 @@ require (
 	github.com/uber/jaeger-client-go v2.29.1+incompatible
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
 	google.golang.org/genproto v0.0.0-20210805201207-89edb61ffb67
-	google.golang.org/grpc v1.39.1
+	google.golang.org/grpc v1.40.0
 )
