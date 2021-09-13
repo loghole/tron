@@ -8,7 +8,7 @@ require (
 	github.com/go-openapi/spec v0.20.3
 	github.com/google/uuid v1.3.0
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.5.0
-	github.com/json-iterator/go v1.1.11
+	github.com/json-iterator/go v1.1.12
 	github.com/lissteron/simplerr v0.9.0
 	github.com/loghole/lhw v0.5.1
 	github.com/loghole/tracing v0.14.4
