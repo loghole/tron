@@ -5,7 +5,7 @@ go 1.16
 require (
 	github.com/gadavy/ozzo-validation/v4 v4.4.0
 	github.com/go-chi/chi v4.1.2+incompatible
-	github.com/go-openapi/spec v0.20.3
+	github.com/go-openapi/spec v0.20.4
 	github.com/google/uuid v1.3.0
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.5.0
 	github.com/json-iterator/go v1.1.11
