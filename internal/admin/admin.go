@@ -1,15 +1,15 @@
 package admin
 
 import (
+	"encoding/json"
 	"net"
 	"net/http"
 	"strconv"
 	"time"
 
-	"github.com/go-chi/chi"
-	"github.com/go-chi/chi/middleware"
+	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-openapi/spec"
-	jsoniter "github.com/json-iterator/go"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 
 	"github.com/loghole/tron/internal/admin/swagger"
@@ -25,7 +25,7 @@ type Health interface {
 
 // Handlers contains http methods with debug service info and swagger docs.
 type Handlers struct {
-	desc   jsoniter.RawMessage
+	desc   json.RawMessage
 	info   *app.Info
 	opts   *app.Options
 	health Health
@@ -80,7 +80,7 @@ func (s *Handlers) InitRoutes(r chi.Router) {
 }
 
 func (s *Handlers) serviceInfoHandler(w http.ResponseWriter, r *http.Request) {
-	encoder := jsoniter.NewEncoder(w)
+	encoder := json.NewEncoder(w)
 	encoder.SetIndent("", "  ")
 
 	_ = encoder.Encode(info{
@@ -103,13 +103,13 @@ func (s *Handlers) swaggerDefHandler(w http.ResponseWriter, r *http.Request) {
 
 	var desc spec.Swagger
 
-	_ = jsoniter.Unmarshal(s.desc, &desc)
+	_ = json.Unmarshal(s.desc, &desc)
 	desc.Host = r.Host
 	desc.Info = &spec.Info{}
 	desc.Info.Version = s.info.Version
 	desc.Info.Title = s.info.AppName
 
-	_ = jsoniter.NewEncoder(w).Encode(desc)
+	_ = json.NewEncoder(w).Encode(desc)
 }
 
 func (s *Handlers) index(w http.ResponseWriter, r *http.Request) {

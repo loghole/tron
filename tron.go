@@ -7,7 +7,7 @@ import (
 	"os"
 	"os/signal"
 
-	"github.com/go-chi/chi"
+	"github.com/go-chi/chi/v5"
 	"github.com/loghole/lhw/zap"
 	"github.com/loghole/tracing"
 	"github.com/loghole/tracing/tracegrpc"

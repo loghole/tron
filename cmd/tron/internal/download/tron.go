@@ -1,6 +1,7 @@
 package download
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"os"
@@ -9,7 +10,6 @@ import (
 
 	"github.com/Masterminds/semver"
 	"github.com/fatih/color"
-	jsoniter "github.com/json-iterator/go"
 	"github.com/lissteron/simplerr"
 
 	"github.com/loghole/tron/cmd/tron/internal/helpers"
@@ -224,7 +224,7 @@ func releasesList() ([]*models.Release, error) {
 
 	result := make([]*models.Release, 0)
 
-	if err := jsoniter.NewDecoder(resp.Body).Decode(&result); err != nil {
+	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
 		return nil, simplerr.Wrap(err, "unmarshal failed")
 	}
 
