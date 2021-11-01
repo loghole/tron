@@ -13,6 +13,7 @@ const ValuesTemplate = `{{ range $value := .List -}}
 {{ $value.Key }}: {{ $value.Val }}
 {{end }}
 # Place default config values here
+EXAMPLE_VALUE: example_value
 `
 
 const ValuesLocalTemplate = `# Place config values for LOCAL development here
