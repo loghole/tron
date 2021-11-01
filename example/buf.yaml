@@ -10,15 +10,12 @@ build:
   roots:
     - vendor.pb
 lint:
+  service_suffix: API
   use:
-    - BASIC
-    - FILE_LOWER_SNAKE_CASE
+    - DEFAULT
   except:
-    - ENUM_NO_ALLOW_ALIAS
-    - IMPORT_NO_PUBLIC
-    - PACKAGE_AFFINITY
-    - PACKAGE_DIRECTORY_MATCH
-    - PACKAGE_SAME_DIRECTORY
+    - RPC_REQUEST_STANDARD_NAME # not configurable and the request suffix is too long.
+    - RPC_RESPONSE_STANDARD_NAME # not configurable and the response suffix is too long.
 breaking:
   use:
     - WIRE_JSON

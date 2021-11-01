@@ -9,7 +9,7 @@ import (
 )
 
 type Implementation struct {
-	stringsV1.UnimplementedStringsServer
+	stringsV1.UnimplementedStringsAPIServer
 }
 
 func NewImplementation() *Implementation {
@@ -19,5 +19,5 @@ func NewImplementation() *Implementation {
 // GetDescription is a simple alias to the ServiceDesc constructor.
 // It makes it possible to register the service implementation @ the server.
 func (i *Implementation) GetDescription() transport.ServiceDesc {
-	return stringsV1.NewStringsServiceDesc(i)
+	return stringsV1.NewStringsAPIServiceDesc(i)
 }

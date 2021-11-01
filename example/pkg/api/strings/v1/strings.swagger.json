@@ -6,7 +6,7 @@
   },
   "tags": [
     {
-      "name": "Strings"
+      "name": "StringsAPI"
     }
   ],
   "consumes": [
@@ -18,12 +18,12 @@
   "paths": {
     "/api/v1/strings/info": {
       "get": {
-        "operationId": "Strings_GetInfo",
+        "operationId": "StringsAPI_GetInfo",
         "responses": {
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/example.api.types.v1.String"
+              "$ref": "#/definitions/example.api.strings.v1.GetInfoResp"
             }
           },
           "default": {
@@ -42,19 +42,19 @@
           }
         ],
         "tags": [
-          "Strings"
+          "StringsAPI"
         ]
       }
     },
     "/api/v1/strings/upper/{str}": {
       "get": {
         "summary": "Method to upper",
-        "operationId": "Strings_ToUpper",
+        "operationId": "StringsAPI_ToUpper",
         "responses": {
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/example.api.types.v1.String"
+              "$ref": "#/definitions/example.api.strings.v1.ToUpperResp"
             }
           },
           "default": {
@@ -73,12 +73,28 @@
           }
         ],
         "tags": [
-          "Strings"
+          "StringsAPI"
         ]
       }
     }
   },
   "definitions": {
+    "example.api.strings.v1.GetInfoResp": {
+      "type": "object",
+      "properties": {
+        "str": {
+          "$ref": "#/definitions/example.api.types.v1.String"
+        }
+      }
+    },
+    "example.api.strings.v1.ToUpperResp": {
+      "type": "object",
+      "properties": {
+        "str": {
+          "$ref": "#/definitions/example.api.types.v1.String"
+        }
+      }
+    },
     "example.api.types.v1.String": {
       "type": "object",
       "properties": {

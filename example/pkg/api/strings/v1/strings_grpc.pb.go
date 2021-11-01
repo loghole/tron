@@ -4,7 +4,6 @@ package stringsV1
 
 import (
 	context "context"
-	v1 "github.com/loghole/tron/example/pkg/api/types/v1"
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
@@ -15,124 +14,124 @@ import (
 // Requires gRPC-Go v1.32.0 or later.
 const _ = grpc.SupportPackageIsVersion7
 
-// StringsClient is the client API for Strings service.
+// StringsAPIClient is the client API for StringsAPI service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
-type StringsClient interface {
+type StringsAPIClient interface {
 	// Method to upper
-	ToUpper(ctx context.Context, in *v1.String, opts ...grpc.CallOption) (*v1.String, error)
-	GetInfo(ctx context.Context, in *v1.String, opts ...grpc.CallOption) (*v1.String, error)
+	ToUpper(ctx context.Context, in *ToUpperReq, opts ...grpc.CallOption) (*ToUpperResp, error)
+	GetInfo(ctx context.Context, in *GetInfoReq, opts ...grpc.CallOption) (*GetInfoResp, error)
 }
 
-type stringsClient struct {
+type stringsAPIClient struct {
 	cc grpc.ClientConnInterface
 }
 
-func NewStringsClient(cc grpc.ClientConnInterface) StringsClient {
-	return &stringsClient{cc}
+func NewStringsAPIClient(cc grpc.ClientConnInterface) StringsAPIClient {
+	return &stringsAPIClient{cc}
 }
 
-func (c *stringsClient) ToUpper(ctx context.Context, in *v1.String, opts ...grpc.CallOption) (*v1.String, error) {
-	out := new(v1.String)
-	err := c.cc.Invoke(ctx, "/example.api.strings.v1.Strings/ToUpper", in, out, opts...)
+func (c *stringsAPIClient) ToUpper(ctx context.Context, in *ToUpperReq, opts ...grpc.CallOption) (*ToUpperResp, error) {
+	out := new(ToUpperResp)
+	err := c.cc.Invoke(ctx, "/example.api.strings.v1.StringsAPI/ToUpper", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *stringsClient) GetInfo(ctx context.Context, in *v1.String, opts ...grpc.CallOption) (*v1.String, error) {
-	out := new(v1.String)
-	err := c.cc.Invoke(ctx, "/example.api.strings.v1.Strings/GetInfo", in, out, opts...)
+func (c *stringsAPIClient) GetInfo(ctx context.Context, in *GetInfoReq, opts ...grpc.CallOption) (*GetInfoResp, error) {
+	out := new(GetInfoResp)
+	err := c.cc.Invoke(ctx, "/example.api.strings.v1.StringsAPI/GetInfo", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-// StringsServer is the server API for Strings service.
-// All implementations must embed UnimplementedStringsServer
+// StringsAPIServer is the server API for StringsAPI service.
+// All implementations must embed UnimplementedStringsAPIServer
 // for forward compatibility
-type StringsServer interface {
+type StringsAPIServer interface {
 	// Method to upper
-	ToUpper(context.Context, *v1.String) (*v1.String, error)
-	GetInfo(context.Context, *v1.String) (*v1.String, error)
-	mustEmbedUnimplementedStringsServer()
+	ToUpper(context.Context, *ToUpperReq) (*ToUpperResp, error)
+	GetInfo(context.Context, *GetInfoReq) (*GetInfoResp, error)
+	mustEmbedUnimplementedStringsAPIServer()
 }
 
-// UnimplementedStringsServer must be embedded to have forward compatible implementations.
-type UnimplementedStringsServer struct {
+// UnimplementedStringsAPIServer must be embedded to have forward compatible implementations.
+type UnimplementedStringsAPIServer struct {
 }
 
-func (UnimplementedStringsServer) ToUpper(context.Context, *v1.String) (*v1.String, error) {
+func (UnimplementedStringsAPIServer) ToUpper(context.Context, *ToUpperReq) (*ToUpperResp, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ToUpper not implemented")
 }
-func (UnimplementedStringsServer) GetInfo(context.Context, *v1.String) (*v1.String, error) {
+func (UnimplementedStringsAPIServer) GetInfo(context.Context, *GetInfoReq) (*GetInfoResp, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetInfo not implemented")
 }
-func (UnimplementedStringsServer) mustEmbedUnimplementedStringsServer() {}
+func (UnimplementedStringsAPIServer) mustEmbedUnimplementedStringsAPIServer() {}
 
-// UnsafeStringsServer may be embedded to opt out of forward compatibility for this service.
-// Use of this interface is not recommended, as added methods to StringsServer will
+// UnsafeStringsAPIServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to StringsAPIServer will
 // result in compilation errors.
-type UnsafeStringsServer interface {
-	mustEmbedUnimplementedStringsServer()
+type UnsafeStringsAPIServer interface {
+	mustEmbedUnimplementedStringsAPIServer()
 }
 
-func RegisterStringsServer(s grpc.ServiceRegistrar, srv StringsServer) {
-	s.RegisterService(&Strings_ServiceDesc, srv)
+func RegisterStringsAPIServer(s grpc.ServiceRegistrar, srv StringsAPIServer) {
+	s.RegisterService(&StringsAPI_ServiceDesc, srv)
 }
 
-func _Strings_ToUpper_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(v1.String)
+func _StringsAPI_ToUpper_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ToUpperReq)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(StringsServer).ToUpper(ctx, in)
+		return srv.(StringsAPIServer).ToUpper(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/example.api.strings.v1.Strings/ToUpper",
+		FullMethod: "/example.api.strings.v1.StringsAPI/ToUpper",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(StringsServer).ToUpper(ctx, req.(*v1.String))
+		return srv.(StringsAPIServer).ToUpper(ctx, req.(*ToUpperReq))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Strings_GetInfo_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(v1.String)
+func _StringsAPI_GetInfo_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetInfoReq)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(StringsServer).GetInfo(ctx, in)
+		return srv.(StringsAPIServer).GetInfo(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/example.api.strings.v1.Strings/GetInfo",
+		FullMethod: "/example.api.strings.v1.StringsAPI/GetInfo",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(StringsServer).GetInfo(ctx, req.(*v1.String))
+		return srv.(StringsAPIServer).GetInfo(ctx, req.(*GetInfoReq))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-// Strings_ServiceDesc is the grpc.ServiceDesc for Strings service.
+// StringsAPI_ServiceDesc is the grpc.ServiceDesc for StringsAPI service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
-var Strings_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "example.api.strings.v1.Strings",
-	HandlerType: (*StringsServer)(nil),
+var StringsAPI_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "example.api.strings.v1.StringsAPI",
+	HandlerType: (*StringsAPIServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
 			MethodName: "ToUpper",
-			Handler:    _Strings_ToUpper_Handler,
+			Handler:    _StringsAPI_ToUpper_Handler,
 		},
 		{
 			MethodName: "GetInfo",
-			Handler:    _Strings_GetInfo_Handler,
+			Handler:    _StringsAPI_GetInfo_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

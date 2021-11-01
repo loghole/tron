@@ -38,6 +38,8 @@ func NewValuesParser(project *models.Project, printer stdout.Printer) *ValuesPar
 			app.LoggerCollectorAddrEnv: {},
 			app.LoggerDisableStdoutEnv: {},
 			app.JaegerAddrEnv:          {},
+			app.JaegerSamplerType:      {},
+			app.JaegerSamplerParam:     {},
 			app.HTTPPortEnv:            {},
 			app.GRPCPortEnv:            {},
 			app.AdminPortEnv:           {},
