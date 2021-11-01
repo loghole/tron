@@ -15,7 +15,6 @@ import (
 
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/utilities"
-	"github.com/loghole/tron/example/pkg/api/types/v1"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/grpclog"
@@ -32,8 +31,8 @@ var _ = runtime.String
 var _ = utilities.NewDoubleArray
 var _ = metadata.Join
 
-func request_Strings_ToUpper_0(ctx context.Context, marshaler runtime.Marshaler, client StringsClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq typesV1.String
+func request_StringsAPI_ToUpper_0(ctx context.Context, marshaler runtime.Marshaler, client StringsAPIClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq ToUpperReq
 	var metadata runtime.ServerMetadata
 
 	var (
@@ -58,8 +57,8 @@ func request_Strings_ToUpper_0(ctx context.Context, marshaler runtime.Marshaler,
 
 }
 
-func local_request_Strings_ToUpper_0(ctx context.Context, marshaler runtime.Marshaler, server StringsServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq typesV1.String
+func local_request_StringsAPI_ToUpper_0(ctx context.Context, marshaler runtime.Marshaler, server StringsAPIServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq ToUpperReq
 	var metadata runtime.ServerMetadata
 
 	var (
@@ -85,17 +84,17 @@ func local_request_Strings_ToUpper_0(ctx context.Context, marshaler runtime.Mars
 }
 
 var (
-	filter_Strings_GetInfo_0 = &utilities.DoubleArray{Encoding: map[string]int{}, Base: []int(nil), Check: []int(nil)}
+	filter_StringsAPI_GetInfo_0 = &utilities.DoubleArray{Encoding: map[string]int{}, Base: []int(nil), Check: []int(nil)}
 )
 
-func request_Strings_GetInfo_0(ctx context.Context, marshaler runtime.Marshaler, client StringsClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq typesV1.String
+func request_StringsAPI_GetInfo_0(ctx context.Context, marshaler runtime.Marshaler, client StringsAPIClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq GetInfoReq
 	var metadata runtime.ServerMetadata
 
 	if err := req.ParseForm(); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
-	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_Strings_GetInfo_0); err != nil {
+	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_StringsAPI_GetInfo_0); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
@@ -104,14 +103,14 @@ func request_Strings_GetInfo_0(ctx context.Context, marshaler runtime.Marshaler,
 
 }
 
-func local_request_Strings_GetInfo_0(ctx context.Context, marshaler runtime.Marshaler, server StringsServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq typesV1.String
+func local_request_StringsAPI_GetInfo_0(ctx context.Context, marshaler runtime.Marshaler, server StringsAPIServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq GetInfoReq
 	var metadata runtime.ServerMetadata
 
 	if err := req.ParseForm(); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
-	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_Strings_GetInfo_0); err != nil {
+	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_StringsAPI_GetInfo_0); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
@@ -120,24 +119,24 @@ func local_request_Strings_GetInfo_0(ctx context.Context, marshaler runtime.Mars
 
 }
 
-// RegisterStringsHandlerServer registers the http handlers for service Strings to "mux".
-// UnaryRPC     :call StringsServer directly.
+// RegisterStringsAPIHandlerServer registers the http handlers for service StringsAPI to "mux".
+// UnaryRPC     :call StringsAPIServer directly.
 // StreamingRPC :currently unsupported pending https://github.com/grpc/grpc-go/issues/906.
-// Note that using this registration option will cause many gRPC library features to stop working. Consider using RegisterStringsHandlerFromEndpoint instead.
-func RegisterStringsHandlerServer(ctx context.Context, mux *runtime.ServeMux, server StringsServer) error {
+// Note that using this registration option will cause many gRPC library features to stop working. Consider using RegisterStringsAPIHandlerFromEndpoint instead.
+func RegisterStringsAPIHandlerServer(ctx context.Context, mux *runtime.ServeMux, server StringsAPIServer) error {
 
-	mux.Handle("GET", pattern_Strings_ToUpper_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("GET", pattern_StringsAPI_ToUpper_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/example.api.strings.v1.Strings/ToUpper", runtime.WithHTTPPathPattern("/api/v1/strings/upper/{str}"))
+		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/example.api.strings.v1.StringsAPI/ToUpper", runtime.WithHTTPPathPattern("/api/v1/strings/upper/{str}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := local_request_Strings_ToUpper_0(rctx, inboundMarshaler, server, req, pathParams)
+		resp, md, err := local_request_StringsAPI_ToUpper_0(rctx, inboundMarshaler, server, req, pathParams)
 		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
@@ -145,22 +144,22 @@ func RegisterStringsHandlerServer(ctx context.Context, mux *runtime.ServeMux, se
 			return
 		}
 
-		forward_Strings_ToUpper_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_StringsAPI_ToUpper_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
-	mux.Handle("GET", pattern_Strings_GetInfo_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("GET", pattern_StringsAPI_GetInfo_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/example.api.strings.v1.Strings/GetInfo", runtime.WithHTTPPathPattern("/api/v1/strings/info"))
+		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/example.api.strings.v1.StringsAPI/GetInfo", runtime.WithHTTPPathPattern("/api/v1/strings/info"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := local_request_Strings_GetInfo_0(rctx, inboundMarshaler, server, req, pathParams)
+		resp, md, err := local_request_StringsAPI_GetInfo_0(rctx, inboundMarshaler, server, req, pathParams)
 		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
@@ -168,16 +167,16 @@ func RegisterStringsHandlerServer(ctx context.Context, mux *runtime.ServeMux, se
 			return
 		}
 
-		forward_Strings_GetInfo_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_StringsAPI_GetInfo_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
 	return nil
 }
 
-// RegisterStringsHandlerFromEndpoint is same as RegisterStringsHandler but
+// RegisterStringsAPIHandlerFromEndpoint is same as RegisterStringsAPIHandler but
 // automatically dials to "endpoint" and closes the connection when "ctx" gets done.
-func RegisterStringsHandlerFromEndpoint(ctx context.Context, mux *runtime.ServeMux, endpoint string, opts []grpc.DialOption) (err error) {
+func RegisterStringsAPIHandlerFromEndpoint(ctx context.Context, mux *runtime.ServeMux, endpoint string, opts []grpc.DialOption) (err error) {
 	conn, err := grpc.Dial(endpoint, opts...)
 	if err != nil {
 		return err
@@ -197,59 +196,59 @@ func RegisterStringsHandlerFromEndpoint(ctx context.Context, mux *runtime.ServeM
 		}()
 	}()
 
-	return RegisterStringsHandler(ctx, mux, conn)
+	return RegisterStringsAPIHandler(ctx, mux, conn)
 }
 
-// RegisterStringsHandler registers the http handlers for service Strings to "mux".
+// RegisterStringsAPIHandler registers the http handlers for service StringsAPI to "mux".
 // The handlers forward requests to the grpc endpoint over "conn".
-func RegisterStringsHandler(ctx context.Context, mux *runtime.ServeMux, conn *grpc.ClientConn) error {
-	return RegisterStringsHandlerClient(ctx, mux, NewStringsClient(conn))
+func RegisterStringsAPIHandler(ctx context.Context, mux *runtime.ServeMux, conn *grpc.ClientConn) error {
+	return RegisterStringsAPIHandlerClient(ctx, mux, NewStringsAPIClient(conn))
 }
 
-// RegisterStringsHandlerClient registers the http handlers for service Strings
-// to "mux". The handlers forward requests to the grpc endpoint over the given implementation of "StringsClient".
-// Note: the gRPC framework executes interceptors within the gRPC handler. If the passed in "StringsClient"
+// RegisterStringsAPIHandlerClient registers the http handlers for service StringsAPI
+// to "mux". The handlers forward requests to the grpc endpoint over the given implementation of "StringsAPIClient".
+// Note: the gRPC framework executes interceptors within the gRPC handler. If the passed in "StringsAPIClient"
 // doesn't go through the normal gRPC flow (creating a gRPC client etc.) then it will be up to the passed in
-// "StringsClient" to call the correct interceptors.
-func RegisterStringsHandlerClient(ctx context.Context, mux *runtime.ServeMux, client StringsClient) error {
+// "StringsAPIClient" to call the correct interceptors.
+func RegisterStringsAPIHandlerClient(ctx context.Context, mux *runtime.ServeMux, client StringsAPIClient) error {
 
-	mux.Handle("GET", pattern_Strings_ToUpper_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("GET", pattern_StringsAPI_ToUpper_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		rctx, err := runtime.AnnotateContext(ctx, mux, req, "/example.api.strings.v1.Strings/ToUpper", runtime.WithHTTPPathPattern("/api/v1/strings/upper/{str}"))
+		rctx, err := runtime.AnnotateContext(ctx, mux, req, "/example.api.strings.v1.StringsAPI/ToUpper", runtime.WithHTTPPathPattern("/api/v1/strings/upper/{str}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := request_Strings_ToUpper_0(rctx, inboundMarshaler, client, req, pathParams)
+		resp, md, err := request_StringsAPI_ToUpper_0(rctx, inboundMarshaler, client, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
 
-		forward_Strings_ToUpper_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_StringsAPI_ToUpper_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
-	mux.Handle("GET", pattern_Strings_GetInfo_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("GET", pattern_StringsAPI_GetInfo_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		rctx, err := runtime.AnnotateContext(ctx, mux, req, "/example.api.strings.v1.Strings/GetInfo", runtime.WithHTTPPathPattern("/api/v1/strings/info"))
+		rctx, err := runtime.AnnotateContext(ctx, mux, req, "/example.api.strings.v1.StringsAPI/GetInfo", runtime.WithHTTPPathPattern("/api/v1/strings/info"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := request_Strings_GetInfo_0(rctx, inboundMarshaler, client, req, pathParams)
+		resp, md, err := request_StringsAPI_GetInfo_0(rctx, inboundMarshaler, client, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
 
-		forward_Strings_GetInfo_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_StringsAPI_GetInfo_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
@@ -257,13 +256,13 @@ func RegisterStringsHandlerClient(ctx context.Context, mux *runtime.ServeMux, cl
 }
 
 var (
-	pattern_Strings_ToUpper_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 1, 0, 4, 1, 5, 4}, []string{"api", "v1", "strings", "upper", "str"}, ""))
+	pattern_StringsAPI_ToUpper_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 1, 0, 4, 1, 5, 4}, []string{"api", "v1", "strings", "upper", "str"}, ""))
 
-	pattern_Strings_GetInfo_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3}, []string{"api", "v1", "strings", "info"}, ""))
+	pattern_StringsAPI_GetInfo_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3}, []string{"api", "v1", "strings", "info"}, ""))
 )
 
 var (
-	forward_Strings_ToUpper_0 = runtime.ForwardResponseMessage
+	forward_StringsAPI_ToUpper_0 = runtime.ForwardResponseMessage
 
-	forward_Strings_GetInfo_0 = runtime.ForwardResponseMessage
+	forward_StringsAPI_GetInfo_0 = runtime.ForwardResponseMessage
 )

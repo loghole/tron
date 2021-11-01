@@ -1,10 +1,10 @@
 package transport
 
 import (
+	"encoding/json"
 	"fmt"
 
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
-	jsoniter "github.com/json-iterator/go"
 	"google.golang.org/grpc"
 )
 
@@ -53,7 +53,7 @@ type swagJoiner struct {
 func (c *swagJoiner) AddDefinition(buf []byte) error {
 	def := map[string]interface{}{}
 
-	err := jsoniter.Unmarshal(buf, &def)
+	err := json.Unmarshal(buf, &def)
 	if err != nil {
 		return fmt.Errorf("couldn't unmarshal JSON def: %w", err)
 	}
@@ -76,7 +76,7 @@ func (c *swagJoiner) SumDefinitions() []byte {
 		c.result = map[string]interface{}{}
 	}
 
-	ret, err := jsoniter.Marshal(c.result)
+	ret, err := json.Marshal(c.result)
 	if err != nil {
 		panic(err)
 	}

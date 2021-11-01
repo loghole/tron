@@ -1,12 +1,11 @@
 package models
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
 	"path/filepath"
 	"time"
-
-	jsoniter "github.com/json-iterator/go"
 )
 
 const TronConfigFilepath = "tron" + sep + "config.json"
@@ -34,7 +33,7 @@ func (c *Config) Read() error {
 		return err
 	}
 
-	if err := jsoniter.Unmarshal(data, c); err != nil {
+	if err := json.Unmarshal(data, c); err != nil {
 		return fmt.Errorf("unmarshal config: %w", err)
 	}
 
@@ -53,7 +52,7 @@ func (c *Config) Write() error {
 		return err
 	}
 
-	data, err := jsoniter.MarshalIndent(c, "", "  ")
+	data, err := json.MarshalIndent(c, "", "  ")
 	if err != nil {
 		return fmt.Errorf("unmarshal config: %w", err)
 	}

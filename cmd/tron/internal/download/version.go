@@ -2,11 +2,10 @@ package download
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"time"
-
-	jsoniter "github.com/json-iterator/go"
 
 	"github.com/loghole/tron/cmd/tron/internal/helpers"
 	"github.com/loghole/tron/cmd/tron/internal/models"
@@ -35,7 +34,7 @@ func LatestTronVersion() (string, error) {
 
 	var dest models.Release
 
-	if err := jsoniter.NewDecoder(resp.Body).Decode(&dest); err != nil {
+	if err := json.NewDecoder(resp.Body).Decode(&dest); err != nil {
 		return "", fmt.Errorf("decode json body: %w", err)
 	}
 

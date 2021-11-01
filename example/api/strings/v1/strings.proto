@@ -7,13 +7,29 @@ package example.api.strings.v1;
 
 option go_package = "github.com/loghole/tron/example/pkg/api/strings/v1;stringsV1";
 
-service Strings {
+service StringsAPI {
   // Method to upper
-  rpc ToUpper (types.v1.String) returns (types.v1.String) {
+  rpc ToUpper (ToUpperReq) returns (ToUpperResp) {
     option (google.api.http) = {get: "/api/v1/strings/upper/{str}"};
   }
 
-  rpc GetInfo (types.v1.String) returns (types.v1.String) {
+  rpc GetInfo (GetInfoReq) returns (GetInfoResp) {
     option (google.api.http) = {get: "/api/v1/strings/info"};
   }
+}
+
+message ToUpperReq {
+  string str = 1;
+}
+
+message ToUpperResp {
+  types.v1.String str = 1;
+}
+
+message GetInfoReq {
+  string str = 1;
+}
+
+message GetInfoResp {
+  types.v1.String str = 1;
 }

@@ -6,12 +6,12 @@ import (
 	"context"
 	"errors"
 
-	typesV1 "github.com/loghole/tron/example/pkg/api/types/v1"
+	stringsV1 "github.com/loghole/tron/example/pkg/api/strings/v1"
 )
 
 func (i *Implementation) ToUpper(
 	ctx context.Context,
-	req *typesV1.String,
-) (*typesV1.String, error) {
+	req *stringsV1.ToUpperReq,
+) (*stringsV1.ToUpperResp, error) {
 	return nil, errors.New("unimplemented")
 }

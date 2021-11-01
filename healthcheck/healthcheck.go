@@ -1,11 +1,10 @@
 package healthcheck
 
 import (
+	"encoding/json"
 	"io"
 	"net/http"
 	"sync"
-
-	jsoniter "github.com/json-iterator/go"
 )
 
 // Check is a basic health check func.
@@ -109,7 +108,7 @@ func (c *checker) handle(w http.ResponseWriter, r *http.Request, list ...map[str
 		return
 	}
 
-	encoder := jsoniter.NewEncoder(w)
+	encoder := json.NewEncoder(w)
 	encoder.SetIndent("", "    ")
 	_ = encoder.Encode(result)
 }

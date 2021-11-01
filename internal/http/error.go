@@ -2,11 +2,11 @@ package http
 
 import (
 	"context"
+	"encoding/json"
 	"io"
 	"net/http"
 
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
-	jsoniter "github.com/json-iterator/go"
 
 	internalErr "github.com/loghole/tron/internal/errors"
 )
@@ -24,7 +24,7 @@ func ErrorWriter() runtime.ErrorHandlerFunc {
 		err error) {
 		s := internalErr.ParseError(ctx, err)
 
-		buf, merr := jsoniter.Marshal(s)
+		buf, merr := json.Marshal(s)
 		if merr != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 

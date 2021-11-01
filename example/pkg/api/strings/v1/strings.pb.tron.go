@@ -15,24 +15,24 @@ import (
 //go:embed strings.swagger.json
 var swagger embed.FS
 
-// StringsServiceDesc is description for the StringsServer.
-type StringsServiceDesc struct {
-	svc StringsServer
+// StringsAPIServiceDesc is description for the StringsAPIServer.
+type StringsAPIServiceDesc struct {
+	svc StringsAPIServer
 }
 
-func NewStringsServiceDesc(s StringsServer) transport.ServiceDesc {
-	return &StringsServiceDesc{svc: s}
+func NewStringsAPIServiceDesc(s StringsAPIServer) transport.ServiceDesc {
+	return &StringsAPIServiceDesc{svc: s}
 }
 
-func (d *StringsServiceDesc) RegisterGRPC(s *grpc.Server) {
-	RegisterStringsServer(s, d.svc)
+func (d *StringsAPIServiceDesc) RegisterGRPC(s *grpc.Server) {
+	RegisterStringsAPIServer(s, d.svc)
 }
 
-func (d *StringsServiceDesc) RegisterHTTP(mux *runtime.ServeMux) {
-	RegisterStringsHandlerServer(context.Background(), mux, d.svc)
+func (d *StringsAPIServiceDesc) RegisterHTTP(mux *runtime.ServeMux) {
+	RegisterStringsAPIHandlerServer(context.Background(), mux, d.svc)
 }
 
-func (d *StringsServiceDesc) SwaggerDef() []byte {
+func (d *StringsAPIServiceDesc) SwaggerDef() []byte {
 	b, _ := swagger.ReadFile("strings.swagger.json")
 
 	return b
