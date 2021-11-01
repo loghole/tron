@@ -96,7 +96,8 @@ func (i *InitCMD) runInitService(opts ...parsers.Option) (err error) {
 		generate.Gitignore,
 		generate.Dockerfile,
 		generate.Values,
-		generate.ReadmeMD); err != nil {
+		generate.ReadmeMD,
+	); err != nil {
 		return fmt.Errorf("generate files: %w", err)
 	}
 
@@ -113,7 +114,9 @@ func (i *InitCMD) runInitService(opts ...parsers.Option) (err error) {
 	if err := i.generate(
 		project,
 		generate.Config,
-		generate.ConfigHelper); err != nil {
+		generate.ConfigHelper,
+		generate.MainFile,
+	); err != nil {
 		return fmt.Errorf("generate config and main files: %w", err)
 	}
 

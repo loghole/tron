@@ -70,7 +70,5 @@ func (gen *Generator) Generate(p *protogen.Plugin) error {
 		gen.generateImpl(p, f)
 	}
 
-	gen.generateMain(p)
-
 	return nil
 }
