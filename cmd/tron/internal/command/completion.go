@@ -36,7 +36,7 @@ Zsh:
   $ echo "autoload -U compinit; compinit" >> ~/.zshrc
 
   # To load completions for each session, execute once:
-  $ tron completion zsh > ~/.oh-my-zsh/completions/_tron"
+  $ tron completion zsh > ~/.oh-my-zsh/completions/_tron
 
   # You will need to start a new shell for this setup to take effect.
 
