@@ -19,13 +19,13 @@ func ProtobufDeps() []*Dep {
 			Main:    filepath.Join("grpc-gateway", "protoc-gen-grpc-gateway"),
 			Out:     filepath.Join("bin", "protoc-gen-grpc-gateway"),
 			Git:     "https://github.com/grpc-ecosystem/grpc-gateway.git",
-			Version: "v2.5.0",
+			Version: "v2.6.0",
 		},
 		{
 			Main:    filepath.Join("grpc-gateway", "protoc-gen-openapiv2"),
 			Out:     filepath.Join("bin", "protoc-gen-openapiv2"),
 			Git:     "https://github.com/grpc-ecosystem/grpc-gateway.git",
-			Version: "v2.5.0",
+			Version: "v2.6.0",
 		},
 		{
 			Main:    filepath.Join("grpc-go", "cmd", "protoc-gen-go-grpc"),
@@ -37,13 +37,13 @@ func ProtobufDeps() []*Dep {
 			Main:    filepath.Join("protobuf-go", "cmd", "protoc-gen-go"),
 			Out:     filepath.Join("bin", "protoc-gen-go"),
 			Git:     "https://github.com/protocolbuffers/protobuf-go.git",
-			Version: "v1.26.0",
+			Version: "v1.27.1",
 		},
 		{
 			Main:    filepath.Join("buf", "cmd", "buf"),
 			Out:     filepath.Join("bin", "buf"),
 			Git:     "https://github.com/bufbuild/buf.git",
-			Version: "v0.43.2",
+			Version: "v0.56.0",
 		},
 		{
 			Main:    filepath.Join("tron", "cmd", "protoc-gen-tron"),
