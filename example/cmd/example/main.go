@@ -1,12 +1,13 @@
+
 package main
 
 import (
 	"log"
 
+	"github.com/loghole/tron/example/config"
+
 	"github.com/loghole/tron"
 	"github.com/loghole/tron/transport"
-
-	stringsV1 "github.com/loghole/tron/example/internal/app/api/strings/v1"
 )
 
 func main() {
@@ -18,7 +19,7 @@ func main() {
 	defer app.Close()
 
 	handlers := []transport.Service{
-		stringsV1.NewImplementation(),
+		// TODO: init handlers.
 	}
 
 	if err := app.Run(handlers...); err != nil {
