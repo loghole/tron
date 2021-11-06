@@ -22,12 +22,13 @@ func main() {
 	}
 
 	var (
-		printer     = stdout.NewPrinter()
-		checkCMD    = command.NewCheckCMD(printer)
-		initCMD     = command.NewInitCMD(printer)
-		generateCMD = command.NewGenerateCMD(printer)
-		upgradeCMD  = command.NewUpgradeCMD(printer)
-		versionCMD  = command.NewVersionCMD(printer)
+		printer       = stdout.NewPrinter()
+		checkCMD      = command.NewCheckCMD(printer)
+		initCMD       = command.NewInitCMD(printer)
+		generateCMD   = command.NewGenerateCMD(printer)
+		upgradeCMD    = command.NewUpgradeCMD(printer)
+		versionCMD    = command.NewVersionCMD(printer)
+		completionCMD = command.NewCompletionCMD()
 	)
 
 	check.NewChecker(printer).CheckTron()
@@ -44,6 +45,7 @@ func main() {
 		generateCMD.Command(),
 		upgradeCMD.Command(),
 		versionCMD.Command(),
+		completionCMD.Command(),
 	)
 
 	rootCmd.PersistentFlags().BoolP(FlagVerbose, "v", false, "make tron more verbose")
