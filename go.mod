@@ -4,7 +4,7 @@ go 1.17
 
 require (
 	github.com/gadavy/ozzo-validation/v4 v4.4.0
-	github.com/go-chi/chi/v5 v5.0.5
+	github.com/go-chi/chi/v5 v5.0.6
 	github.com/go-openapi/spec v0.20.4
 	github.com/google/uuid v1.3.0
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.6.0
