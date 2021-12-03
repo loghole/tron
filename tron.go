@@ -8,7 +8,7 @@ import (
 	"os/signal"
 
 	"github.com/go-chi/chi/v5"
-	"github.com/loghole/lhw/zap"
+	"github.com/loghole/lhw/zaplog"
 	"github.com/loghole/tracing"
 	"github.com/loghole/tracing/tracegrpc"
 	"github.com/loghole/tracing/tracehttp"
@@ -90,7 +90,7 @@ func (a *App) Tracer() *tracing.Tracer {
 }
 
 // Logger returns default zap logger.
-func (a *App) Logger() *zap.Logger {
+func (a *App) Logger() *zaplog.Logger {
 	return a.logger.Logger
 }
 

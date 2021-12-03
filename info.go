@@ -6,13 +6,18 @@ import (
 	"github.com/loghole/tron/internal/app"
 )
 
+// Info contains service information.
+type Info = app.Info
+
 // SetName overrides default the application name.
 func SetName(name string) {
 	app.ServiceName = name
 }
 
-// Info contains service information.
-type Info = app.Info
+// GetInfo returns base service information.
+func GetInfo() *Info {
+	return initInfo()
+}
 
 func initInfo() *Info {
 	return &Info{
@@ -25,9 +30,4 @@ func initInfo() *Info {
 		BuildAt:      app.BuildAt,
 		StartTime:    app.StartTime,
 	}
-}
-
-// GetInfo returns base service information.
-func GetInfo() *Info {
-	return initInfo()
 }

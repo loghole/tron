@@ -4,7 +4,7 @@ import (
 	"net"
 	"os"
 
-	"github.com/loghole/lhw/zap"
+	"github.com/loghole/lhw/zaplog"
 
 	"github.com/loghole/tron/internal/app"
 )
@@ -123,7 +123,7 @@ func WithHTTPListener(listener net.Listener) Option {
 // and line number of zap's caller.
 func AddLogCaller() Option {
 	return func(opts *app.Options) error {
-		opts.LoggerOptions = append(opts.LoggerOptions, zap.AddCaller())
+		opts.LoggerOptions = append(opts.LoggerOptions, zaplog.AddCaller())
 
 		return nil
 	}
@@ -137,7 +137,7 @@ func AddLogCaller() Option {
 //  tron.New(tron.AddLogStacktrace("error"))
 func AddLogStacktrace(level string) Option {
 	return func(opts *app.Options) error {
-		opts.LoggerOptions = append(opts.LoggerOptions, zap.AddStacktrace(level))
+		opts.LoggerOptions = append(opts.LoggerOptions, zaplog.AddStacktrace(level))
 
 		return nil
 	}
@@ -150,7 +150,7 @@ func AddLogStacktrace(level string) Option {
 //  tron.New(tron.WithLogField("my_field_key", "my_field_value"))
 func WithLogField(key string, value interface{}) Option {
 	return func(opts *app.Options) error {
-		opts.LoggerOptions = append(opts.LoggerOptions, zap.WithField(key, value))
+		opts.LoggerOptions = append(opts.LoggerOptions, zaplog.WithField(key, value))
 
 		return nil
 	}
