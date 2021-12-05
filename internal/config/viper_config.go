@@ -114,5 +114,7 @@ func (c *ViperConfig) onConfigChange(_ fsnotify.Event) {
 		for _, watcher := range watchers {
 			watcher(value{oldValue}, value{newValue})
 		}
+
+		c.settings[key] = newValue
 	}
 }

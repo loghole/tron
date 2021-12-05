@@ -1,7 +1,8 @@
 package tron
 
 import (
-	"github.com/loghole/tron/config"
+	"os"
+
 	"github.com/loghole/tron/internal/app"
 )
 
@@ -23,7 +24,7 @@ func initInfo() *Info {
 		InstanceUUID: app.InstanceUUID.String(),
 		ServiceName:  app.ServiceName,
 		AppName:      app.AppName,
-		Namespace:    app.ParseNamespace(config.GetString(app.NamespaceEnv)).String(),
+		Namespace:    app.ParseNamespace(os.Getenv(app.NamespaceEnv)).String(),
 		GitHash:      app.GitHash,
 		Version:      app.Version,
 		BuildAt:      app.BuildAt,

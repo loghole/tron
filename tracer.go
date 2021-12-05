@@ -7,8 +7,8 @@ import (
 	"github.com/opentracing/opentracing-go"
 	jaegerconfig "github.com/uber/jaeger-client-go/config"
 
-	"github.com/loghole/tron/config"
 	"github.com/loghole/tron/internal/app"
+	"github.com/loghole/tron/rtconfig"
 )
 
 type tracer struct {
@@ -31,14 +31,14 @@ func (t *tracer) init(info *Info) (err error) {
 func (t *tracer) configuration(info *Info) *jaegerconfig.Configuration {
 	configuration := tracing.DefaultConfiguration(
 		info.AppName,
-		config.GetString(app.JaegerAddrEnv),
+		rtconfig.GetString(app.JaegerAddrEnv),
 	)
 
-	if v, _ := config.GetValue(app.JaegerSamplerType); !v.IsNil() {
+	if v, _ := rtconfig.GetValue(app.JaegerSamplerType); !v.IsNil() {
 		configuration.Sampler.Type = v.String()
 	}
 
-	if v, _ := config.GetValue(app.JaegerSamplerParam); !v.IsNil() {
+	if v, _ := rtconfig.GetValue(app.JaegerSamplerParam); !v.IsNil() {
 		configuration.Sampler.Param = v.Float64()
 	}
 

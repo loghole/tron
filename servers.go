@@ -3,10 +3,10 @@ package tron
 import (
 	"fmt"
 
-	"github.com/loghole/tron/config"
 	"github.com/loghole/tron/internal/app"
 	"github.com/loghole/tron/internal/grpc"
 	"github.com/loghole/tron/internal/http"
+	"github.com/loghole/tron/rtconfig"
 )
 
 type servers struct {
@@ -31,7 +31,7 @@ func (s *servers) initPubGRPC(opts *app.Options) {
 	}
 
 	if opts.PortGRPC == 0 {
-		opts.PortGRPC = uint16(config.GetInt32(app.GRPCPortEnv))
+		opts.PortGRPC = uint16(rtconfig.GetInt32(app.GRPCPortEnv))
 	}
 
 	s.publicGRPC = grpc.NewServer(opts.PortGRPC)
@@ -45,7 +45,7 @@ func (s *servers) initPubHTTP(opts *app.Options) {
 	}
 
 	if opts.PortHTTP == 0 {
-		opts.PortHTTP = uint16(config.GetInt32(app.HTTPPortEnv))
+		opts.PortHTTP = uint16(rtconfig.GetInt32(app.HTTPPortEnv))
 	}
 
 	s.publicHTTP = http.NewServer(opts.PortHTTP)
@@ -53,7 +53,7 @@ func (s *servers) initPubHTTP(opts *app.Options) {
 
 func (s *servers) initAdmHTTP(opts *app.Options) {
 	if opts.PortAdmin == 0 {
-		opts.PortAdmin = uint16(config.GetInt32(app.AdminPortEnv))
+		opts.PortAdmin = uint16(rtconfig.GetInt32(app.AdminPortEnv))
 	}
 
 	s.adminHTTP = http.NewServer(opts.PortAdmin)

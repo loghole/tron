@@ -2,16 +2,20 @@
 
 package config
 
-/*
+import (
+	"log"
+
+	"github.com/loghole/tron/rtconfig"
+)
+
 // GetExampleValue returns ExampleValue from config.
 func GetExampleValue() string {
-	return config.GetString(ExampleValue)
+	return rtconfig.GetString(ExampleValue)
 }
 
 // WatchExampleValue starts watching ExampleValue change.
 func WatchExampleValue() {
-	_ = config.WatchVariable(ExampleValue, func(oldValue, newValue config.Value) {
+	_ = rtconfig.WatchVariable(ExampleValue, func(oldValue, newValue rtconfig.Value) {
 		log.Printf("old example value = %s, new example value = %s", oldValue.String(), newValue.String())
 	})
 }
-*/
