@@ -6,6 +6,8 @@ linters:
     - godot
     - gci
     - exhaustivestruct
+    - ireturn
+    - varnamelen
 linters-settings:
   tagliatelle:
     case:

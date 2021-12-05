@@ -34,7 +34,7 @@ func (p *Deps) InstallProtoPlugins() error {
 	}
 
 	for _, dep := range models.ProtobufDeps() {
-		if p.exists(dep.Out) {
+		if p.exists(dep.Out) && p.isActual(dep) {
 			p.printer.VerbosePrintf(color.Reset, "\tplugin '%s' already exists\n", color.YellowString(dep.Out))
 
 			continue
@@ -65,7 +65,7 @@ func (p *Deps) install(dir string, dep *models.Dep) error {
 		return simplerr.Wrapf(err, "checkout '%s' to version '%s'", dep.Out, dep.Version)
 	}
 
-	if err := p.build(dir, dep.Main, dep.Out); err != nil {
+	if err := p.build(dir, dep.Main, dep.Out, dep.LdFlag); err != nil {
 		return simplerr.Wrapf(err, "build '%s'", dep.Out)
 	}
 
@@ -126,8 +126,18 @@ func (p *Deps) checkout(dir, repo, version string) error {
 	return nil
 }
 
-func (p *Deps) build(dir, main, output string) error {
-	cmd := exec.Command(cmdGo, "build", "-o", filepath.Join(p.project.AbsPath, output)) // nolint:gosec // need output.
+func (p *Deps) build(dir, main, output, ldflags string) error {
+	args := []string{
+		"build",
+		"-o", filepath.Join(p.project.AbsPath, output),
+	}
+
+	if ldflags != "" {
+		args = append(args, "-ldflags", "-X "+ldflags)
+	}
+
+	// nolint:gosec // need output and ldflags.
+	cmd := exec.Command(cmdGo, args...)
 	cmd.Dir = filepath.Join(dir, main)
 
 	if err := cmd.Run(); err != nil {
@@ -135,4 +145,21 @@ func (p *Deps) build(dir, main, output string) error {
 	}
 
 	return nil
+}
+
+func (p *Deps) isActual(dep *models.Dep) bool {
+	// nolint:gosec // need binary path.
+	cmd := exec.Command(filepath.Join(p.project.AbsPath, dep.Out), "--version")
+
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		return false
+	}
+
+	isActual, err := dep.IsActual(string(output))
+	if err != nil {
+		return false
+	}
+
+	return isActual
 }
