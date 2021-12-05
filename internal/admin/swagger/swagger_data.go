@@ -13,4 +13,4 @@ import "embed"
 //go:embed swagger-ui-standalone-preset.js
 //go:embed swagger-ui.css
 //go:embed swagger-ui.js
-var Content embed.FS // nolint:gochecknoglobals // is swagger web server embed content.
+var Content embed.FS

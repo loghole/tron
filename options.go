@@ -9,16 +9,13 @@ import (
 	"github.com/loghole/tron/internal/app"
 )
 
-// Option sets tron options such as ports, config, etc.
-type Option = app.Option
-
 // WithPublicHTTP returns a Option that sets public http port.
 // Cannot be changed by config or env.
 //
 //  Example:
 //
 //  tron.New(tron.WithPublicGRPC(8080))
-func WithPublicHTTP(port uint16) Option {
+func WithPublicHTTP(port uint16) app.Option {
 	return func(opts *app.Options) error {
 		opts.PortHTTP = port
 
@@ -32,7 +29,7 @@ func WithPublicHTTP(port uint16) Option {
 //  Example:
 //
 //  tron.New(tron.WithAdminHTTP(8081))
-func WithAdminHTTP(port uint16) Option {
+func WithAdminHTTP(port uint16) app.Option {
 	return func(opts *app.Options) error {
 		opts.PortAdmin = port
 
@@ -46,7 +43,7 @@ func WithAdminHTTP(port uint16) Option {
 //  Example:
 //
 //  tron.New(tron.WithPublicGRPC(8082))
-func WithPublicGRPC(port uint16) Option {
+func WithPublicGRPC(port uint16) app.Option {
 	return func(opts *app.Options) error {
 		opts.PortGRPC = port
 
@@ -60,7 +57,7 @@ func WithPublicGRPC(port uint16) Option {
 //  Example:
 //
 //  tron.New(tron.WithExitSignals(syscall.SIGKILL))
-func WithExitSignals(sig ...os.Signal) Option {
+func WithExitSignals(sig ...os.Signal) app.Option {
 	return func(opts *app.Options) error {
 		opts.ExitSignals = append(opts.ExitSignals, sig...)
 
@@ -79,7 +76,7 @@ func WithExitSignals(sig ...os.Signal) Option {
 //  	"cockroach_user":    "db_user",
 //  	"cockroach_db":      "db_name",
 //  }))
-func WithConfigMap(cfg map[string]interface{}) Option {
+func WithConfigMap(cfg map[string]interface{}) app.Option {
 	return func(opts *app.Options) error {
 		opts.ConfigMap = cfg
 
@@ -95,7 +92,7 @@ func WithConfigMap(cfg map[string]interface{}) Option {
 //  listener := bufconn.Listen(1024*1024)
 //
 //  tron.New(tron.WithGRPCListener(listener))
-func WithGRPCListener(listener net.Listener) Option {
+func WithGRPCListener(listener net.Listener) app.Option {
 	return func(opts *app.Options) error {
 		opts.GRPCListener = listener
 
@@ -111,7 +108,7 @@ func WithGRPCListener(listener net.Listener) Option {
 //  listener = bufconn.Listen(1024*1024)
 //
 //  tron.New(tron.WithHTTPListener(listener))
-func WithHTTPListener(listener net.Listener) Option {
+func WithHTTPListener(listener net.Listener) app.Option {
 	return func(opts *app.Options) error {
 		opts.HTTPListener = listener
 
@@ -121,7 +118,7 @@ func WithHTTPListener(listener net.Listener) Option {
 
 // AddLogCaller configures the Logger to annotate each message with the filename
 // and line number of zap's caller.
-func AddLogCaller() Option {
+func AddLogCaller() app.Option {
 	return func(opts *app.Options) error {
 		opts.LoggerOptions = append(opts.LoggerOptions, zaplog.AddCaller())
 
@@ -135,7 +132,7 @@ func AddLogCaller() Option {
 //  Example:
 //
 //  tron.New(tron.AddLogStacktrace("error"))
-func AddLogStacktrace(level string) Option {
+func AddLogStacktrace(level string) app.Option {
 	return func(opts *app.Options) error {
 		opts.LoggerOptions = append(opts.LoggerOptions, zaplog.AddStacktrace(level))
 
@@ -148,7 +145,7 @@ func AddLogStacktrace(level string) Option {
 //  Example:
 //
 //  tron.New(tron.WithLogField("my_field_key", "my_field_value"))
-func WithLogField(key string, value interface{}) Option {
+func WithLogField(key string, value interface{}) app.Option {
 	return func(opts *app.Options) error {
 		opts.LoggerOptions = append(opts.LoggerOptions, zaplog.WithField(key, value))
 
@@ -162,7 +159,7 @@ func WithLogField(key string, value interface{}) Option {
 //  Example:
 //
 //  tron.New(tron.WithRealtimeConfig())
-func WithRealtimeConfig() Option {
+func WithRealtimeConfig() app.Option {
 	return func(opts *app.Options) error {
 		opts.RealtimeConfig = true
 

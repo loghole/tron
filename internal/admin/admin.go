@@ -112,7 +112,7 @@ func (s *Handlers) swaggerDefHandler(w http.ResponseWriter, r *http.Request) {
 	_ = json.NewEncoder(w).Encode(desc)
 }
 
-func (s *Handlers) index(w http.ResponseWriter, r *http.Request) {
+func (s *Handlers) index(w http.ResponseWriter, _ *http.Request) {
 	w.Header().Set("X-Content-Type-Options", "nosniff")
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 

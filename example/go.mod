@@ -3,10 +3,9 @@ module github.com/loghole/tron/example
 go 1.17
 
 require (
-	github.com/grpc-ecosystem/grpc-gateway/v2 v2.6.0
+	github.com/grpc-ecosystem/grpc-gateway/v2 v2.7.1
 	github.com/loghole/tron v0.20.1
-	github.com/spf13/viper v1.9.0
-	google.golang.org/genproto v0.0.0-20211104193956-4c6863e31247
+	google.golang.org/genproto v0.0.0-20211129164237-f09f9a12af12
 	google.golang.org/grpc v1.42.0
 	google.golang.org/protobuf v1.27.1
 )
@@ -18,7 +17,7 @@ require (
 	github.com/cespare/xxhash/v2 v2.1.1 // indirect
 	github.com/fsnotify/fsnotify v1.5.1 // indirect
 	github.com/gadavy/ozzo-validation/v4 v4.4.0 // indirect
-	github.com/go-chi/chi/v5 v5.0.5 // indirect
+	github.com/go-chi/chi/v5 v5.0.7 // indirect
 	github.com/go-openapi/jsonpointer v0.19.5 // indirect
 	github.com/go-openapi/jsonreference v0.19.6 // indirect
 	github.com/go-openapi/spec v0.20.4 // indirect
@@ -29,7 +28,7 @@ require (
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/lissteron/simplerr v0.9.0 // indirect
-	github.com/loghole/lhw v0.5.1 // indirect
+	github.com/loghole/lhw v0.6.0 // indirect
 	github.com/loghole/tracing v0.14.4 // indirect
 	github.com/magiconair/properties v1.8.5 // indirect
 	github.com/mailru/easyjson v0.7.6 // indirect
@@ -49,6 +48,7 @@ require (
 	github.com/spf13/cast v1.4.1 // indirect
 	github.com/spf13/jwalterweatherman v1.1.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
+	github.com/spf13/viper v1.9.0 // indirect
 	github.com/subosito/gotenv v1.2.0 // indirect
 	github.com/uber/jaeger-client-go v2.29.1+incompatible // indirect
 	github.com/uber/jaeger-lib v2.4.1+incompatible // indirect
@@ -62,3 +62,5 @@ require (
 	gopkg.in/ini.v1 v1.63.2 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 )
+
+replace github.com/loghole/tron => ../

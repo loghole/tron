@@ -34,13 +34,13 @@ func (d *CompoundServiceDesc) RegisterHTTP(mux *runtime.ServeMux) {
 
 // SwaggerDef returns combines swagger definitions.
 func (d *CompoundServiceDesc) SwaggerDef() []byte {
-	j := &swagJoiner{}
+	joiner := &swagJoiner{}
 
 	for _, svc := range d.svc {
-		_ = j.AddDefinition(svc.SwaggerDef())
+		_ = joiner.AddDefinition(svc.SwaggerDef())
 	}
 
-	return j.SumDefinitions()
+	return joiner.SumDefinitions()
 }
 
 // swagJoiner glues up several Swagger definitions to one.

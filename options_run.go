@@ -9,14 +9,11 @@ import (
 	"github.com/loghole/tron/internal/app"
 )
 
-// RunOption sets tron run options such as grpc unary interceptors, tls config.
-type RunOption = app.RunOption
-
 // WithUnaryInterceptor returns a RunOption that specifies the chained interceptor
 // for unary RPCs. The first interceptor will be the outer most,
 // while the last interceptor will be the inner most wrapper around the real call.
 // All unary interceptors added by this method will be chained.
-func WithUnaryInterceptor(interceptor grpc.UnaryServerInterceptor) RunOption {
+func WithUnaryInterceptor(interceptor grpc.UnaryServerInterceptor) app.RunOption {
 	return func(opts *app.Options) error {
 		opts.GRPCOptions = append(opts.GRPCOptions, grpc.ChainUnaryInterceptor(interceptor))
 
@@ -28,7 +25,7 @@ func WithUnaryInterceptor(interceptor grpc.UnaryServerInterceptor) RunOption {
 // for streaming RPCs. The first interceptor will be the outer most,
 // while the last interceptor will be the inner most wrapper around the real call.
 // All stream interceptors added by this method will be chained.
-func WithStreamInterceptor(interceptor grpc.StreamServerInterceptor) RunOption {
+func WithStreamInterceptor(interceptor grpc.StreamServerInterceptor) app.RunOption {
 	return func(opts *app.Options) error {
 		opts.GRPCOptions = append(opts.GRPCOptions, grpc.ChainStreamInterceptor(interceptor))
 
@@ -37,7 +34,7 @@ func WithStreamInterceptor(interceptor grpc.StreamServerInterceptor) RunOption {
 }
 
 // WithTLSConfig returns a RunOption that set tls configuration for grpc and http servers.
-func WithTLSConfig(config *tls.Config) RunOption {
+func WithTLSConfig(config *tls.Config) app.RunOption {
 	return func(opts *app.Options) error {
 		opts.TLSConfig = config
 
@@ -46,7 +43,7 @@ func WithTLSConfig(config *tls.Config) RunOption {
 }
 
 // WithTLSKeyPair returns a RunOption that set tls configuration for grpc and http servers from files.
-func WithTLSKeyPair(certFile, keyFile string) RunOption {
+func WithTLSKeyPair(certFile, keyFile string) app.RunOption {
 	if certFile == "" || keyFile == "" {
 		return nil
 	}

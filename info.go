@@ -1,8 +1,7 @@
 package tron
 
 import (
-	"github.com/spf13/viper"
-
+	"github.com/loghole/tron/config"
 	"github.com/loghole/tron/internal/app"
 )
 
@@ -24,7 +23,7 @@ func initInfo() *Info {
 		InstanceUUID: app.InstanceUUID.String(),
 		ServiceName:  app.ServiceName,
 		AppName:      app.AppName,
-		Namespace:    app.ParseNamespace(viper.GetString(app.NamespaceEnv)).String(),
+		Namespace:    app.ParseNamespace(config.GetString(app.NamespaceEnv)).String(),
 		GitHash:      app.GitHash,
 		Version:      app.Version,
 		BuildAt:      app.BuildAt,
