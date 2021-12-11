@@ -5,10 +5,10 @@ import (
 
 	"github.com/loghole/tracing"
 	"github.com/opentracing/opentracing-go"
-	"github.com/spf13/viper"
-	"github.com/uber/jaeger-client-go/config"
+	jaegerconfig "github.com/uber/jaeger-client-go/config"
 
 	"github.com/loghole/tron/internal/app"
+	"github.com/loghole/tron/rtconfig"
 )
 
 type tracer struct {
@@ -28,18 +28,18 @@ func (t *tracer) init(info *Info) (err error) {
 	return nil
 }
 
-func (t *tracer) configuration(info *Info) *config.Configuration {
+func (t *tracer) configuration(info *Info) *jaegerconfig.Configuration {
 	configuration := tracing.DefaultConfiguration(
 		info.AppName,
-		viper.GetString(app.JaegerAddrEnv),
+		rtconfig.GetString(app.JaegerAddrEnv),
 	)
 
-	if v := viper.GetString(app.JaegerSamplerType); v != "" {
-		configuration.Sampler.Type = v
+	if v, _ := rtconfig.GetValue(app.JaegerSamplerType); !v.IsNil() {
+		configuration.Sampler.Type = v.String()
 	}
 
-	if v := viper.GetFloat64(app.JaegerSamplerParam); v != 0 {
-		configuration.Sampler.Param = v
+	if v, _ := rtconfig.GetValue(app.JaegerSamplerParam); !v.IsNil() {
+		configuration.Sampler.Param = v.Float64()
 	}
 
 	configuration.Tags = append(configuration.Tags,

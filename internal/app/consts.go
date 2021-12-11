@@ -2,16 +2,16 @@ package app
 
 // Application internal config keys.
 const (
-	NamespaceEnv           = "namespace"
-	LoggerLevelEnv         = "logger_level"
-	LoggerCollectorAddrEnv = "logger_collector_addr"
-	LoggerDisableStdoutEnv = "logger_disable_stdout"
-	JaegerAddrEnv          = "jaeger_addr"
-	JaegerSamplerType      = "jaeger_sampler_type"
-	JaegerSamplerParam     = "jaeger_sampler_param"
-	HTTPPortEnv            = "service_port_http"
-	GRPCPortEnv            = "service_port_grpc"
-	AdminPortEnv           = "service_port_admin"
+	NamespaceEnv           = "NAMESPACE"
+	LoggerLevelEnv         = "LOGGER_LEVEL"
+	LoggerCollectorAddrEnv = "LOGGER_COLLECTOR_ADDR"
+	LoggerDisableStdoutEnv = "LOGGER_DISABLE_STDOUT"
+	JaegerAddrEnv          = "JAEGER_ADDR"
+	JaegerSamplerType      = "JAEGER_SAMPLER_TYPE"
+	JaegerSamplerParam     = "JAEGER_SAMPLER_PARAM"
+	HTTPPortEnv            = "SERVICE_PORT_HTTP"
+	GRPCPortEnv            = "SERVICE_PORT_GRPC"
+	AdminPortEnv           = "SERVICE_PORT_ADMIN"
 )
 
 // Default names for application files and directories.

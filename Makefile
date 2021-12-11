@@ -31,6 +31,6 @@ update-swagger:
 
 .PHONY: tidy
 tidy:
-	go mod tidy
-	cd cmd/tron && go mod tidy
-	cd cmd/protoc-gen-tron && go mod tidy
+	go mod tidy -go=1.17
+	cd cmd/tron && go mod tidy -go=1.17
+	cd cmd/protoc-gen-tron && go mod tidy -go=1.17

@@ -8,7 +8,7 @@ import (
 	"os/signal"
 
 	"github.com/go-chi/chi/v5"
-	"github.com/loghole/lhw/zap"
+	"github.com/loghole/lhw/zaplog"
 	"github.com/loghole/tracing"
 	"github.com/loghole/tracing/tracegrpc"
 	"github.com/loghole/tracing/tracehttp"
@@ -90,7 +90,7 @@ func (a *App) Tracer() *tracing.Tracer {
 }
 
 // Logger returns default zap logger.
-func (a *App) Logger() *zap.Logger {
+func (a *App) Logger() *zaplog.Logger {
 	return a.logger.Logger
 }
 
@@ -156,19 +156,22 @@ func (a *App) Run(impl ...transport.Service) error { // nolint:funlen // can be 
 	a.logger.Info("starting app")
 
 	a.Go(func() error {
-		a.logger.Infof("start public grpc server on: %s", a.servers.publicGRPC.Addr())
+		a.logger.Infof("grpc.public: start server on: %s", a.servers.publicGRPC.Addr())
+		defer a.logger.Warn("grpc.public: server stopped")
 
 		return a.servers.publicGRPC.Serve() // nolint:wrapcheck // need clean err
 	})
 
 	a.Go(func() error {
-		a.logger.Infof("start public http server on: %s", a.servers.publicHTTP.Addr())
+		a.logger.Infof("http.public: start server on: %s", a.servers.publicHTTP.Addr())
+		defer a.logger.Warn("http.public: server stopped")
 
 		return a.servers.publicHTTP.Serve() // nolint:wrapcheck // need clean err
 	})
 
 	a.Go(func() error {
-		a.logger.Infof("start admin http server on: %s", a.servers.adminHTTP.Addr())
+		a.logger.Infof("http.admin: start server on: %s", a.servers.adminHTTP.Addr())
+		defer a.logger.Warn("http.admin: server stopped")
 
 		return a.servers.adminHTTP.Serve() // nolint:wrapcheck // need clean err
 	})

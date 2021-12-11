@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"errors"
 	"flag"
+	"fmt"
 	"log"
 	"os"
 	"regexp"
@@ -15,10 +16,20 @@ import (
 
 var ErrModuleNotFound = errors.New("project module does not exists")
 
+var Version string // nolint:gochecknoglobals // build args
+
 func main() {
-	unboundMethods := flag.Bool("generate_unbound_methods", false, "Generate unbound methods")
+	var (
+		unboundMethods = flag.Bool("generate_unbound_methods", false, "Generate unbound methods")
+		versionFlag    = flag.Bool("version", false, "print the current version")
+	)
 
 	flag.Parse()
+
+	if *versionFlag {
+		fmt.Println(Version)
+		os.Exit(0)
+	}
 
 	opt := protogen.Options{
 		ParamFunc: flag.CommandLine.Set,

@@ -7,7 +7,7 @@ import (
 	"os"
 	"syscall"
 
-	"github.com/loghole/lhw/zap"
+	"github.com/loghole/lhw/zaplog"
 	"google.golang.org/grpc"
 )
 
@@ -25,7 +25,7 @@ type Options struct {
 	PortHTTP       uint16
 	PortGRPC       uint16
 	RealtimeConfig bool
-	LoggerOptions  []zap.Option
+	LoggerOptions  []zaplog.Option
 	ExitSignals    []os.Signal
 	ConfigMap      map[string]interface{}
 	GRPCListener   net.Listener

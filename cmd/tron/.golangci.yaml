@@ -13,6 +13,8 @@ linters:
     - revive
     - cyclop
     - gomoddirectives # need root lib constants.
+    - ireturn
+    - varnamelen
 linters-settings:
   tagliatelle:
     case:
@@ -26,5 +28,3 @@ linters-settings:
       - performance
       - diagnostic
       - opinionated
-service:
-  golangci-lint-version: 1.41.x

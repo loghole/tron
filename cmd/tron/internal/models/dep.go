@@ -1,7 +1,10 @@
 package models
 
 import (
+	"fmt"
 	"path/filepath"
+
+	"github.com/Masterminds/semver"
 
 	"github.com/loghole/tron/cmd/tron/internal/version"
 )
@@ -11,6 +14,31 @@ type Dep struct {
 	Out     string
 	Git     string
 	Version string
+	LdFlag  string
+}
+
+func (d *Dep) IsActual(actual string) (bool, error) {
+	targetStr, err := ExtractVersion(d.Version)
+	if err != nil {
+		return false, fmt.Errorf("extract target version: %w", err)
+	}
+
+	actualStr, err := ExtractVersion(actual)
+	if err != nil {
+		return false, fmt.Errorf("extract actual version: %w", err)
+	}
+
+	targetVer, err := semver.NewVersion(targetStr)
+	if err != nil {
+		return false, fmt.Errorf("parse target version: %w", err)
+	}
+
+	actualVer, err := semver.NewVersion(actualStr)
+	if err != nil {
+		return false, fmt.Errorf("parse actual version: %w", err)
+	}
+
+	return targetVer.Equal(actualVer), nil
 }
 
 func ProtobufDeps() []*Dep {
@@ -19,13 +47,15 @@ func ProtobufDeps() []*Dep {
 			Main:    filepath.Join("grpc-gateway", "protoc-gen-grpc-gateway"),
 			Out:     filepath.Join("bin", "protoc-gen-grpc-gateway"),
 			Git:     "https://github.com/grpc-ecosystem/grpc-gateway.git",
-			Version: "v2.6.0",
+			Version: "v2.7.1",
+			LdFlag:  "main.version=v2.7.1",
 		},
 		{
 			Main:    filepath.Join("grpc-gateway", "protoc-gen-openapiv2"),
 			Out:     filepath.Join("bin", "protoc-gen-openapiv2"),
 			Git:     "https://github.com/grpc-ecosystem/grpc-gateway.git",
-			Version: "v2.6.0",
+			Version: "v2.7.1",
+			LdFlag:  "main.version=v2.7.1",
 		},
 		{
 			Main:    filepath.Join("grpc-go", "cmd", "protoc-gen-go-grpc"),
@@ -50,6 +80,7 @@ func ProtobufDeps() []*Dep {
 			Out:     filepath.Join("bin", "protoc-gen-tron"),
 			Git:     "https://github.com/loghole/tron.git",
 			Version: version.CliVersion,
+			LdFlag:  "main.Version=" + version.CliVersion,
 		},
 	}
 }

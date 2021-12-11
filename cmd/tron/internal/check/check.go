@@ -21,10 +21,7 @@ const (
 	ProtocMinVersion = "3.3.0"
 )
 
-var (
-	ErrNotSemanticVersion = errors.New("string is not semantic version")
-	ErrCheckVersionFailed = errors.New("check failed")
-)
+var ErrCheckVersionFailed = errors.New("check failed")
 
 type Checker struct {
 	printer stdout.Printer
@@ -107,7 +104,7 @@ func (c *Checker) checkVersion(cmd *exec.Cmd, min string) error {
 		return err
 	}
 
-	appVersion, err := c.extractVersion(string(output))
+	appVersion, err := models.ExtractVersion(string(output))
 	if err != nil {
 		return err
 	}
@@ -124,20 +121,6 @@ func (c *Checker) checkVersion(cmd *exec.Cmd, min string) error {
 	}
 
 	return nil
-}
-
-func (c *Checker) extractVersion(s string) (string, error) {
-	matches := models.Version3Regexp.FindStringSubmatch(s)
-	if len(matches) > 1 {
-		return matches[1], nil
-	}
-
-	matches = models.Version2Regexp.FindStringSubmatch(s)
-	if len(matches) > 1 {
-		return matches[1] + ".0", nil
-	}
-
-	return "", ErrNotSemanticVersion
 }
 
 func (c *Checker) checkTronIsLatest() error {
