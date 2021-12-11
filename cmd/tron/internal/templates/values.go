@@ -28,5 +28,5 @@ LOGGER_LEVEL: info
 `
 
 const ValuesProdTemplate = `# Place production overrides here
-LOGGER_LEVEL: warn
+LOGGER_LEVEL: info
 `
