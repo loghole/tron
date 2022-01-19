@@ -9,6 +9,9 @@ import (
 	"github.com/loghole/tron/internal/app"
 )
 
+// RunOption sets tron run options such as grpc unary interceptors, tls config.
+type RunOption = app.RunOption
+
 // WithUnaryInterceptor returns a RunOption that specifies the chained interceptor
 // for unary RPCs. The first interceptor will be the outer most,
 // while the last interceptor will be the inner most wrapper around the real call.

@@ -9,6 +9,9 @@ import (
 	"github.com/loghole/tron/internal/app"
 )
 
+// Option sets tron options such as ports, config, etc.
+type Option = app.Option
+
 // WithPublicHTTP returns a Option that sets public http port.
 // Cannot be changed by config or env.
 //

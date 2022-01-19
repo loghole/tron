@@ -2,10 +2,11 @@ package tron
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/loghole/tracing"
-	"github.com/opentracing/opentracing-go"
-	jaegerconfig "github.com/uber/jaeger-client-go/config"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/sdk/trace"
 
 	"github.com/loghole/tron/internal/app"
 	"github.com/loghole/tron/rtconfig"
@@ -28,26 +29,29 @@ func (t *tracer) init(info *Info) (err error) {
 	return nil
 }
 
-func (t *tracer) configuration(info *Info) *jaegerconfig.Configuration {
+func (t *tracer) configuration(info *Info) *tracing.Configuration {
 	configuration := tracing.DefaultConfiguration(
 		info.AppName,
 		rtconfig.GetString(app.JaegerAddrEnv),
 	)
 
-	if v, _ := rtconfig.GetValue(app.JaegerSamplerType); !v.IsNil() {
-		configuration.Sampler.Type = v.String()
+	switch strings.ToLower(rtconfig.GetString(app.JaegerSamplerType)) {
+	case "probabilistic":
+		configuration.Sampler = trace.TraceIDRatioBased(rtconfig.GetFloat64(app.JaegerSamplerParam))
+	case "const":
+		if rtconfig.GetFloat64(app.JaegerSamplerParam) > 0 {
+			configuration.Sampler = trace.AlwaysSample()
+		} else {
+			configuration.Sampler = trace.NeverSample()
+		}
 	}
 
-	if v, _ := rtconfig.GetValue(app.JaegerSamplerParam); !v.IsNil() {
-		configuration.Sampler.Param = v.Float64()
-	}
-
-	configuration.Tags = append(configuration.Tags,
-		opentracing.Tag{Key: "app.version", Value: info.Version},
-		opentracing.Tag{Key: "app.namespace", Value: info.Namespace},
-		opentracing.Tag{Key: "app.name", Value: info.AppName},
-		opentracing.Tag{Key: "app.git_hash", Value: info.GitHash},
-		opentracing.Tag{Key: "app.build_at", Value: info.BuildAt},
+	configuration.Attributes = append(configuration.Attributes,
+		attribute.String("app.version", info.Version),
+		attribute.String("app.namespace", info.Namespace),
+		attribute.String("app.name", info.AppName),
+		attribute.String("app.git_hash", info.GitHash),
+		attribute.String("app.build_at", info.BuildAt),
 	)
 
 	return configuration
