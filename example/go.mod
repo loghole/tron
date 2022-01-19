@@ -5,8 +5,8 @@ go 1.17
 require (
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.7.1
 	github.com/loghole/tron v0.20.1
-	google.golang.org/genproto v0.0.0-20211129164237-f09f9a12af12
-	google.golang.org/grpc v1.42.0
+	google.golang.org/genproto v0.0.0-20220107163113-42d7afdf6368
+	google.golang.org/grpc v1.43.0
 	google.golang.org/protobuf v1.27.1
 )
 
@@ -18,6 +18,8 @@ require (
 	github.com/fsnotify/fsnotify v1.5.1 // indirect
 	github.com/gadavy/ozzo-validation/v4 v4.4.0 // indirect
 	github.com/go-chi/chi/v5 v5.0.7 // indirect
+	github.com/go-logr/logr v1.2.1 // indirect
+	github.com/go-logr/stdr v1.2.0 // indirect
 	github.com/go-openapi/jsonpointer v0.19.5 // indirect
 	github.com/go-openapi/jsonreference v0.19.6 // indirect
 	github.com/go-openapi/spec v0.20.4 // indirect
@@ -26,20 +28,14 @@ require (
 	github.com/google/uuid v1.3.0 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
-	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/lissteron/simplerr v0.9.0 // indirect
 	github.com/loghole/lhw v0.6.0 // indirect
-	github.com/loghole/tracing v0.14.4 // indirect
+	github.com/loghole/tracing v0.15.0 // indirect
 	github.com/magiconair/properties v1.8.5 // indirect
 	github.com/mailru/easyjson v0.7.6 // indirect
 	github.com/matttproud/golang_protobuf_extensions v1.0.1 // indirect
 	github.com/mitchellh/mapstructure v1.4.2 // indirect
-	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
-	github.com/modern-go/reflect2 v1.0.2 // indirect
-	github.com/opentracing-contrib/go-stdlib v1.0.0 // indirect
-	github.com/opentracing/opentracing-go v1.2.0 // indirect
 	github.com/pelletier/go-toml v1.9.4 // indirect
-	github.com/pkg/errors v0.9.1 // indirect
 	github.com/prometheus/client_golang v1.11.0 // indirect
 	github.com/prometheus/client_model v0.2.0 // indirect
 	github.com/prometheus/common v0.26.0 // indirect
@@ -50,14 +46,16 @@ require (
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/spf13/viper v1.9.0 // indirect
 	github.com/subosito/gotenv v1.2.0 // indirect
-	github.com/uber/jaeger-client-go v2.29.1+incompatible // indirect
-	github.com/uber/jaeger-lib v2.4.1+incompatible // indirect
+	go.opentelemetry.io/otel v1.3.0 // indirect
+	go.opentelemetry.io/otel/exporters/jaeger v1.3.0 // indirect
+	go.opentelemetry.io/otel/sdk v1.3.0 // indirect
+	go.opentelemetry.io/otel/trace v1.3.0 // indirect
 	go.uber.org/atomic v1.7.0 // indirect
 	go.uber.org/multierr v1.6.0 // indirect
-	go.uber.org/zap v1.19.0 // indirect
-	golang.org/x/net v0.0.0-20210813160813-60bc85c4be6d // indirect
+	go.uber.org/zap v1.20.0 // indirect
+	golang.org/x/net v0.0.0-20220107192237-5cfca573fb4d // indirect
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c // indirect
-	golang.org/x/sys v0.0.0-20210823070655-63515b42dcdf // indirect
+	golang.org/x/sys v0.0.0-20211216021012-1d35b9e2eb4e // indirect
 	golang.org/x/text v0.3.7 // indirect
 	gopkg.in/ini.v1 v1.63.2 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect

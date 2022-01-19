@@ -110,7 +110,7 @@ func (p *ValuesParser) parseFile(path string) error {
 	}
 
 	for key := range dest {
-		if _, ok := p.internal[strings.ToLower(key)]; ok {
+		if _, ok := p.internal[strings.ToUpper(key)]; ok {
 			continue
 		}
 
