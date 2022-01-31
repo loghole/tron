@@ -11,7 +11,7 @@ require (
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.7.2
 	github.com/lissteron/simplerr v0.9.0
 	github.com/loghole/lhw v0.6.0
-	github.com/loghole/tracing v0.15.2
+	github.com/loghole/tracing v0.16.0
 	github.com/prometheus/client_golang v1.11.0
 	github.com/spf13/cast v1.4.1
 	github.com/spf13/viper v1.10.1

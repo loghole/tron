@@ -171,6 +171,7 @@ github.com/golang/mock v1.4.1/go.mod h1:UOMv5ysSaYNkG+OFQykRIcU/QvvxJf3p21QfJ2Bt
 github.com/golang/mock v1.4.3/go.mod h1:UOMv5ysSaYNkG+OFQykRIcU/QvvxJf3p21QfJ2Bt3cw=
 github.com/golang/mock v1.4.4/go.mod h1:l3mdAwkq5BuhzHwde/uurv3sEJeZMXNpwsxVWU71h+4=
 github.com/golang/mock v1.5.0/go.mod h1:CWnOUgYIOo4TcNZ0wHX3YZCqsaM1I1Jvs6v3mP3KVu8=
+github.com/golang/mock v1.6.0 h1:ErTB+efbowRARo13NNdxyJji2egdxLGQhRaY+DUumQc=
 github.com/golang/mock v1.6.0/go.mod h1:p6yTPP+5HYm5mzsMV8JkE6ZKdX+/wYM6Hr+LicevLPs=
 github.com/golang/protobuf v1.2.0/go.mod h1:6lQm79b+lXiMfvg/cZm0SGofjICqVBUtrP5yJMmIC1U=
 github.com/golang/protobuf v1.3.1/go.mod h1:6lQm79b+lXiMfvg/cZm0SGofjICqVBUtrP5yJMmIC1U=
@@ -298,8 +299,8 @@ github.com/lissteron/simplerr v0.9.0 h1:eOU8Lxa1H+EnoydpWe/1pNTsUmFG0xt9hXmhlw9X
 github.com/lissteron/simplerr v0.9.0/go.mod h1:VSOjL9ES27gcVJB58bBLPCr3bwEcyatTCqCxnlYQGmA=
 github.com/loghole/lhw v0.6.0 h1:iDqPe/FIfjYFaBzpv6YLVrjoxSSPl0Bw5yAdPiu+UGs=
 github.com/loghole/lhw v0.6.0/go.mod h1:3nHTTNpzwL9iITm+BSLoXjIpglpsNpIw3KYemGTsLgw=
-github.com/loghole/tracing v0.15.2 h1:GxVpOdi3gtkG7vT8P2Z3mEGJMUi73u8ub2lhKINUE4s=
-github.com/loghole/tracing v0.15.2/go.mod h1:idXwl9nG8g51gQobW4BGfB3vqPn1thW+MCF+rLU1yFY=
+github.com/loghole/tracing v0.16.0 h1:ktEo2+Mw+XkrW9n0HhKiy84ZjIeVD8p2LBgucLZX0h0=
+github.com/loghole/tracing v0.16.0/go.mod h1:fW51UXmhNFN3xXGs0+ekyBPScw6Fj8V9324pd07JTVI=
 github.com/lyft/protoc-gen-star v0.5.3/go.mod h1:V0xaHgaf5oCCqmcxYcWiDfTiKsZsRc87/1qhoTACD8w=
 github.com/magiconair/properties v1.8.5 h1:b6kJs+EmPFMYGkow9GiUyCyOvIwYetYJ3fSaWak/Gls=
 github.com/magiconair/properties v1.8.5/go.mod h1:y3VJvCyxH9uVvJTWEGAELF3aiYNyPKd5NZ3oSwXrF60=
