@@ -21,8 +21,6 @@ linters-settings:
       - performance
       - diagnostic
       - opinionated
-service:
-  golangci-lint-version: 1.41.x
 issues:
   include:
     - EXC0002

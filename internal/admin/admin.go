@@ -83,6 +83,7 @@ func (s *Handlers) serviceInfoHandler(w http.ResponseWriter, r *http.Request) {
 	encoder := json.NewEncoder(w)
 	encoder.SetIndent("", "  ")
 
+	// nolint:errchkjson // not need check error.
 	_ = encoder.Encode(info{
 		InstanceUUID: s.info.InstanceUUID,
 		ServiceName:  s.info.ServiceName,
@@ -109,6 +110,7 @@ func (s *Handlers) swaggerDefHandler(w http.ResponseWriter, r *http.Request) {
 	desc.Info.Version = s.info.Version
 	desc.Info.Title = s.info.AppName
 
+	// nolint:errchkjson // not need check error.
 	_ = json.NewEncoder(w).Encode(desc)
 }
 
