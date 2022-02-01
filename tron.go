@@ -32,7 +32,7 @@ type App struct {
 	tracer  tracer
 	health  health
 
-	errGroupCtx context.Context
+	errGroupCtx context.Context // nolint:containedctx // need internal context
 	errGroup    *errgroup.Group
 }
 

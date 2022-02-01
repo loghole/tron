@@ -91,7 +91,7 @@ func runBufCommand(project *models.Project, args ...string) error {
 		out := strings.ReplaceAll(output.String(), models.ProjectPathVendorPB, "")
 		out = strings.ReplaceAll("\t"+out, "\n", "\n\t")
 
-		return fmt.Errorf(out) // nolint:goerr113 // need dynamic error for beautiful output
+		return fmt.Errorf(out) // nolint:goerr113,gocritic // need dynamic error for beautiful output
 	}
 
 	return nil
