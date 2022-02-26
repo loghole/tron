@@ -22,7 +22,7 @@ var (
 type Info struct {
 	InstanceUUID string
 	ServiceName  string
-	Namespace    string
+	Namespace    Namespace
 	AppName      string
 	GitHash      string
 	Version      string

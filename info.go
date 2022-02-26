@@ -24,7 +24,7 @@ func initInfo() *Info {
 		InstanceUUID: app.InstanceUUID.String(),
 		ServiceName:  app.ServiceName,
 		AppName:      app.AppName,
-		Namespace:    app.ParseNamespace(os.Getenv(app.NamespaceEnv)).String(),
+		Namespace:    app.ParseNamespace(os.Getenv(app.NamespaceEnv)),
 		GitHash:      app.GitHash,
 		Version:      app.Version,
 		BuildAt:      app.BuildAt,

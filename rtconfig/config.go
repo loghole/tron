@@ -1,156 +1,118 @@
 package rtconfig
 
 import (
-	"time"
+	"fmt"
+	"reflect"
+	"strings"
+	"sync"
 
-	"github.com/loghole/tron/internal/config"
+	"github.com/fsnotify/fsnotify"
+	"github.com/spf13/viper"
 )
 
-// WatcherCallback is a callback function for a variable watcher.
-type WatcherCallback = config.WatcherCallback
+// Config is viper wrapper.
+type Config struct {
+	viper *viper.Viper
 
-// Value describes a config value.
-type Value = config.Value
-
-// GetValue returns a config Value associated with the key.
-func GetValue(key string) (Value, error) {
-	return config.Get(key) // nolint:wrapcheck // need clean error.
+	mu       sync.Mutex
+	settings map[string]interface{}
+	watchers map[string][]WatcherCallback
 }
 
-// GetString returns the value associated with the key as a string.
-func GetString(key string) string {
-	if val, err := config.Get(key); err == nil {
-		return val.String()
+// New returns new Config instance.
+func New() *Config {
+	config := &Config{
+		viper:    viper.GetViper(),
+		settings: make(map[string]interface{}),
+		watchers: make(map[string][]WatcherCallback),
 	}
 
-	return ""
+	config.viper.AutomaticEnv()
+
+	return config
 }
 
-// GetBool returns the value associated with the key as a boolean.
-func GetBool(key string) bool {
-	if val, err := config.Get(key); err == nil {
-		return val.Bool()
+// SetDefaultConfigFile sets default config file.
+func (c *Config) SetDefaultConfigFile(path, name, ext string) error {
+	if err := c.SetConfigFile(path, name, ext); err != nil {
+		return err
 	}
 
-	return false
-}
-
-// GetInt returns the value associated with the key as an integer.
-func GetInt(key string) int {
-	if val, err := config.Get(key); err == nil {
-		return val.Int()
-	}
-
-	return 0
-}
-
-// GetInt32 returns the value associated with the key as an integer.
-func GetInt32(key string) int32 {
-	val, _ := config.Get(key)
-
-	return val.Int32()
-}
-
-// GetInt64 returns the value associated with the key as an integer.
-func GetInt64(key string) int64 {
-	if val, err := config.Get(key); err == nil {
-		return val.Int64()
-	}
-
-	return 0
-}
-
-// GetUint returns the value associated with the key as an unsigned integer.
-func GetUint(key string) uint {
-	if val, err := config.Get(key); err == nil {
-		return val.Uint()
-	}
-
-	return 0
-}
-
-// GetUint32 returns the value associated with the key as an unsigned integer.
-func GetUint32(key string) uint32 {
-	if val, err := config.Get(key); err == nil {
-		return val.Uint32()
-	}
-
-	return 0
-}
-
-// GetUint64 returns the value associated with the key as an unsigned integer.
-func GetUint64(key string) uint64 {
-	if val, err := config.Get(key); err == nil {
-		return val.Uint64()
-	}
-
-	return 0
-}
-
-// GetFloat64 returns the value associated with the key as a float64.
-func GetFloat64(key string) float64 {
-	if val, err := config.Get(key); err == nil {
-		return val.Float64()
-	}
-
-	return 0
-}
-
-// GetTime returns the value associated with the key as time.
-func GetTime(key string) time.Time {
-	if val, err := config.Get(key); err == nil {
-		return val.Time()
-	}
-
-	return time.Time{}
-}
-
-// GetDuration returns the value associated with the key as a duration.
-func GetDuration(key string) time.Duration {
-	if val, err := config.Get(key); err == nil {
-		return val.Duration()
-	}
-
-	return 0
-}
-
-// GetIntSlice returns the value associated with the key as a slice of int values.
-func GetIntSlice(key string) []int {
-	if val, err := config.Get(key); err == nil {
-		return val.IntSlice()
+	for key, val := range c.viper.AllSettings() {
+		c.viper.SetDefault(key, val)
 	}
 
 	return nil
 }
 
-// GetStringSlice returns the value associated with the key as a slice of strings.
-func GetStringSlice(key string) []string {
-	if val, err := config.Get(key); err == nil {
-		return val.StringSlice()
+// SetConfigFile sets config file.
+func (c *Config) SetConfigFile(path, name, ext string) error {
+	c.viper.SetConfigType(ext)
+	c.viper.AddConfigPath(path)
+	c.viper.SetConfigName(name)
+
+	if err := c.viper.MergeInConfig(); err != nil {
+		return fmt.Errorf("can't merge base config: %w", err)
 	}
+
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
+	c.settings = c.viper.AllSettings()
 
 	return nil
 }
 
-// GetStringMap returns the value associated with the key as a map of interfaces.
-func GetStringMap(key string) map[string]interface{} {
-	if val, err := config.Get(key); err == nil {
-		return val.StringMap()
+// WatchConfig starts config watching.
+func (c *Config) WatchConfig() {
+	c.viper.WatchConfig()
+	c.viper.OnConfigChange(c.onConfigChange)
+}
+
+// Get returns a config Value associated with the key in viper config.
+func (c *Config) Get(key string) (Value, error) {
+	if val := c.viper.Get(key); val != nil {
+		return value{val}, nil
 	}
+
+	return nil, ErrNilVariable
+}
+
+// WatchVariable allows to set a callback func on a specific variable change in viper config.
+func (c *Config) WatchVariable(key string, cb WatcherCallback) error {
+	if key == "" {
+		return ErrEmptyKey
+	}
+
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
+	key = strings.ToLower(key)
+
+	c.watchers[key] = append(c.watchers[key], cb)
 
 	return nil
 }
 
-// GetStringMapString returns the value associated with the key as a map of strings.
-func GetStringMapString(key string) map[string]string {
-	if val, err := config.Get(key); err == nil {
-		return val.StringMapString()
+func (c *Config) onConfigChange(_ fsnotify.Event) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
+	for key, newValue := range c.viper.AllSettings() {
+		watchers, ok := c.watchers[key]
+		if !ok {
+			continue
+		}
+
+		oldValue, ok := c.settings[key]
+		if !ok || reflect.DeepEqual(oldValue, newValue) {
+			continue
+		}
+
+		for _, watcher := range watchers {
+			watcher(value{oldValue}, value{newValue})
+		}
+
+		c.settings[key] = newValue
 	}
-
-	return nil
-}
-
-// WatchVariable allows to set a callback func on a specific variable change.
-func WatchVariable(key string, cb WatcherCallback) error {
-	return config.WatchVariable(key, cb) // nolint:wrapcheck // need clean error.
 }

@@ -48,7 +48,7 @@ func (t *tracer) configuration(info *Info) *tracing.Configuration {
 
 	configuration.Attributes = append(configuration.Attributes,
 		attribute.String("app.version", info.Version),
-		attribute.String("app.namespace", info.Namespace),
+		attribute.String("app.namespace", info.Namespace.String()),
 		attribute.String("app.name", info.AppName),
 		attribute.String("app.git_hash", info.GitHash),
 		attribute.String("app.build_at", info.BuildAt),

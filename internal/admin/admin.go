@@ -87,7 +87,7 @@ func (s *Handlers) serviceInfoHandler(w http.ResponseWriter, r *http.Request) {
 	_ = encoder.Encode(info{
 		InstanceUUID: s.info.InstanceUUID,
 		ServiceName:  s.info.ServiceName,
-		Namespace:    s.info.Namespace,
+		Namespace:    s.info.Namespace.String(),
 		AppName:      s.info.AppName,
 		GitHash:      s.info.GitHash,
 		Version:      s.info.Version,

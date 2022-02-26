@@ -8,17 +8,16 @@ import (
 	"os/signal"
 
 	"github.com/go-chi/chi/v5"
-	"github.com/loghole/lhw/zaplog"
 	"github.com/loghole/tracing"
 	"github.com/loghole/tracing/tracegrpc"
 	"github.com/loghole/tracing/tracehttp"
 	"github.com/loghole/tracing/tracelog"
+	"go.uber.org/zap"
 	"golang.org/x/sync/errgroup"
 
 	"github.com/loghole/tron/healthcheck"
 	"github.com/loghole/tron/internal/admin"
 	"github.com/loghole/tron/internal/app"
-	"github.com/loghole/tron/internal/config"
 	"github.com/loghole/tron/internal/grpc"
 	"github.com/loghole/tron/transport"
 )
@@ -43,12 +42,12 @@ func New(options ...app.Option) (*App, error) {
 		return nil, fmt.Errorf("apply opts failed: %w", err)
 	}
 
-	if err := config.Init(opts); err != nil {
-		return nil, fmt.Errorf("init config failed: %w", err)
-	}
-
 	a := &App{opts: opts, info: initInfo()}
 	a.health.init()
+
+	if err := initConfig(a.info, a.opts); err != nil {
+		return nil, err
+	}
 
 	if err := a.logger.init(a.info, a.opts); err != nil {
 		return nil, err
@@ -90,8 +89,8 @@ func (a *App) Tracer() *tracing.Tracer {
 }
 
 // Logger returns default zap logger.
-func (a *App) Logger() *zaplog.Logger {
-	return a.logger.Logger
+func (a *App) Logger() *zap.SugaredLogger {
+	return a.logger.SugaredLogger
 }
 
 // TraceLogger returns wrapped zap logger with opentracing metadata injection to log records.
@@ -128,7 +127,6 @@ func (a *App) Close() {
 	_ = a.logger.Sync()
 
 	a.tracer.Close()
-	a.logger.Close()
 }
 
 // WithRunOptions appends some run options.
