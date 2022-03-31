@@ -8,7 +8,7 @@ require (
 	github.com/go-chi/chi/v5 v5.0.7
 	github.com/go-openapi/spec v0.20.4
 	github.com/google/uuid v1.3.0
-	github.com/grpc-ecosystem/grpc-gateway/v2 v2.7.3
+	github.com/grpc-ecosystem/grpc-gateway/v2 v2.10.0
 	github.com/lissteron/simplerr v0.9.0
 	github.com/loghole/tracing v0.16.3
 	github.com/prometheus/client_golang v1.12.1
@@ -18,8 +18,8 @@ require (
 	go.opentelemetry.io/otel/sdk v1.3.0
 	go.uber.org/zap v1.20.0
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
-	google.golang.org/genproto v0.0.0-20220126215142-9970aeb2e350
-	google.golang.org/grpc v1.44.0
+	google.golang.org/genproto v0.0.0-20220317150908-0efb43f6373e
+	google.golang.org/grpc v1.45.0
 )
 
 require (
