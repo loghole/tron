@@ -10,13 +10,13 @@ require (
 	github.com/google/uuid v1.3.0
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.7.3
 	github.com/lissteron/simplerr v0.9.0
-	github.com/loghole/lhw v0.6.0
 	github.com/loghole/tracing v0.16.3
 	github.com/prometheus/client_golang v1.12.1
 	github.com/spf13/cast v1.4.1
 	github.com/spf13/viper v1.10.1
 	go.opentelemetry.io/otel v1.3.0
 	go.opentelemetry.io/otel/sdk v1.3.0
+	go.uber.org/zap v1.20.0
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
 	google.golang.org/genproto v0.0.0-20220126215142-9970aeb2e350
 	google.golang.org/grpc v1.44.0
@@ -51,7 +51,6 @@ require (
 	go.opentelemetry.io/otel/trace v1.3.0 // indirect
 	go.uber.org/atomic v1.9.0 // indirect
 	go.uber.org/multierr v1.7.0 // indirect
-	go.uber.org/zap v1.20.0 // indirect
 	golang.org/x/net v0.0.0-20220127200216-cd36cc0744dd // indirect
 	golang.org/x/sys v0.0.0-20220128215802-99c3d69c2c27 // indirect
 	golang.org/x/text v0.3.7 // indirect

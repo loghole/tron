@@ -20,8 +20,6 @@ func Values(project *models.Project, printer stdout.Printer) error {
 	data := templates.ValuesData{
 		List: []templates.Env{
 			{Key: strings.ToUpper(app.LoggerLevelEnv), Val: `info`},
-			{Key: strings.ToUpper(app.LoggerCollectorAddrEnv), Val: `""`},
-			{Key: strings.ToUpper(app.LoggerDisableStdoutEnv), Val: `false`},
 			{Key: strings.ToUpper(app.JaegerAddrEnv), Val: `""`},
 			{Key: strings.ToUpper(app.JaegerSamplerType), Val: `const`},
 			{Key: strings.ToUpper(app.JaegerSamplerParam), Val: `0.5`},

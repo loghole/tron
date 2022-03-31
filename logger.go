@@ -3,33 +3,51 @@ package tron
 import (
 	"fmt"
 
-	"github.com/loghole/lhw/zaplog"
 	"github.com/loghole/tracing/tracelog"
+	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 
 	"github.com/loghole/tron/internal/app"
 	"github.com/loghole/tron/rtconfig"
 )
 
 type logger struct {
-	*zaplog.Logger
+	level zap.AtomicLevel
+
+	*zap.SugaredLogger
 	tracelog tracelog.Logger
 }
 
 func (l *logger) init(info *Info, opts *app.Options) (err error) {
-	l.Logger, err = zaplog.NewLogger(&zaplog.Config{
-		Level:         rtconfig.GetString(app.LoggerLevelEnv),
-		CollectorURL:  rtconfig.GetString(app.LoggerCollectorAddrEnv),
-		Hostname:      opts.Hostname,
-		Namespace:     info.Namespace,
-		Source:        info.ServiceName,
-		BuildCommit:   info.GitHash,
-		DisableStdout: rtconfig.GetBool(app.LoggerDisableStdoutEnv),
-	}, opts.LoggerOptions...)
-	if err != nil {
-		return fmt.Errorf("init logger failed: %w", err)
+	l.level = zap.NewAtomicLevelAt(parseZapLevel(rtconfig.GetString(app.LoggerLevelEnv)))
+
+	var cfg zap.Config
+
+	if info.Namespace == app.NamespaceLocal {
+		cfg = zap.NewDevelopmentConfig()
+		cfg.EncoderConfig.EncodeLevel = zapcore.CapitalColorLevelEncoder
+	} else {
+		cfg = zap.NewProductionConfig()
+		cfg.EncoderConfig = l.encoderConfig()
 	}
 
-	l.tracelog = tracelog.NewTraceLogger(l.Logger.SugaredLogger)
+	cfg.Level = l.level
+	cfg.DisableStacktrace = true
+	cfg.InitialFields = map[string]interface{}{
+		"host":         info.InstanceUUID,
+		"namespace":    info.Namespace,
+		"source":       info.ServiceName,
+		"version":      info.Version,
+		"build_commit": info.GitHash,
+	}
+
+	logger, err := cfg.Build(opts.LoggerOptions...)
+	if err != nil {
+		return fmt.Errorf("build zap logger: %w", err)
+	}
+
+	l.SugaredLogger = logger.Sugar()
+	l.tracelog = tracelog.NewTraceLogger(l.SugaredLogger)
 
 	if err := rtconfig.WatchVariable(app.LoggerLevelEnv, l.levelWatcher); err != nil {
 		return fmt.Errorf("start watch log level: %w", err)
@@ -47,5 +65,40 @@ func (l *logger) levelWatcher(oldValue, newValue rtconfig.Value) {
 		return
 	}
 
-	l.Logger.SetLevel(newValue.String())
+	var lvl zapcore.Level
+
+	if err := lvl.Set(newValue.String()); err != nil {
+		l.Errorf("invalid level value '%s'", newValue.String())
+
+		return
+	}
+
+	l.level.SetLevel(parseZapLevel(newValue.String()))
+	l.Errorf("update log level to: '%s'", newValue.String())
+}
+
+func (l *logger) encoderConfig() zapcore.EncoderConfig {
+	return zapcore.EncoderConfig{
+		TimeKey:        "time",
+		LevelKey:       "level",
+		NameKey:        "logger",
+		CallerKey:      "caller",
+		MessageKey:     "message",
+		StacktraceKey:  "stacktrace",
+		LineEnding:     zapcore.DefaultLineEnding,
+		EncodeLevel:    zapcore.LowercaseLevelEncoder,
+		EncodeTime:     zapcore.RFC3339NanoTimeEncoder,
+		EncodeDuration: zapcore.NanosDurationEncoder,
+		EncodeCaller:   zapcore.ShortCallerEncoder,
+	}
+}
+
+func parseZapLevel(s string) zapcore.Level {
+	var lvl zapcore.Level
+
+	if err := lvl.Set(s); err != nil {
+		return zapcore.InfoLevel
+	}
+
+	return lvl
 }
