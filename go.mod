@@ -16,7 +16,7 @@ require (
 	github.com/spf13/viper v1.10.1
 	go.opentelemetry.io/otel v1.3.0
 	go.opentelemetry.io/otel/sdk v1.3.0
-	go.uber.org/zap v1.20.0
+	go.uber.org/zap v1.24.0
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
 	google.golang.org/genproto v0.0.0-20220126215142-9970aeb2e350
 	google.golang.org/grpc v1.44.0
