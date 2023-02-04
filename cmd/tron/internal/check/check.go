@@ -16,7 +16,7 @@ import (
 )
 
 const (
-	GoMinVersion     = "1.17.0"
+	GoMinVersion     = "1.20.0"
 	GitMinVersion    = "2.3.4"
 	ProtocMinVersion = "3.3.0"
 )

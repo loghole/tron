@@ -1,5 +1,6 @@
 package templates
 
+//nolint:dupword // skip
 const Buf = `# Below is not the lint and breaking configuration we recommend!
 # This just just what googleapis passes.
 # For lint, we recommend having the single value "DEFAULT" in "use"

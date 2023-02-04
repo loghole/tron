@@ -129,7 +129,7 @@ func (v *VendorPB) curlProto(name string) error {
 		return fmt.Errorf("'%s': %w", name, ErrBadImport)
 	}
 
-	resp, err := http.Get(link) // nolint:gosec,bodyclose,noctx //body is closed
+	resp, err := http.Get(link) //nolint:gosec,bodyclose,noctx //body is closed
 	if err != nil {
 		return err
 	}

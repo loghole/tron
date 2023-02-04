@@ -3,6 +3,7 @@ package swagger
 import "embed"
 
 // Content holds our static swagger web server content.
+//
 //go:embed favicon-16x16.png
 //go:embed favicon-32x32.png
 //go:embed index.html

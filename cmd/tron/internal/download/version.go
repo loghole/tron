@@ -25,7 +25,7 @@ func LatestTronVersion() (string, error) {
 		return "", fmt.Errorf("http new request '%s': %w", url, err)
 	}
 
-	resp, err := http.DefaultClient.Do(req) // nolint:bodyclose // body is closed
+	resp, err := http.DefaultClient.Do(req) //nolint:bodyclose // body is closed
 	if err != nil {
 		return "", fmt.Errorf("http do request '%s': %w", url, err)
 	}

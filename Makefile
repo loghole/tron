@@ -4,8 +4,8 @@ GO_TEST_PACKAGES = $(shell go list ./... | egrep -v '(pkg|cmd)')
 gomod:
 	go mod download
 
-.PHONY: gotest
-gotest:
+.PHONY: test
+test:
 	go test -race -v -cover -coverprofile coverage.out $(GO_TEST_PACKAGES)
 
 .PHONY: lint

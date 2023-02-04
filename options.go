@@ -15,9 +15,9 @@ type Option = app.Option
 // WithPublicHTTP returns a Option that sets public http port.
 // Cannot be changed by config or env.
 //
-//  Example:
+//	Example:
 //
-//  tron.New(tron.WithPublicGRPC(8080))
+//	tron.New(tron.WithPublicGRPC(8080))
 func WithPublicHTTP(port uint16) app.Option {
 	return func(opts *app.Options) error {
 		opts.PortHTTP = port
@@ -29,9 +29,9 @@ func WithPublicHTTP(port uint16) app.Option {
 // WithAdminHTTP returns a Option that sets admin http port.
 // Cannot be changed by config or env.
 //
-//  Example:
+//	Example:
 //
-//  tron.New(tron.WithAdminHTTP(8081))
+//	tron.New(tron.WithAdminHTTP(8081))
 func WithAdminHTTP(port uint16) app.Option {
 	return func(opts *app.Options) error {
 		opts.PortAdmin = port
@@ -43,9 +43,9 @@ func WithAdminHTTP(port uint16) app.Option {
 // WithPublicGRPC returns a Option that sets public grpc port.
 // Cannot be changed by config or env.
 //
-//  Example:
+//	Example:
 //
-//  tron.New(tron.WithPublicGRPC(8082))
+//	tron.New(tron.WithPublicGRPC(8082))
 func WithPublicGRPC(port uint16) app.Option {
 	return func(opts *app.Options) error {
 		opts.PortGRPC = port
@@ -57,9 +57,9 @@ func WithPublicGRPC(port uint16) app.Option {
 // WithExitSignals returns a Option that sets exit signals for application.
 // Default signals is: syscall.SIGTERM, syscall.SIGINT.
 //
-//  Example:
+//	Example:
 //
-//  tron.New(tron.WithExitSignals(syscall.SIGKILL))
+//	tron.New(tron.WithExitSignals(syscall.SIGKILL))
 func WithExitSignals(sig ...os.Signal) app.Option {
 	return func(opts *app.Options) error {
 		opts.ExitSignals = append(opts.ExitSignals, sig...)
@@ -70,15 +70,15 @@ func WithExitSignals(sig ...os.Signal) app.Option {
 
 // WithConfigMap returns a Option that init app config from map and envs.
 //
-//  Example:
+//	Example:
 //
-//  tron.New(tron.WithConfigMap(map[string]interface{}{
-//  	"namespace":         "dev",
-//  	"service_port_grpc": 35900,
-//  	"cockroach_addr":    "db_addr",
-//  	"cockroach_user":    "db_user",
-//  	"cockroach_db":      "db_name",
-//  }))
+//	tron.New(tron.WithConfigMap(map[string]interface{}{
+//		"namespace":         "dev",
+//		"service_port_grpc": 35900,
+//		"cockroach_addr":    "db_addr",
+//		"cockroach_user":    "db_user",
+//		"cockroach_db":      "db_name",
+//	}))
 func WithConfigMap(cfg map[string]interface{}) app.Option {
 	return func(opts *app.Options) error {
 		opts.ConfigMap = cfg
@@ -90,11 +90,11 @@ func WithConfigMap(cfg map[string]interface{}) app.Option {
 // WithGRPCListener returns a Option that sets net listener for grpc public server.
 // Can be used for create application tests with memory listener.
 //
-//  Example:
+//	Example:
 //
-//  listener := bufconn.Listen(1024*1024)
+//	listener := bufconn.Listen(1024*1024)
 //
-//  tron.New(tron.WithGRPCListener(listener))
+//	tron.New(tron.WithGRPCListener(listener))
 func WithGRPCListener(listener net.Listener) app.Option {
 	return func(opts *app.Options) error {
 		opts.GRPCListener = listener
@@ -106,11 +106,11 @@ func WithGRPCListener(listener net.Listener) app.Option {
 // WithHTTPListener returns a Option that sets net listener for http public server.
 // Can be used for create application tests with memory listener.
 //
-//  Example:
+//	Example:
 //
-//  listener = bufconn.Listen(1024*1024)
+//	listener = bufconn.Listen(1024*1024)
 //
-//  tron.New(tron.WithHTTPListener(listener))
+//	tron.New(tron.WithHTTPListener(listener))
 func WithHTTPListener(listener net.Listener) app.Option {
 	return func(opts *app.Options) error {
 		opts.HTTPListener = listener
@@ -132,9 +132,9 @@ func AddLogCaller() app.Option {
 // AddLogStacktrace configures the Logger to record a stack trace for all messages at
 // or above a given level.
 //
-//  Example:
+//	Example:
 //
-//  tron.New(tron.AddLogStacktrace("error"))
+//	tron.New(tron.AddLogStacktrace("error"))
 func AddLogStacktrace(level string) app.Option {
 	return func(opts *app.Options) error {
 		opts.LoggerOptions = append(opts.LoggerOptions, zap.AddStacktrace(parseZapLevel(level)))
@@ -145,9 +145,9 @@ func AddLogStacktrace(level string) app.Option {
 
 // WithLogField adds field to the Logger.
 //
-//  Example:
+//	Example:
 //
-//  tron.New(tron.WithLogField("my_field_key", "my_field_value"))
+//	tron.New(tron.WithLogField("my_field_key", "my_field_value"))
 func WithLogField(key string, value interface{}) app.Option {
 	return func(opts *app.Options) error {
 		opts.LoggerOptions = append(opts.LoggerOptions, zap.Fields(zap.Any(key, value)))
@@ -159,9 +159,9 @@ func WithLogField(key string, value interface{}) app.Option {
 // WithRealtimeConfig returns a Option that activate realtime config.
 // Realtime config watch only values file for current namespace.
 //
-//  Example:
+//	Example:
 //
-//  tron.New(tron.WithRealtimeConfig())
+//	tron.New(tron.WithRealtimeConfig())
 func WithRealtimeConfig() app.Option {
 	return func(opts *app.Options) error {
 		opts.RealtimeConfig = true

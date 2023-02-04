@@ -110,5 +110,5 @@ func (c *checker) handle(w http.ResponseWriter, r *http.Request, list ...map[str
 
 	encoder := json.NewEncoder(w)
 	encoder.SetIndent("", "    ")
-	_ = encoder.Encode(result) // nolint:errchkjson // not need check error.
+	_ = encoder.Encode(result) //nolint:errchkjson // not need check error.
 }

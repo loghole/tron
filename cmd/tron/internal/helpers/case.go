@@ -6,7 +6,6 @@ import (
 	"unicode"
 )
 
-// nolint:gochecknoglobals //regexp
 var (
 	goNameRexp      = regexp.MustCompile(`[^a-zA-Z0-9\s_-]+`)
 	firstDigitsRexp = regexp.MustCompile(`^\d+`)

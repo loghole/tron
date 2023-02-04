@@ -21,7 +21,8 @@ func ErrorWriter() runtime.ErrorHandlerFunc {
 		marshaler runtime.Marshaler,
 		w http.ResponseWriter,
 		r *http.Request,
-		err error) {
+		err error,
+	) {
 		s := internalErr.ParseError(ctx, err)
 
 		buf, merr := json.Marshal(s)

@@ -138,7 +138,7 @@ func (t *Tron) checkout(rel *models.Release, dir string) error {
 		return simplerr.Wrapf(err, "failed to run %s", cmd.String())
 	}
 
-	cmd = exec.Command(cmdGit, "checkout", rel.TagName) // nolint:gosec //all good
+	cmd = exec.Command(cmdGit, "checkout", rel.TagName) //nolint:gosec //all good
 	cmd.Dir = filepath.Join(dir, "tron")
 
 	if err := cmd.Run(); err != nil {
@@ -181,7 +181,7 @@ func (t *Tron) install(rel *models.Release, dir string) error {
 
 	args := []string{`build`, `-o`, path, `-ldflags`, fmt.Sprintf(versionLdflag, rel.TagName), `main.go`}
 
-	cmd := exec.Command(cmdGo, args...) // nolint:gosec //all good
+	cmd := exec.Command(cmdGo, args...) //nolint:gosec //all good
 	cmd.Dir = filepath.Join(dir, "tron", "cmd", "tron")
 
 	if err := cmd.Run(); err != nil {
@@ -215,7 +215,7 @@ func filterReleases(list []*models.Release, stable bool) ([]*models.Release, err
 }
 
 func releasesList() ([]*models.Release, error) {
-	resp, err := http.Get(releasesURL) // nolint:gosec,bodyclose,noctx //body is closed
+	resp, err := http.Get(releasesURL) //nolint:gosec,bodyclose,noctx //body is closed
 	if err != nil {
 		return nil, simplerr.Wrap(err, "request failed")
 	}
