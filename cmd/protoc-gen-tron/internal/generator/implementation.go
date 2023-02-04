@@ -7,7 +7,7 @@ import (
 	"google.golang.org/protobuf/compiler/protogen"
 )
 
-// nolint:funlen // generation can be big
+//nolint:funlen // generation can be big
 func (gen *Generator) generateImpl(p *protogen.Plugin, f *protogen.File) {
 	var (
 		service         = f.Services[0]

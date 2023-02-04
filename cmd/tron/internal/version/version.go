@@ -1,4 +1,4 @@
 package version
 
-// nolint
+//nolint:gochecknoglobals // skip
 var CliVersion = "+devel"

@@ -5,7 +5,7 @@ import (
 	"time"
 )
 
-// nolint:gochecknoglobals // global config instance.
+//nolint:gochecknoglobals // global config instance.
 var (
 	_globalConfig   = New()
 	_globalConfigMu sync.RWMutex

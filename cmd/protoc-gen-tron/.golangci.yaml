@@ -1,4 +1,3 @@
-# More info on config here: https://github.com/golangci/golangci-lint#config-file
 run:
   tests: false
 linters:
@@ -6,14 +5,20 @@ linters:
   disable:
     - godot
     - gci
-    - nolintlint
-    - wrapcheck
     - exhaustivestruct
-    - forbidigo
-    - revive
-    - cyclop
+    - ireturn
     - varnamelen
+    - nosnakecase
+    - interfacebloat
+    - forbidigo
+    - gomoddirectives
+  fast: true
 linters-settings:
+  tagliatelle:
+    case:
+      use-field-name: true
+      rules:
+        json: snake
   gocritic:
     enabled-tags:
       - style
@@ -21,3 +26,6 @@ linters-settings:
       - performance
       - diagnostic
       - opinionated
+issues:
+  include:
+    - EXC0002

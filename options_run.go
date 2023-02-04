@@ -52,7 +52,7 @@ func WithTLSKeyPair(certFile, keyFile string) app.RunOption {
 	}
 
 	return func(opts *app.Options) (err error) {
-		opts.TLSConfig = &tls.Config{} // nolint:gosec // default by http.ListenAndServeTLS
+		opts.TLSConfig = &tls.Config{} //nolint:gosec // default by http.ListenAndServeTLS
 		opts.TLSConfig.Certificates = make([]tls.Certificate, 1)
 
 		opts.TLSConfig.Certificates[0], err = tls.LoadX509KeyPair(certFile, keyFile)

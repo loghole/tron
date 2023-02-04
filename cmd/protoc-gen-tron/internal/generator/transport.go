@@ -6,7 +6,7 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
-// nolint:funlen // generation can be big
+//nolint:funlen // generation can be big
 func (gen *Generator) generateTransport(p *protogen.Plugin, f *protogen.File) {
 	var (
 		service     = f.Services[0]

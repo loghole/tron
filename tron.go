@@ -31,7 +31,7 @@ type App struct {
 	tracer  tracer
 	health  health
 
-	errGroupCtx context.Context // nolint:containedctx // need internal context
+	errGroupCtx context.Context //nolint:containedctx // need internal context
 	errGroup    *errgroup.Group
 }
 
@@ -119,7 +119,7 @@ func (a *App) Go(f func() error) {
 // Wait blocks until all function calls from the Go method have returned, then
 // returns the first non-nil error (if any) from them.
 func (a *App) Wait() error {
-	return a.errGroup.Wait() // nolint:wrapcheck // need clean err.
+	return a.errGroup.Wait() //nolint:wrapcheck // need clean err.
 }
 
 // Close closes tracer and logger.
@@ -137,7 +137,7 @@ func (a *App) WithRunOptions(opts ...app.RunOption) *App {
 }
 
 // Run apply run options if exists and starts servers.
-func (a *App) Run(impl ...transport.Service) error { // nolint:funlen // can be big.
+func (a *App) Run(impl ...transport.Service) error { //nolint:funlen // can be big.
 	if err := a.opts.ApplyRunOptions(); err != nil {
 		return fmt.Errorf("apply run options failed: %w", err)
 	}
@@ -157,21 +157,21 @@ func (a *App) Run(impl ...transport.Service) error { // nolint:funlen // can be 
 		a.logger.Infof("grpc.public: start server on: %s", a.servers.publicGRPC.Addr())
 		defer a.logger.Warn("grpc.public: server stopped")
 
-		return a.servers.publicGRPC.Serve() // nolint:wrapcheck // need clean err
+		return a.servers.publicGRPC.Serve() //nolint:wrapcheck // need clean err
 	})
 
 	a.Go(func() error {
 		a.logger.Infof("http.public: start server on: %s", a.servers.publicHTTP.Addr())
 		defer a.logger.Warn("http.public: server stopped")
 
-		return a.servers.publicHTTP.Serve() // nolint:wrapcheck // need clean err
+		return a.servers.publicHTTP.Serve() //nolint:wrapcheck // need clean err
 	})
 
 	a.Go(func() error {
 		a.logger.Infof("http.admin: start server on: %s", a.servers.adminHTTP.Addr())
 		defer a.logger.Warn("http.admin: server stopped")
 
-		return a.servers.adminHTTP.Serve() // nolint:wrapcheck // need clean err
+		return a.servers.adminHTTP.Serve() //nolint:wrapcheck // need clean err
 	})
 
 	exit := make(chan os.Signal, 1)

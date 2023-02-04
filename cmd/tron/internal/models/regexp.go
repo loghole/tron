@@ -7,7 +7,6 @@ import (
 
 var ErrNotSemanticVersion = errors.New("string is not semantic version")
 
-// nolint:gochecknoglobals //regexp
 var (
 	Version3Regexp = regexp.MustCompile(`(\d+\.\d+\.\d+)`)
 	Version2Regexp = regexp.MustCompile(`(\d+\.\d+)`)

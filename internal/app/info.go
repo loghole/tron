@@ -7,7 +7,7 @@ import (
 	"github.com/google/uuid"
 )
 
-// nolint:gochecknoglobals // build args
+//nolint:gochecknoglobals // build args
 var (
 	InstanceUUID = uuid.New()
 	StartTime    = time.Now()

@@ -16,7 +16,7 @@ import (
 
 var ErrModuleNotFound = errors.New("project module does not exists")
 
-var Version string // nolint:gochecknoglobals // build args
+var Version string //nolint:gochecknoglobals // build args
 
 func main() {
 	var (

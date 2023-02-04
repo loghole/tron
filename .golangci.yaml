@@ -8,6 +8,9 @@ linters:
     - exhaustivestruct
     - ireturn
     - varnamelen
+    - nosnakecase
+    - interfacebloat
+  fast: true
 linters-settings:
   tagliatelle:
     case:
