@@ -27,7 +27,6 @@ type Options struct {
 	PortAdmin     uint16
 	PortHTTP      uint16
 	PortGRPC      uint16
-	LoggerLevel   zap.AtomicLevel
 	LoggerOptions []zap.Option
 	LoggerConfig  zap.Config
 	TracerConfig  *tracing.Configuration

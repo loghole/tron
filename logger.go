@@ -11,8 +11,6 @@ import (
 )
 
 type logger struct {
-	level zap.AtomicLevel
-
 	*zap.SugaredLogger
 	tracelog tracelog.Logger
 }
@@ -23,7 +21,6 @@ func (l *logger) init(opts *app.Options) (err error) {
 		return fmt.Errorf("build zap logger: %w", err)
 	}
 
-	l.level = opts.LoggerLevel
 	l.SugaredLogger = zlog.Sugar()
 	l.tracelog = tracelog.NewTraceLogger(l.SugaredLogger)
 

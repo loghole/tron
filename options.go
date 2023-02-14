@@ -174,7 +174,16 @@ func WithLoggerLevel(s string) app.Option {
 //	tron.New(tron.WithLoggerLevel(level))
 func WithAtomicLoggerLevel(level zap.AtomicLevel) app.Option {
 	return func(opts *app.Options) error {
-		opts.LoggerLevel = level
+		opts.LoggerConfig.Level = level
+
+		return nil
+	}
+}
+
+// WithLoggerConfig sets logger config.
+func WithLoggerConfig(config zap.Config) app.Option { //nolint:gocritic // zap returns nonpointer struct
+	return func(opts *app.Options) error {
+		opts.LoggerConfig = config
 
 		return nil
 	}

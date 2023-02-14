@@ -28,6 +28,7 @@ linters:
     - scopelint # deprecated (since v1.39.0)
     - structcheck # deprecated (since v1.49.0)
     - nonamedreturns
+    - musttag
 linters-settings:
   tagliatelle:
     case:
