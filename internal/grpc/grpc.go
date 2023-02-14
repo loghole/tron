@@ -77,6 +77,10 @@ func (s *Server) RegistryDesc(services ...transport.Service) {
 	}
 }
 
+func (s *Server) IsPresent() bool {
+	return s != nil
+}
+
 // Serve starts serving incoming connections.
 func (s *Server) Serve() error {
 	if s == nil {

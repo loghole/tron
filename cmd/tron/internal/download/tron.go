@@ -181,7 +181,7 @@ func (t *Tron) install(rel *models.Release, dir string) error {
 
 	args := []string{`build`, `-o`, path, `-ldflags`, fmt.Sprintf(versionLdflag, rel.TagName), `main.go`}
 
-	cmd := exec.Command(cmdGo, args...) //nolint:gosec //all good
+	cmd := exec.Command(cmdGo, args...)
 	cmd.Dir = filepath.Join(dir, "tron", "cmd", "tron")
 
 	if err := cmd.Run(); err != nil {
@@ -215,7 +215,7 @@ func filterReleases(list []*models.Release, stable bool) ([]*models.Release, err
 }
 
 func releasesList() ([]*models.Release, error) {
-	resp, err := http.Get(releasesURL) //nolint:gosec,bodyclose,noctx //body is closed
+	resp, err := http.Get(releasesURL) //nolint:bodyclose,noctx // body is closed
 	if err != nil {
 		return nil, simplerr.Wrap(err, "request failed")
 	}

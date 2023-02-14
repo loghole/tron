@@ -29,15 +29,12 @@ func (g *GenerateCMD) Command() *cobra.Command {
 		Use:   "generate",
 		Short: "Generate project pkg and implementation from proto api",
 		Long:  "Generate project pkg and implementation from proto api",
-		Example: "# generate config constants from deploy values:\n" +
-			"tron generate --config\n" +
-			"# generate proto pkg and service implementations from protos:\n" +
+		Example: "# generate proto pkg and service implementations from protos:\n" +
 			"tron generate --proto=api",
 		Run: g.run,
 	}
 
 	cmd.Flags().StringArray(FlagProtoDirs, []string{}, "directory with protos for generating your services")
-	cmd.Flags().Bool(FlagConfig, false, "Generate config helpers from values")
 
 	return cmd
 }
@@ -50,27 +47,12 @@ func (g *GenerateCMD) run(cmd *cobra.Command, args []string) {
 		os.Exit(1)
 	}
 
-	config, err := cmd.Flags().GetBool(FlagConfig)
-	if err != nil {
-		helpers.PrintCommandHelp(cmd)
-		os.Exit(1)
-	}
-
 	// Parse project.
 	project, err := parsers.NewProjectParser(g.printer, parsers.WithProtoDirs(protoDirs)).Parse()
 	if err != nil {
 		g.printer.Printf(color.FgRed, "Parse project failed: %v\n", err)
 		helpers.PrintCommandHelp(cmd)
 		os.Exit(1)
-	}
-
-	// Generate.
-	if config {
-		if err := g.runConfig(project); err != nil {
-			g.printer.Printf(color.FgRed, "Generate config failed: %v\n", err)
-			helpers.PrintCommandHelp(cmd)
-			os.Exit(1)
-		}
 	}
 
 	if len(protoDirs) > 0 && project.WithProtos() {
@@ -107,18 +89,6 @@ func (g *GenerateCMD) runProto(project *models.Project) (err error) {
 
 	if err := generate.ProtoAPI(project, g.printer); err != nil {
 		return fmt.Errorf("generate proto api: %w", err)
-	}
-
-	return nil
-}
-
-func (g *GenerateCMD) runConfig(project *models.Project) error {
-	if err := parsers.NewValuesParser(project, g.printer).Parser(); err != nil {
-		return fmt.Errorf("parse config values: %w", err)
-	}
-
-	if err := generate.Config(project, g.printer); err != nil {
-		return fmt.Errorf("generate config: %w", err)
 	}
 
 	return nil

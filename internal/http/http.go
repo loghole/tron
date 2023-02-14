@@ -16,6 +16,8 @@ import (
 	"github.com/loghole/tron/transport"
 )
 
+const _readHeaderTimeout = 10 * time.Second
+
 // A Server defines configuration for running an HTTP server.
 type Server struct {
 	addr     string
@@ -43,7 +45,7 @@ func NewServerWithListener(listener net.Listener) *Server {
 }
 
 // BuildServer init http server.
-func (s *Server) BuildServer(tlsConfig *tls.Config) (err error) {
+func (s *Server) BuildServer(tlsConfig *tls.Config) error {
 	if s == nil {
 		return nil
 	}
@@ -51,6 +53,8 @@ func (s *Server) BuildServer(tlsConfig *tls.Config) (err error) {
 	if s.listener != nil {
 		return nil
 	}
+
+	var err error
 
 	switch {
 	case tlsConfig != nil:
@@ -107,13 +111,20 @@ func (s *Server) Router() chi.Router {
 	return s.router
 }
 
+func (s *Server) IsPresent() bool {
+	return s != nil
+}
+
 // Serve starts serving incoming connections.
 func (s *Server) Serve() error {
 	if s == nil {
 		return nil
 	}
 
-	s.server = &http.Server{Handler: s.router}
+	s.server = &http.Server{
+		Handler:           s.router,
+		ReadHeaderTimeout: _readHeaderTimeout,
+	}
 
 	if len(s.router.Routes()) == 0 {
 		s.router.HandleFunc("/", http.NotFound)

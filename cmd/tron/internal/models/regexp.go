@@ -13,7 +13,6 @@ var (
 	PackageRegexp  = regexp.MustCompile(`^package ([^;]+);$`)
 	ImportRegexp   = regexp.MustCompile(`^import "([^"]+)";$`)
 	ModuleRegexp   = regexp.MustCompile(`^module (.+)$`)
-	TronOptions    = regexp.MustCompile(`tron_option:(\S+)`)
 )
 
 func ExtractVersion(s string) (string, error) {

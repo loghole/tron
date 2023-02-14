@@ -45,7 +45,7 @@ func ConfirmOverwrite(path string) bool {
 	return result == write
 }
 
-func MkdirWithConfirm(path string) error {
+func MkdirWithConfirm(path string) error { //nolint:cyclop //skip
 	stat, err := os.Stat(path)
 	if err != nil {
 		if !os.IsNotExist(err) {

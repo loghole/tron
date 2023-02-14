@@ -12,7 +12,14 @@ linters:
     - interfacebloat
     - forbidigo
     - gomoddirectives
-  fast: true
+    - wrapcheck
+    - exhaustruct
+    - varcheck # deprecated (since v1.49.0)
+    - deadcode # deprecated (since v1.49.0)
+    - golint # deprecated (since v1.41.0)
+    - scopelint # deprecated (since v1.39.0)
+    - structcheck # deprecated (since v1.49.0)
+    - nonamedreturns
 linters-settings:
   tagliatelle:
     case:

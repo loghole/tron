@@ -1,0 +1,29 @@
+version: '3'
+services:
+  app:
+    image: "github.com/loghole/tron/example:${GIT_COMMIT:-1}"
+    build:
+      context: .
+      dockerfile: build/Dockerfile.dev
+    container_name: "github.com/loghole/tron/example_${GIT_COMMIT:-1}-${BUILD_NUMBER:-1}"
+    volumes:
+      - ./:/src
+      - go-mod-cache:/go/pkg
+      - go-build-cache:/root/.cache/go-build
+    working_dir: /src
+
+  linter:
+    image: golangci/golangci-lint:v1.50.1
+    volumes:
+      - ./:/src
+      - go-mod-cache:/go/pkg
+      - go-build-cache:/root/.cache/go-build
+      - go-lint-cache:/root/.cache/golangci-lint
+
+volumes:
+  go-mod-cache:
+    external: true
+  go-build-cache:
+    external: true
+  go-lint-cache:
+    external: true

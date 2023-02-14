@@ -95,33 +95,19 @@ func (i *InitCMD) runInitService(opts ...parsers.Option) (err error) {
 		generate.Linter,
 		generate.Gitignore,
 		generate.Dockerfile,
-		generate.Values,
+		generate.DevDockerfile,
+		generate.DockerCompose,
+		generate.DockerComposeOverride,
 		generate.ReadmeMD,
+		generate.MainFile,
 	); err != nil {
 		return fmt.Errorf("generate files: %w", err)
 	}
 
 	i.printer.Println(color.FgMagenta, "Generate files from proto api if exists")
 
-	if err := helpers.ExecWithPrint(project.AbsPath, "make", "generate"); err != nil {
+	if err := helpers.ExecWithPrint(project.AbsPath, "make"); err != nil {
 		return fmt.Errorf("exec 'make generate': %w", err)
-	}
-
-	if err := parsers.NewValuesParser(project, i.printer).Parser(); err != nil {
-		return fmt.Errorf("parse config values: %w", err)
-	}
-
-	if err := i.generate(
-		project,
-		generate.Config,
-		generate.ConfigHelper,
-		generate.MainFile,
-	); err != nil {
-		return fmt.Errorf("generate config and main files: %w", err)
-	}
-
-	if err := helpers.Exec(project.AbsPath, "go", "mod", "tidy"); err != nil {
-		return fmt.Errorf("exec 'go mod tidy': %w", err)
 	}
 
 	return nil

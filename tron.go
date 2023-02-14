@@ -37,45 +37,43 @@ type App struct {
 
 // New init viper config, logger and tracer.
 func New(options ...app.Option) (*App, error) {
-	opts, err := app.NewOptions(options...)
+	info := initInfo()
+
+	opts, err := app.NewOptions(info, options...)
 	if err != nil {
 		return nil, fmt.Errorf("apply opts failed: %w", err)
 	}
 
-	a := &App{opts: opts, info: initInfo()}
-	a.health.init()
+	application := &App{opts: opts, info: info}
+	application.health.init()
 
-	if err := initConfig(a.info, a.opts); err != nil {
+	if err := application.logger.init(application.opts); err != nil {
 		return nil, err
 	}
 
-	if err := a.logger.init(a.info, a.opts); err != nil {
+	if err := application.tracer.init(application.opts); err != nil {
 		return nil, err
 	}
 
-	if err := a.tracer.init(a.info); err != nil {
-		return nil, err
-	}
-
-	if err := a.servers.init(a.opts); err != nil {
+	if err := application.servers.init(application.logger, application.opts); err != nil {
 		return nil, fmt.Errorf("init servers failed: %w", err)
 	}
 
 	// Append recover, tracing and errors middlewares.
-	a.opts.AddRunOptions(
-		WithUnaryInterceptor(grpc.RecoverServerInterceptor(a.logger.tracelog)),
-		WithUnaryInterceptor(tracegrpc.UnaryServerInterceptor(a.Tracer())),
-		WithStreamInterceptor(tracegrpc.StreamServerInterceptor(a.Tracer())),
+	application.opts.AddRunOptions(
+		WithUnaryInterceptor(grpc.RecoverServerInterceptor(application.logger.tracelog)),
+		WithUnaryInterceptor(tracegrpc.UnaryServerInterceptor(application.Tracer())),
+		WithStreamInterceptor(tracegrpc.StreamServerInterceptor(application.Tracer())),
 		WithUnaryInterceptor(grpc.SimpleErrorServerInterceptor()),
 	)
 
-	a.servers.publicHTTP.UseMiddleware(tracehttp.Handler(a.Tracer()))
+	application.servers.publicHTTP.UseMiddleware(tracehttp.Handler(application.Tracer()))
 
-	a.logger.With("app info", a.info).Infof("init app")
+	application.logger.With("app info", application.info).Infof("init app")
 
-	a.errGroup, a.errGroupCtx = errgroup.WithContext(context.Background())
+	application.errGroup, application.errGroupCtx = errgroup.WithContext(context.Background())
 
-	return a, nil
+	return application, nil
 }
 
 // Info returns application info.
@@ -137,7 +135,7 @@ func (a *App) WithRunOptions(opts ...app.RunOption) *App {
 }
 
 // Run apply run options if exists and starts servers.
-func (a *App) Run(impl ...transport.Service) error { //nolint:funlen // can be big.
+func (a *App) Run(impl ...transport.Service) error {
 	if err := a.opts.ApplyRunOptions(); err != nil {
 		return fmt.Errorf("apply run options failed: %w", err)
 	}
@@ -153,26 +151,7 @@ func (a *App) Run(impl ...transport.Service) error { //nolint:funlen // can be b
 
 	a.logger.Info("starting app")
 
-	a.Go(func() error {
-		a.logger.Infof("grpc.public: start server on: %s", a.servers.publicGRPC.Addr())
-		defer a.logger.Warn("grpc.public: server stopped")
-
-		return a.servers.publicGRPC.Serve() //nolint:wrapcheck // need clean err
-	})
-
-	a.Go(func() error {
-		a.logger.Infof("http.public: start server on: %s", a.servers.publicHTTP.Addr())
-		defer a.logger.Warn("http.public: server stopped")
-
-		return a.servers.publicHTTP.Serve() //nolint:wrapcheck // need clean err
-	})
-
-	a.Go(func() error {
-		a.logger.Infof("http.admin: start server on: %s", a.servers.adminHTTP.Addr())
-		defer a.logger.Warn("http.admin: server stopped")
-
-		return a.servers.adminHTTP.Serve() //nolint:wrapcheck // need clean err
-	})
+	a.servers.serve(a.errGroup)
 
 	exit := make(chan os.Signal, 1)
 	signal.Notify(exit, a.opts.ExitSignals...)
@@ -190,17 +169,7 @@ func (a *App) Run(impl ...transport.Service) error { //nolint:funlen // can be b
 
 	signal.Stop(exit)
 
-	if err := a.servers.publicHTTP.Close(); err != nil {
-		a.logger.Errorf("error while stopping public http server: %v", err)
-	}
-
-	if err := a.servers.publicGRPC.Close(); err != nil {
-		a.logger.Errorf("error while stopping public grpc server: %v", err)
-	}
-
-	if err := a.servers.adminHTTP.Close(); err != nil {
-		a.logger.Errorf("error while stopping admin http server: %v", err)
-	}
+	a.servers.close()
 
 	return nil
 }

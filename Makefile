@@ -1,4 +1,5 @@
 GO_TEST_PACKAGES = $(shell go list ./... | egrep -v '(pkg|cmd)')
+DOCKER_COMPOSE_DEV ?= docker-compose -f docker-compose-dev.yaml
 
 .PHONY: gomod
 gomod:
@@ -10,9 +11,9 @@ test:
 
 .PHONY: lint
 lint:
-	golangci-lint run -v
-	cd cmd/tron && golangci-lint run -v --path-prefix=cmd/tron
-	cd cmd/protoc-gen-tron && golangci-lint run -v --path-prefix=cmd/protoc-gen-tron
+	${DOCKER_COMPOSE_DEV} run --rm linter /bin/sh -c "golangci-lint run ./... -v"
+	${DOCKER_COMPOSE_DEV} run --rm linter /bin/sh -c "cd cmd/tron && golangci-lint run --path-prefix=cmd/tron -v"
+	${DOCKER_COMPOSE_DEV} run --rm linter /bin/sh -c "cd cmd/protoc-gen-tron && golangci-lint run --path-prefix=cmd/protoc-gen-tron -v"
 
 .PHONY: update-swagger
 update-swagger:

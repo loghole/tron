@@ -202,6 +202,8 @@ github.com/lissteron/simplerr v0.9.0 h1:eOU8Lxa1H+EnoydpWe/1pNTsUmFG0xt9hXmhlw9X
 github.com/lissteron/simplerr v0.9.0/go.mod h1:VSOjL9ES27gcVJB58bBLPCr3bwEcyatTCqCxnlYQGmA=
 github.com/loghole/tracing v0.17.0 h1:MncQfB7e3xsXpI/R+2JzekVJSLSVsV+6BWX335ylYwg=
 github.com/loghole/tracing v0.17.0/go.mod h1:H3dS6+OIpRSvvUKReqTMtoY/TvlWlGADDD37qmhuxgY=
+github.com/loghole/tron v0.25.0 h1:5ALDg6i7uluJf2z78y9Pn1zFpFFnbD7mBnyGwzH6bVA=
+github.com/loghole/tron v0.25.0/go.mod h1:rK5V+Qo3c702NrNwpcY68/EIGehIxiKZ9ZgPBklz508=
 github.com/magiconair/properties v1.8.5 h1:b6kJs+EmPFMYGkow9GiUyCyOvIwYetYJ3fSaWak/Gls=
 github.com/magiconair/properties v1.8.5/go.mod h1:y3VJvCyxH9uVvJTWEGAELF3aiYNyPKd5NZ3oSwXrF60=
 github.com/mailru/easyjson v0.0.0-20190614124828-94de47d64c63/go.mod h1:C1wdFJiN94OJF2b5HbByQZoLdCWB1Yqtg26g4irojpc=

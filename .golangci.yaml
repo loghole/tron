@@ -1,29 +1,70 @@
 run:
+  timeout: 5m
+  skip-dirs:
+    - pkg/api
   tests: false
 linters:
   enable-all: true
   disable:
-    - godot
-    - gci
     - exhaustivestruct
+    - exhaustruct
+    - maligned
+    - tagliatelle
+    - interfacer
     - ireturn
-    - varnamelen
+    - contextcheck
+    - godox
     - nosnakecase
     - interfacebloat
-  fast: true
+    - varcheck # deprecated (since v1.49.0)
+    - deadcode # deprecated (since v1.49.0)
+    - golint # deprecated (since v1.41.0)
+    - scopelint # deprecated (since v1.39.0)
+    - structcheck # deprecated (since v1.49.0)
+    - nonamedreturns
+  fast: false
 linters-settings:
-  tagliatelle:
-    case:
-      use-field-name: true
-      rules:
-        json: snake
   gocritic:
+    disabled-checks:
+      - unnamedResult
     enabled-tags:
       - style
       - experimental
       - performance
       - diagnostic
       - opinionated
-issues:
-  include:
-    - EXC0002
+
+  govet:
+    enable-all: true
+    disable:
+      - shadow
+      - fieldalignment
+
+  gci:
+    local-prefixes: github.com/loghole/tron
+
+  varnamelen:
+    # The longest distance, in source lines, that is being considered a "small scope." (defaults to 5)
+    # Variables used in at most this many lines will be ignored.
+    max-distance: 12
+    # Ignore "ok" variables that hold the bool return value of a type assertion. (defaults to false)
+    ignore-type-assert-ok: true
+    # Ignore "ok" variables that hold the bool return value of a map index. (defaults to false)
+    ignore-map-index-ok: true
+    # Ignore "ok" variables that hold the bool return value of a channel receive. (defaults to false)
+    ignore-chan-recv-ok: true
+    # Optional list of variable names that should be ignored completely. (defaults to empty list)
+    ignore-names:
+      - tx
+      - db
+      - ip
+      - fs
+    # Optional list of variable declarations that should be ignored completely. (defaults to empty list)
+    # Entries must be in the form of "<variable name> <type>" or "<variable name> *<type>" for
+    # variables, or "const <name>" for constants.
+    ignore-decls:
+      - w http.ResponseWriter
+      - r *http.Request
+      - t testing.T
+      - from time.Time
+      - to time.Time

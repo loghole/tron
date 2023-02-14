@@ -2,22 +2,24 @@
 
 ### Installation
 
-##### install tron: 
+##### install tron:
 
 ```
 curl -sSfL https://raw.githubusercontent.com/loghole/tron/main/install.sh | sh
 tron version
 ```
 
-##### install protoc: 
+##### install protoc:
 
 * linux
+
  ```
 $ apt install -y protobuf-compiler
 $ protoc --version
 ```
 
 * mac:
+
 ```
 $ brew install protobuf
 $ protoc --version

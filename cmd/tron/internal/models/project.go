@@ -2,6 +2,7 @@ package models
 
 import (
 	"bytes"
+	"os/exec"
 	"strings"
 )
 
@@ -60,6 +61,24 @@ func (p *Project) GenerateCmd() string {
 	}
 
 	return buf.String()
+}
+
+func (p *Project) GoVersion() string {
+	output, err := exec.Command("go", "version").Output()
+	if err != nil {
+		return DefaultGoVersion
+	}
+
+	version, err := ExtractVersion(string(output))
+	if err != nil {
+		return DefaultGoVersion
+	}
+
+	return version
+}
+
+func (p *Project) ImageName() string {
+	return p.Module
 }
 
 type ConfigValue struct {

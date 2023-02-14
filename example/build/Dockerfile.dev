@@ -1,0 +1,8 @@
+# Dockerfile for development
+FROM golang:1.20.0-alpine
+
+RUN apk add git make
+
+ENV WORKDIR=/src
+RUN mkdir -p ${WORKDIR}
+WORKDIR ${WORKDIR}

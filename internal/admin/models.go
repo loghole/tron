@@ -3,7 +3,6 @@ package admin
 type info struct {
 	InstanceUUID string `json:"instance_uuid"`
 	ServiceName  string `json:"service_name"`
-	Namespace    string `json:"namespace"`
 	AppName      string `json:"app_name"`
 	GitHash      string `json:"git_hash"`
 	Version      string `json:"version"`
