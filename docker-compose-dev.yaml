@@ -1,0 +1,18 @@
+version: '3'
+services:
+  linter:
+    image: golangci/golangci-lint:v1.51
+    working_dir: /src
+    volumes:
+      - ./:/src
+      - go-mod-cache:/go/pkg
+      - go-build-cache:/root/.cache/go-build
+      - go-lint-cache:/root/.cache/golangci-lint
+
+volumes:
+  go-mod-cache:
+    external: true
+  go-build-cache:
+    external: true
+  go-lint-cache:
+    external: true

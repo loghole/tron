@@ -23,9 +23,9 @@ func ErrorWriter() runtime.ErrorHandlerFunc {
 		r *http.Request,
 		err error,
 	) {
-		s := internalErr.ParseError(ctx, err)
+		parsed := internalErr.ParseError(ctx, err)
 
-		buf, merr := json.Marshal(s)
+		buf, merr := json.Marshal(parsed)
 		if merr != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 
@@ -36,7 +36,7 @@ func ErrorWriter() runtime.ErrorHandlerFunc {
 		w.Header().Del("Transfer-Encoding")
 		w.Header().Set("Content-Type", marshaler.ContentType(buf))
 
-		w.WriteHeader(s.HTTPStatus())
+		w.WriteHeader(parsed.HTTPStatus())
 
 		if _, err := w.Write(buf); err != nil {
 			w.WriteHeader(http.StatusInternalServerError)

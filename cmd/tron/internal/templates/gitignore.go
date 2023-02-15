@@ -17,4 +17,5 @@ vendor.pb/
 .DS_STORE
 /.idea
 /.vscode
+docker-compose.override.yaml
 `

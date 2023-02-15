@@ -4,7 +4,6 @@ package errors
 import (
 	"context"
 	"errors"
-	"fmt"
 	"net/http"
 	"strconv"
 
@@ -20,8 +19,8 @@ import (
 type Error struct {
 	rootErr    error
 	httpStatus int
-	grpcStatus codes.Code
 
+	Code    codes.Code `json:"code"`
 	Message string     `json:"message,omitempty"`
 	Details []*Details `json:"details,omitempty"`
 	TraceID string     `json:"trace_id"`
@@ -40,13 +39,13 @@ func ParseError(ctx context.Context, err error) *Error {
 	resp := &Error{
 		rootErr:    err,
 		httpStatus: http.StatusInternalServerError,
-		grpcStatus: codes.Unknown,
+		Code:       codes.Unknown,
 		TraceID:    tracelog.TraceID(ctx),
 	}
 
 	if resp.parseValidationErr(err) {
 		resp.httpStatus = http.StatusBadRequest
-		resp.grpcStatus = codes.InvalidArgument
+		resp.Code = codes.InvalidArgument
 	} else {
 		resp.parseDefaultErr(err)
 	}
@@ -58,20 +57,13 @@ func ParseError(ctx context.Context, err error) *Error {
 
 // GRPCStatus build status.Status from current error.
 func (e *Error) GRPCStatus() *status.Status {
-	st := status.New(e.grpcStatus, e.rootErr.Error())
+	grpcStatus := status.New(e.Code, e.rootErr.Error())
 
-	for _, val := range e.Details {
-		stNew, err := st.WithDetails(&errdetails.DebugInfo{
-			Detail: fmt.Sprintf("code: %s, detail: %s", val.Code, val.Description),
-		})
-		if err != nil {
-			return st
-		}
-
-		st = stNew
+	if value, err := grpcStatus.WithDetails(e.grpcErrorInfo()); err == nil {
+		return value
 	}
 
-	return st
+	return grpcStatus
 }
 
 // HTTPStatus return http status for error.
@@ -86,6 +78,17 @@ func (e *Error) Error() string {
 	}
 
 	return ""
+}
+
+func (e *Error) grpcErrorInfo() *errdetails.ErrorInfo {
+	info := &errdetails.ErrorInfo{}
+	info.Metadata["trace_id"] = e.TraceID
+
+	for _, detail := range e.Details {
+		info.Metadata[detail.Code] = detail.Description
+	}
+
+	return info
 }
 
 func (e *Error) parseValidationErr(err error) bool {
@@ -112,7 +115,7 @@ func (e *Error) parseDefaultErr(err error) {
 	code := simplerr.GetCode(err)
 
 	if gCode := code.GRPC(); gCode > 0 {
-		e.grpcStatus = codes.Code(gCode)
+		e.Code = codes.Code(gCode)
 	}
 
 	if hCode := code.HTTP(); hCode > 0 {

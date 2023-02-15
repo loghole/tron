@@ -104,7 +104,7 @@ func (p *Deps) download(dir, repo string) error {
 }
 
 func (p *Deps) checkout(dir, repo, version string) error {
-	cmd := exec.Command(cmdGit, "checkout", version) //nolint:gosec // need git version to checkout.
+	cmd := exec.Command(cmdGit, "checkout", version)
 	cmd.Dir = filepath.Join(dir, strings.TrimSuffix(filepath.Base(repo), filepath.Ext(repo)))
 
 	if err := cmd.Run(); err != nil {
@@ -115,7 +115,7 @@ func (p *Deps) checkout(dir, repo, version string) error {
 			return simplerr.Wrapf(err, "failed to run %s", cmd.String())
 		}
 
-		cmd = exec.Command(cmdGit, "checkout", version) //nolint:gosec // need git version to checkout.
+		cmd = exec.Command(cmdGit, "checkout", version)
 		cmd.Dir = filepath.Join(dir, strings.TrimSuffix(filepath.Base(repo), filepath.Ext(repo)))
 
 		if err := cmd.Run(); err != nil {
@@ -136,7 +136,6 @@ func (p *Deps) build(dir, main, output, ldflags string) error {
 		args = append(args, "-ldflags", "-X "+ldflags)
 	}
 
-	//nolint:gosec // need output and ldflags.
 	cmd := exec.Command(cmdGo, args...)
 	cmd.Dir = filepath.Join(dir, main)
 

@@ -50,33 +50,33 @@ func NewHandlers(info *app.Info, opts *app.Options, health Health, services ...t
 }
 
 // InitRoutes init routes for current router with debug service info and swagger docs.
-func (s *Handlers) InitRoutes(r chi.Router) {
-	if r == nil {
+func (s *Handlers) InitRoutes(router chi.Router) {
+	if router == nil {
 		return
 	}
 
-	r.HandleFunc("/", s.index)
+	router.HandleFunc("/", s.index)
 
-	r.Handle("/metrics", promhttp.Handler())
+	router.Handle("/metrics", promhttp.Handler())
 
-	r.Get("/info", s.serviceInfoHandler)
+	router.Get("/info", s.serviceInfoHandler)
 
-	r.Mount("/debug", middleware.Profiler())
+	router.Mount("/debug", middleware.Profiler())
 
-	r.Mount("/docs", http.StripPrefix("/docs", http.FileServer(http.FS(swagger.Content))))
+	router.Mount("/docs", http.StripPrefix("/docs", http.FileServer(http.FS(swagger.Content))))
 
-	r.Get("/docs", func(w http.ResponseWriter, r *http.Request) {
+	router.Get("/docs", func(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/docs/", http.StatusMovedPermanently)
 	})
 
-	r.Get("/docs/swagger.json", func(w http.ResponseWriter, r *http.Request) {
+	router.Get("/docs/swagger.json", func(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/swagger.json", http.StatusMovedPermanently)
 	})
 
-	r.HandleFunc("/swagger.json", s.swaggerDefHandler)
+	router.HandleFunc("/swagger.json", s.swaggerDefHandler)
 
-	r.Get("/heath/live", s.health.LivenessHandler)
-	r.Get("/heath/ready", s.health.ReadinessHandler)
+	router.Get("/heath/live", s.health.LivenessHandler)
+	router.Get("/heath/ready", s.health.ReadinessHandler)
 }
 
 func (s *Handlers) serviceInfoHandler(w http.ResponseWriter, r *http.Request) {
@@ -87,7 +87,6 @@ func (s *Handlers) serviceInfoHandler(w http.ResponseWriter, r *http.Request) {
 	_ = encoder.Encode(info{
 		InstanceUUID: s.info.InstanceUUID,
 		ServiceName:  s.info.ServiceName,
-		Namespace:    s.info.Namespace.String(),
 		AppName:      s.info.AppName,
 		GitHash:      s.info.GitHash,
 		Version:      s.info.Version,

@@ -17,14 +17,22 @@ func Buf(p *models.Project, printer stdout.Printer) error {
 
 	path := filepath.Join(p.AbsPath, models.BufFilepath)
 
-	if err := helpers.WriteToFile(path, []byte(templates.Buf)); err != nil {
-		return fmt.Errorf("write file '%s': %w", path, err)
+	if helpers.ConfirmOverwrite(path) {
+		if err := helpers.WriteToFile(path, []byte(templates.Buf)); err != nil {
+			return fmt.Errorf("write file '%s': %w", path, err)
+		}
+	} else {
+		printer.Println(color.FgBlue, "\tSkipped")
 	}
 
 	path = filepath.Join(p.AbsPath, models.BufGenFilepath)
 
-	if err := helpers.WriteToFile(path, []byte(templates.BufGen)); err != nil {
-		return fmt.Errorf("write file '%s': %w", path, err)
+	if helpers.ConfirmOverwrite(path) {
+		if err := helpers.WriteToFile(path, []byte(templates.BufGen)); err != nil {
+			return fmt.Errorf("write file '%s': %w", path, err)
+		}
+	} else {
+		printer.Println(color.FgBlue, "\tSkipped")
 	}
 
 	printer.Println(color.FgBlue, "\tSuccess")

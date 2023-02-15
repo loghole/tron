@@ -4,6 +4,7 @@ import (
 	"net"
 	"os"
 
+	"github.com/loghole/tracing"
 	"go.uber.org/zap"
 
 	"github.com/loghole/tron/internal/app"
@@ -156,15 +157,44 @@ func WithLogField(key string, value interface{}) app.Option {
 	}
 }
 
-// WithRealtimeConfig returns a Option that activate realtime config.
-// Realtime config watch only values file for current namespace.
+// WithLoggerLevel sets logger level.
 //
 //	Example:
 //
-//	tron.New(tron.WithRealtimeConfig())
-func WithRealtimeConfig() app.Option {
+//	tron.New(tron.WithLoggerLevel("info"))
+func WithLoggerLevel(s string) app.Option {
+	return WithAtomicLoggerLevel(zap.NewAtomicLevelAt(parseZapLevel(s)))
+}
+
+// WithAtomicLoggerLevel sets atomic logger level.
+//
+// Example:
+//
+//	level := zap.NewAtomicLevelAt(zapcore.InfoLevel)
+//	tron.New(tron.WithLoggerLevel(level))
+func WithAtomicLoggerLevel(level zap.AtomicLevel) app.Option {
 	return func(opts *app.Options) error {
-		opts.RealtimeConfig = true
+		opts.LoggerConfig.Level = level
+
+		return nil
+	}
+}
+
+// WithLoggerConfig sets logger config.
+func WithLoggerConfig(config zap.Config) app.Option { //nolint:gocritic // zap returns nonpointer struct
+	return func(opts *app.Options) error {
+		opts.LoggerConfig = config
+
+		return nil
+	}
+}
+
+// WithTracerConfiguration sets tracer config.
+func WithTracerConfiguration(config *tracing.Configuration) app.Option {
+	return func(opts *app.Options) error {
+		if config != nil {
+			opts.TracerConfig = config
+		}
 
 		return nil
 	}

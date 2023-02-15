@@ -1,7 +1,7 @@
 package templates
 
 const DefaultDockerfileTemplate = `# BUILD BACKEND
-FROM golang:1.17-alpine as builder
+FROM golang:{{ .GoVersion }}-alpine as builder
 
 RUN apk add --no-cache ca-certificates tzdata git
 
@@ -51,4 +51,14 @@ COPY --from=builder /app /app
 USER appuser:appuser
 
 ENTRYPOINT ["/app"]
+`
+
+const DefaultDockerfileDev = `# Dockerfile for development
+FROM golang:{{ .GoVersion }}-alpine
+
+RUN apk add git make
+
+ENV WORKDIR=/src
+RUN mkdir -p ${WORKDIR}
+WORKDIR ${WORKDIR}
 `
