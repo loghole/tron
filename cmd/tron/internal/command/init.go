@@ -106,7 +106,13 @@ func (i *InitCMD) runInitService(opts ...parsers.Option) (err error) {
 
 	i.printer.Println(color.FgMagenta, "Generate files from proto api if exists")
 
-	if err := helpers.ExecWithPrint(project.AbsPath, "make"); err != nil {
+	if err := helpers.ExecWithPrint(project.AbsPath,
+		"make",
+		"docker-compose",
+		"docker-volumes",
+		"tidy",
+		"generate",
+	); err != nil {
 		return fmt.Errorf("exec 'make generate': %w", err)
 	}
 

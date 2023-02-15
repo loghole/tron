@@ -22,7 +22,7 @@ LDFLAGS:=-X 'github.com/loghole/tron/internal/app.ServiceName={{ .ServiceName }}
 DOCKER_COMPOSE_RUN ?= docker-compose
 
 .PHONY: default
-default: docker-compose docker-volumes tidy generate ## Init docker volumes, download deps and generate code
+default: docker-compose docker-volumes tidy generate docker-run ## Init docker volumes, download deps, generate code and start app
 
 # This will output the help for each task
 # thanks to https://marmelab.com/blog/2016/02/29/auto-documented-makefile.html
