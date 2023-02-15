@@ -30,5 +30,9 @@ func main() {
 	if err := app.Run(handlers...); err != nil {
 		app.Logger().Fatalf("can't run app: %v", err)
 	}
+
+	if err := app.Wait(); err != nil {
+		app.Logger().Errorf("wait: %v", err)
+	}
 }
 `

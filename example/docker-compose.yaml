@@ -13,12 +13,13 @@ services:
     working_dir: /src
 
   linter:
-    image: golangci/golangci-lint:v1.50.1
+    image: golangci/golangci-lint:v1.51
     volumes:
       - ./:/src
       - go-mod-cache:/go/pkg
       - go-build-cache:/root/.cache/go-build
       - go-lint-cache:/root/.cache/golangci-lint
+    working_dir: /src
 
 volumes:
   go-mod-cache:
