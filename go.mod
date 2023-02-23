@@ -13,7 +13,7 @@ require (
 	github.com/prometheus/client_golang v1.14.0
 	go.opentelemetry.io/otel v1.13.0
 	go.uber.org/zap v1.24.0
-	golang.org/x/sync v0.0.0-20220601150217-0de741cfad7f
+	golang.org/x/sync v0.1.0
 	google.golang.org/genproto v0.0.0-20230202175211-008b39050e57
 	google.golang.org/grpc v1.53.0
 )
