@@ -11,7 +11,7 @@ require (
 	github.com/lissteron/simplerr v0.9.0
 	github.com/loghole/tracing v0.17.0
 	github.com/prometheus/client_golang v1.14.0
-	go.opentelemetry.io/otel v1.13.0
+	go.opentelemetry.io/otel v1.14.0
 	go.uber.org/zap v1.24.0
 	golang.org/x/sync v0.0.0-20220601150217-0de741cfad7f
 	google.golang.org/genproto v0.0.0-20230202175211-008b39050e57
@@ -35,7 +35,7 @@ require (
 	github.com/prometheus/procfs v0.8.0 // indirect
 	go.opentelemetry.io/otel/exporters/jaeger v1.12.0 // indirect
 	go.opentelemetry.io/otel/sdk v1.12.0 // indirect
-	go.opentelemetry.io/otel/trace v1.13.0 // indirect
+	go.opentelemetry.io/otel/trace v1.14.0 // indirect
 	go.uber.org/atomic v1.9.0 // indirect
 	go.uber.org/multierr v1.7.0 // indirect
 	golang.org/x/net v0.5.0 // indirect
