@@ -78,7 +78,7 @@ func (p *Project) GoVersion() string {
 }
 
 func (p *Project) ImageName() string {
-	return p.Module
+	return strings.ReplaceAll(p.Module, "-", "_")
 }
 
 type ConfigValue struct {

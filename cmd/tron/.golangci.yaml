@@ -29,6 +29,8 @@ linters:
     - structcheck # deprecated (since v1.49.0)
     - nonamedreturns
     - musttag
+    - depguard
+    - revive
 linters-settings:
   tagliatelle:
     case:

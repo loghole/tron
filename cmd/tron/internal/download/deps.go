@@ -93,7 +93,7 @@ func (p *Deps) download(dir, repo string) error {
 		return simplerr.Wrapf(err, "can't create dir '%s'", dir)
 	}
 
-	cmd := exec.Command(cmdGit, "clone", repo)
+	cmd := exec.Command(cmdGit, "clone", "--depth", "1", repo)
 	cmd.Dir = dir
 
 	if err := cmd.Run(); err != nil {
@@ -108,7 +108,7 @@ func (p *Deps) checkout(dir, repo, version string) error {
 	cmd.Dir = filepath.Join(dir, strings.TrimSuffix(filepath.Base(repo), filepath.Ext(repo)))
 
 	if err := cmd.Run(); err != nil {
-		cmd := exec.Command(cmdGit, "fetch", "--all", "--tags")
+		cmd := exec.Command(cmdGit, "fetch", "--tags")
 		cmd.Dir = filepath.Join(dir, strings.TrimSuffix(filepath.Base(repo), filepath.Ext(repo)))
 
 		if err := cmd.Run(); err != nil {
