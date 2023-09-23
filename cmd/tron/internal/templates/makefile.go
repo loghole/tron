@@ -49,6 +49,9 @@ lint: ## Run linter
 .PHONY: docker-image
 docker-image: ## Create docker image
 	docker build \
+	--build-arg="GIT_HASH=$(GIT_HASH)" \
+	--build-arg="VERSION=$(VERSION)" \
+	--build-arg="BUILD_TS=$(BUILD_TS)" \
 	-f $(DOCKERFILE) \
 	-t $(DOCKER_IMAGE):latest \
 	-t $(DOCKER_IMAGE):$(VERSION) \
