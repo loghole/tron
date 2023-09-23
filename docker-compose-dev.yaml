@@ -1,7 +1,7 @@
 version: '3'
 services:
   linter:
-    image: golangci/golangci-lint:v1.51
+    image: golangci/golangci-lint:v1.53
     working_dir: /src
     volumes:
       - ./:/src

@@ -23,6 +23,8 @@ linters:
     - structcheck # deprecated (since v1.49.0)
     - nonamedreturns
     - musttag
+    - depguard
+    - revive
   fast: false
 linters-settings:
   gocritic:

@@ -13,11 +13,11 @@ VERSION  := $(shell git describe --tags --always)
 GIT_HASH := $$(git rev-parse HEAD)
 BUILD_TS := $(shell date +%FT%T%z)
 
-LDFLAGS:=-X 'github.com/loghole/tron/internal/app.ServiceName={{ .ServiceName }}' \
-		 -X 'github.com/loghole/tron/internal/app.AppName={{ .AppName }}' \
-		 -X 'github.com/loghole/tron/internal/app.GitHash=$(GIT_HASH)' \
-		 -X 'github.com/loghole/tron/internal/app.Version=$(VERSION)' \
-		 -X 'github.com/loghole/tron/internal/app.BuildAt=$(BUILD_TS)'
+LDFLAGS := -X 'github.com/loghole/tron/internal/app.ServiceName={{ .ServiceName }}' \
+		   -X 'github.com/loghole/tron/internal/app.AppName={{ .AppName }}' \
+		   -X 'github.com/loghole/tron/internal/app.GitHash=$(GIT_HASH)' \
+		   -X 'github.com/loghole/tron/internal/app.Version=$(VERSION)' \
+		   -X 'github.com/loghole/tron/internal/app.BuildAt=$(BUILD_TS)'
 
 DOCKER_COMPOSE_RUN ?= docker-compose
 
@@ -49,6 +49,9 @@ lint: ## Run linter
 .PHONY: docker-image
 docker-image: ## Create docker image
 	docker build \
+	--build-arg="GIT_HASH=$(GIT_HASH)" \
+	--build-arg="VERSION=$(VERSION)" \
+	--build-arg="BUILD_TS=$(BUILD_TS)" \
 	-f $(DOCKERFILE) \
 	-t $(DOCKER_IMAGE):latest \
 	-t $(DOCKER_IMAGE):$(VERSION) \

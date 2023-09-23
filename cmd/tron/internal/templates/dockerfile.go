@@ -28,14 +28,17 @@ COPY . .
 
 ARG SERVICE_NAME={{ .Name }}
 ARG APP_NAME={{ .Module }}
+ARG GIT_HASH=unknown
+ARG VERSION=unknown
+ARG BUILD_TS=unknown
 
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build \
     -ldflags="-w -s \
     -X github.com/loghole/tron/internal/app.ServiceName=$SERVICE_NAME \
     -X github.com/loghole/tron/internal/app.AppName=$APP_NAME \
-    -X github.com/loghole/tron/internal/app.GitHash=$(git rev-parse HEAD) \
-    -X github.com/loghole/tron/internal/app.Version=$(git describe --tags --always) \
-    -X github.com/loghole/tron/internal/app.BuildAt=$(date --utc +%FT%TZ) \
+    -X github.com/loghole/tron/internal/app.GitHash=${GIT_HASH} \
+    -X github.com/loghole/tron/internal/app.Version=${VERSION} \
+    -X github.com/loghole/tron/internal/app.BuildAt=${BUILD_TS} \
     " -o /app cmd/$SERVICE_NAME/*.go
 
 # BUILD FINAL CONTAINER

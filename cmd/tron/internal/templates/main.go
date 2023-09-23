@@ -4,6 +4,7 @@ const MainFile = `package main
 
 import (
 	"log"
+	"os"
 
 	"github.com/loghole/tron"
 	"github.com/loghole/tron/transport"

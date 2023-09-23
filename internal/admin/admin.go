@@ -79,7 +79,7 @@ func (s *Handlers) InitRoutes(router chi.Router) {
 	router.Get("/heath/ready", s.health.ReadinessHandler)
 }
 
-func (s *Handlers) serviceInfoHandler(w http.ResponseWriter, r *http.Request) {
+func (s *Handlers) serviceInfoHandler(w http.ResponseWriter, _ *http.Request) {
 	encoder := json.NewEncoder(w)
 	encoder.SetIndent("", "  ")
 
