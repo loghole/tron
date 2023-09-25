@@ -7,6 +7,7 @@ import (
 	"net"
 
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/reflection"
 
 	"github.com/loghole/tron/transport"
 )
@@ -86,6 +87,8 @@ func (s *Server) Serve() error {
 	if s == nil {
 		return nil
 	}
+
+	reflection.Register(s.server)
 
 	if err := s.server.Serve(s.listener); err != nil {
 		return fmt.Errorf("serve: %w", err)
