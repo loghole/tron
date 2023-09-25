@@ -81,7 +81,7 @@ func (e *Error) Error() string {
 }
 
 func (e *Error) grpcErrorInfo() *errdetails.ErrorInfo {
-	info := &errdetails.ErrorInfo{}
+	info := &errdetails.ErrorInfo{Metadata: make(map[string]string)}
 	info.Metadata["trace_id"] = e.TraceID
 
 	for _, detail := range e.Details {
