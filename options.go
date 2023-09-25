@@ -19,7 +19,7 @@ type Option = app.Option
 //	Example:
 //
 //	tron.New(tron.WithPublicGRPC(8080))
-func WithPublicHTTP(port uint16) app.Option {
+func WithPublicHTTP(port uint16) Option {
 	return func(opts *app.Options) error {
 		opts.PortHTTP = port
 
@@ -33,7 +33,7 @@ func WithPublicHTTP(port uint16) app.Option {
 //	Example:
 //
 //	tron.New(tron.WithAdminHTTP(8081))
-func WithAdminHTTP(port uint16) app.Option {
+func WithAdminHTTP(port uint16) Option {
 	return func(opts *app.Options) error {
 		opts.PortAdmin = port
 
@@ -47,7 +47,7 @@ func WithAdminHTTP(port uint16) app.Option {
 //	Example:
 //
 //	tron.New(tron.WithPublicGRPC(8082))
-func WithPublicGRPC(port uint16) app.Option {
+func WithPublicGRPC(port uint16) Option {
 	return func(opts *app.Options) error {
 		opts.PortGRPC = port
 
@@ -61,7 +61,7 @@ func WithPublicGRPC(port uint16) app.Option {
 //	Example:
 //
 //	tron.New(tron.WithExitSignals(syscall.SIGKILL))
-func WithExitSignals(sig ...os.Signal) app.Option {
+func WithExitSignals(sig ...os.Signal) Option {
 	return func(opts *app.Options) error {
 		opts.ExitSignals = append(opts.ExitSignals, sig...)
 
@@ -77,7 +77,7 @@ func WithExitSignals(sig ...os.Signal) app.Option {
 //	listener := bufconn.Listen(1024*1024)
 //
 //	tron.New(tron.WithGRPCListener(listener))
-func WithGRPCListener(listener net.Listener) app.Option {
+func WithGRPCListener(listener net.Listener) Option {
 	return func(opts *app.Options) error {
 		opts.GRPCListener = listener
 
@@ -93,7 +93,7 @@ func WithGRPCListener(listener net.Listener) app.Option {
 //	listener = bufconn.Listen(1024*1024)
 //
 //	tron.New(tron.WithHTTPListener(listener))
-func WithHTTPListener(listener net.Listener) app.Option {
+func WithHTTPListener(listener net.Listener) Option {
 	return func(opts *app.Options) error {
 		opts.HTTPListener = listener
 
@@ -103,7 +103,7 @@ func WithHTTPListener(listener net.Listener) app.Option {
 
 // AddLogCaller configures the Logger to annotate each message with the filename
 // and line number of zap's caller.
-func AddLogCaller() app.Option {
+func AddLogCaller() Option {
 	return func(opts *app.Options) error {
 		opts.LoggerOptions = append(opts.LoggerOptions, zap.AddCaller())
 
@@ -117,7 +117,7 @@ func AddLogCaller() app.Option {
 //	Example:
 //
 //	tron.New(tron.AddLogStacktrace("error"))
-func AddLogStacktrace(level string) app.Option {
+func AddLogStacktrace(level string) Option {
 	return func(opts *app.Options) error {
 		opts.LoggerOptions = append(opts.LoggerOptions, zap.AddStacktrace(parseZapLevel(level)))
 
@@ -130,7 +130,7 @@ func AddLogStacktrace(level string) app.Option {
 //	Example:
 //
 //	tron.New(tron.WithLogField("my_field_key", "my_field_value"))
-func WithLogField(key string, value interface{}) app.Option {
+func WithLogField(key string, value interface{}) Option {
 	return func(opts *app.Options) error {
 		opts.LoggerOptions = append(opts.LoggerOptions, zap.Fields(zap.Any(key, value)))
 
@@ -143,7 +143,7 @@ func WithLogField(key string, value interface{}) app.Option {
 //	Example:
 //
 //	tron.New(tron.WithLoggerLevel("info"))
-func WithLoggerLevel(s string) app.Option {
+func WithLoggerLevel(s string) Option {
 	return WithAtomicLoggerLevel(zap.NewAtomicLevelAt(parseZapLevel(s)))
 }
 
@@ -153,7 +153,7 @@ func WithLoggerLevel(s string) app.Option {
 //
 //	level := zap.NewAtomicLevelAt(zapcore.InfoLevel)
 //	tron.New(tron.WithLoggerLevel(level))
-func WithAtomicLoggerLevel(level zap.AtomicLevel) app.Option {
+func WithAtomicLoggerLevel(level zap.AtomicLevel) Option {
 	return func(opts *app.Options) error {
 		opts.LoggerConfig.Level = level
 
@@ -162,7 +162,7 @@ func WithAtomicLoggerLevel(level zap.AtomicLevel) app.Option {
 }
 
 // WithLoggerConfig sets logger config.
-func WithLoggerConfig(config zap.Config) app.Option { //nolint:gocritic // zap returns nonpointer struct
+func WithLoggerConfig(config zap.Config) Option { //nolint:gocritic // zap returns nonpointer struct
 	return func(opts *app.Options) error {
 		opts.LoggerConfig = config
 
@@ -171,7 +171,7 @@ func WithLoggerConfig(config zap.Config) app.Option { //nolint:gocritic // zap r
 }
 
 // WithTracerConfiguration sets tracer config.
-func WithTracerConfiguration(config *tracing.Configuration) app.Option {
+func WithTracerConfiguration(config *tracing.Configuration) Option {
 	return func(opts *app.Options) error {
 		if config != nil {
 			opts.TracerConfig = config

@@ -36,7 +36,7 @@ type App struct {
 }
 
 // New init viper config, logger and tracer.
-func New(options ...app.Option) (*App, error) {
+func New(options ...Option) (*App, error) {
 	info := initInfo()
 
 	opts, err := app.NewOptions(info, options...)
