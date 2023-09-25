@@ -18,16 +18,12 @@ lint:
 .PHONY: update-swagger
 update-swagger:
 	rm -fr /tmp/swagger-ui
-	git clone https://github.com/swagger-api/swagger-ui.git /tmp/swagger-ui
-	cd /tmp/swagger-ui; \
-		mkdir ./html; \
-		cat ./dist/index.html | perl -pe 's/https?:\/\/petstore.swagger.io\/v2\///g' > ./html/index.html; \
-		cp ./dist/oauth2-redirect.html ./html; \
-		cp ./dist/*.js ./html; \
-		cp ./dist/*.css ./html; \
-		cp ./dist/*.png ./html
-
-	cp -R /tmp/swagger-ui/html ./internal/admin/
+	git clone --depth=1 https://github.com/swagger-api/swagger-ui.git /tmp/swagger-ui
+	cp -R /tmp/swagger-ui/dist/*.js ./internal/admin/swagger
+	cp -R /tmp/swagger-ui/dist/*.png ./internal/admin/swagger
+	cp -R /tmp/swagger-ui/dist/*.css ./internal/admin/swagger
+	cp -R /tmp/swagger-ui/dist/*.html ./internal/admin/swagger
+	find ./internal/admin/swagger -name '*.js' -exec sed -i '' 's/https:\/\/petstore.swagger.io\/v2\/swagger.json/swagger.json/g' {} \;
 	rm -rf /tmp/swagger-ui
 
 .PHONY: tidy
