@@ -36,7 +36,7 @@ type App struct {
 }
 
 // New init viper config, logger and tracer.
-func New(options ...app.Option) (*App, error) {
+func New(options ...Option) (*App, error) {
 	info := initInfo()
 
 	opts, err := app.NewOptions(info, options...)
@@ -128,7 +128,7 @@ func (a *App) Close() {
 }
 
 // WithRunOptions appends some run options.
-func (a *App) WithRunOptions(opts ...app.RunOption) *App {
+func (a *App) WithRunOptions(opts ...RunOption) *App {
 	a.opts.AddRunOptions(opts...)
 
 	return a

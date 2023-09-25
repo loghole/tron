@@ -31,7 +31,6 @@ type Options struct {
 	LoggerConfig  zap.Config
 	TracerConfig  *tracing.Configuration
 	ExitSignals   []os.Signal
-	ConfigMap     map[string]interface{}
 	GRPCListener  net.Listener
 	HTTPListener  net.Listener
 

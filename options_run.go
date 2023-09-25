@@ -16,7 +16,7 @@ type RunOption = app.RunOption
 // for unary RPCs. The first interceptor will be the outer most,
 // while the last interceptor will be the inner most wrapper around the real call.
 // All unary interceptors added by this method will be chained.
-func WithUnaryInterceptor(interceptor grpc.UnaryServerInterceptor) app.RunOption {
+func WithUnaryInterceptor(interceptor grpc.UnaryServerInterceptor) RunOption {
 	return func(opts *app.Options) error {
 		opts.GRPCOptions = append(opts.GRPCOptions, grpc.ChainUnaryInterceptor(interceptor))
 
@@ -28,7 +28,7 @@ func WithUnaryInterceptor(interceptor grpc.UnaryServerInterceptor) app.RunOption
 // for streaming RPCs. The first interceptor will be the outer most,
 // while the last interceptor will be the inner most wrapper around the real call.
 // All stream interceptors added by this method will be chained.
-func WithStreamInterceptor(interceptor grpc.StreamServerInterceptor) app.RunOption {
+func WithStreamInterceptor(interceptor grpc.StreamServerInterceptor) RunOption {
 	return func(opts *app.Options) error {
 		opts.GRPCOptions = append(opts.GRPCOptions, grpc.ChainStreamInterceptor(interceptor))
 
@@ -37,7 +37,7 @@ func WithStreamInterceptor(interceptor grpc.StreamServerInterceptor) app.RunOpti
 }
 
 // WithTLSConfig returns a RunOption that set tls configuration for grpc and http servers.
-func WithTLSConfig(config *tls.Config) app.RunOption {
+func WithTLSConfig(config *tls.Config) RunOption {
 	return func(opts *app.Options) error {
 		opts.TLSConfig = config
 
@@ -46,7 +46,7 @@ func WithTLSConfig(config *tls.Config) app.RunOption {
 }
 
 // WithTLSKeyPair returns a RunOption that set tls configuration for grpc and http servers from files.
-func WithTLSKeyPair(certFile, keyFile string) app.RunOption {
+func WithTLSKeyPair(certFile, keyFile string) RunOption {
 	if certFile == "" || keyFile == "" {
 		return nil
 	}
