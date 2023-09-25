@@ -69,25 +69,6 @@ func WithExitSignals(sig ...os.Signal) app.Option {
 	}
 }
 
-// WithConfigMap returns a Option that init app config from map and envs.
-//
-//	Example:
-//
-//	tron.New(tron.WithConfigMap(map[string]interface{}{
-//		"namespace":         "dev",
-//		"service_port_grpc": 35900,
-//		"cockroach_addr":    "db_addr",
-//		"cockroach_user":    "db_user",
-//		"cockroach_db":      "db_name",
-//	}))
-func WithConfigMap(cfg map[string]interface{}) app.Option {
-	return func(opts *app.Options) error {
-		opts.ConfigMap = cfg
-
-		return nil
-	}
-}
-
 // WithGRPCListener returns a Option that sets net listener for grpc public server.
 // Can be used for create application tests with memory listener.
 //
