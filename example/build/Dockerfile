@@ -1,5 +1,5 @@
 # BUILD BACKEND
-FROM golang:1.20.4-alpine as builder
+FROM golang:1.21.1-alpine as builder
 
 RUN apk add --no-cache ca-certificates tzdata git
 
@@ -26,14 +26,17 @@ COPY . .
 
 ARG SERVICE_NAME=example
 ARG APP_NAME=github.com/loghole/tron/example
+ARG GIT_HASH=unknown
+ARG VERSION=unknown
+ARG BUILD_TS=unknown
 
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build \
     -ldflags="-w -s \
     -X github.com/loghole/tron/internal/app.ServiceName=$SERVICE_NAME \
     -X github.com/loghole/tron/internal/app.AppName=$APP_NAME \
-    -X github.com/loghole/tron/internal/app.GitHash=$(git rev-parse HEAD) \
-    -X github.com/loghole/tron/internal/app.Version=$(git describe --tags --always) \
-    -X github.com/loghole/tron/internal/app.BuildAt=$(date --utc +%FT%TZ) \
+    -X github.com/loghole/tron/internal/app.GitHash=${GIT_HASH} \
+    -X github.com/loghole/tron/internal/app.Version=${VERSION} \
+    -X github.com/loghole/tron/internal/app.BuildAt=${BUILD_TS} \
     " -o /app cmd/$SERVICE_NAME/*.go
 
 # BUILD FINAL CONTAINER
