@@ -128,7 +128,7 @@ func (a *App) Close() {
 }
 
 // WithRunOptions appends some run options.
-func (a *App) WithRunOptions(opts ...app.RunOption) *App {
+func (a *App) WithRunOptions(opts ...RunOption) *App {
 	a.opts.AddRunOptions(opts...)
 
 	return a
