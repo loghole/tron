@@ -6,7 +6,7 @@ require (
 	github.com/gadavy/ozzo-validation/v4 v4.4.0
 	github.com/go-chi/chi/v5 v5.0.10
 	github.com/go-openapi/spec v0.20.9
-	github.com/google/uuid v1.3.1
+	github.com/google/uuid v1.5.0
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.18.0
 	github.com/lissteron/simplerr v0.9.0
 	github.com/loghole/tracing v0.18.0
